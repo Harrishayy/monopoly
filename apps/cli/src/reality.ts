@@ -49,7 +49,7 @@ async function runOne(c: Case, n: number) {
   await writeFile(join(dir, 'ANSWER.md'), error ? `${answer}\n**Runner error**\n${error}\n` : answer);
   await writeFile(join(dir, 'REASONING.md'), reasoning);
   await writeFile(join(dir, 'trace.jsonl'), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
-  return { n, ref: c.ref, outcome: view.outcome ?? 'incomplete', error };
+  return { n, ref: c.ref, outcome: view.outcome ?? 'incomplete', next: view.next?.action ?? 'none', decidedBy: view.next?.decidedBy ?? 'none', error };
 }
 
 async function main() {
@@ -68,12 +68,14 @@ async function main() {
         const i = next++;
         const r = await runOne(cases[i]!, caseNumber(cases[i]!, i));
         results.push(r);
-        console.log(`#${r.n} ${r.ref} → ${r.outcome}${r.error ? ` (${r.error})` : ''}`);
+        console.log(`#${r.n} ${r.ref} → ${r.outcome} · ${r.next} (${r.decidedBy})${r.error ? ` (${r.error})` : ''}`);
       }
     }),
   );
   results.sort((a, b) => a.n - b.n);
-  console.table(results.map(({ n, ref, outcome }) => ({ n, ref, outcome })));
+  console.table(results.map(({ n, ref, outcome, next, decidedBy }) => ({ n, ref, outcome, next, decidedBy })));
+  const fallbacks = results.filter((r) => r.decidedBy !== 'model').length;
+  if (fallbacks) console.warn(`${fallbacks} of ${results.length} cases were decided by the rules-only playbook (model unavailable or failed). Re-run them once the model is reachable.`);
 }
 
 /** Case refs end in the supplied folder number (PM-007 → 7); fall back to position. */

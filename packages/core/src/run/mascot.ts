@@ -10,6 +10,8 @@ export function mascotFor(event: RunEvent | undefined): MascotState {
     case 'step.read':
     case 'decision.made':
     case 'action.blocked':
+    case 'case.assessed':
+    case 'next.proposed':
       return 'think';
     case 'tool.called':
     case 'tool.succeeded':

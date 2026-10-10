@@ -7,7 +7,8 @@
   "scripts": {
     "reality": "tsx --env-file-if-exists=../../.env src/reality.ts",
     "replay": "tsx --env-file-if-exists=../../.env src/replay.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eval": "tsx --env-file-if-exists=../../.env src/eval.ts"
   },
   "devDependencies": {
     "tsx": "^4.23.15"

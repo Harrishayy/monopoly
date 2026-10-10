@@ -1,6 +1,7 @@
 import type { TrackPack } from '@casework/core';
 import { TRACK_META } from '../meta';
 import { loadCaseFolders } from '../shared/cases';
+import { assess } from './assess';
 import { policy } from './policy';
 import { systemPrompt } from './prompt';
 import { tools } from './tools';
@@ -12,6 +13,7 @@ export const pack: TrackPack = {
   ...TRACK_META.property,
   autonomy: 'ask_first',
   loadCases: (dataDir, opts) => loadCaseFolders(dataDir, cases, opts),
+  assess,
   tools,
   policy,
   systemPrompt,

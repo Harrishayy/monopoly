@@ -1,0 +1,5086 @@
+[
+ {
+  "case": "001",
+  "cutBefore": 4,
+  "asOf": "2025-10-11T18:33:56Z",
+  "kind": "determined",
+  "situation": "Tenant reported weeds, overgrown hedge and an uncleared strip in the communal garden; the system gate says landlord approval must come first.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval yet for any attendance or works",
+   "Communal areas may be handled by the landlord's own contractor"
+  ],
+  "happened": "event 4: emailed the landlord the tenant's report and asked how they want to respond."
+ },
+ {
+  "case": "001",
+  "cutBefore": 8,
+  "asOf": "2025-10-12T16:02:31Z",
+  "kind": "judgement",
+  "situation": "Landlord replied that he met his own contractor (Riverside) on site and is awaiting quotes, and will follow up on Monday.",
+  "accept": [
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord is arranging his own contractor; the agency has no quote to approve",
+   "Landlord said he will follow up Monday; do not chase before then"
+  ],
+  "happened": "event 8: put on hold waiting for the landlord, to follow up Monday.",
+  "note": "Telling the tenant the landlord is getting quotes is also reasonable; the agency did not update the tenant until 5 Nov."
+ },
+ {
+  "case": "001",
+  "cutBefore": 9,
+  "asOf": "2025-10-16T18:06:55Z",
+  "kind": "determined",
+  "situation": "Landlord promised to follow up on Monday 13 Oct about his contractor's quotes; nothing heard by 16 Oct.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord has not yet received or approved any quote"
+  ],
+  "happened": "event 9: emailed the landlord asking whether Riverside's quote had arrived."
+ },
+ {
+  "case": "001",
+  "cutBefore": 23,
+  "asOf": "2025-11-05T14:46:58Z",
+  "kind": "judgement",
+  "situation": "Landlord confirmed he has his contractor's quotes and agreed to go ahead with the garden works using his own contractor.",
+  "accept": [
+   "tenant.update",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord is managing his own contractor; the agency does not instruct or pay them",
+   "No start date has been given yet"
+  ],
+  "happened": "events 23-25: thanked the landlord and asked for the start date, then told the tenant a contractor had been instructed and a date would follow."
+ },
+ {
+  "case": "001",
+  "cutBefore": 39,
+  "asOf": "2025-12-10T19:27:05Z",
+  "kind": "judgement",
+  "situation": "The landlord's contractor started the large communal job around 20 Nov (it was delayed by nesting pigeons); by 10 Dec nobody has confirmed completion.",
+  "accept": [
+   "contractor.chase",
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Nobody has confirmed the job is finished",
+   "The contractor was hired by the landlord, not the agency"
+  ],
+  "happened": "event 39: called the contractor (Freya) for an update and left a callback number."
+ },
+ {
+  "case": "001",
+  "cutBefore": 43,
+  "asOf": "2025-12-11T21:51:18Z",
+  "kind": "judgement",
+  "situation": "In a phone call the contractor confirmed the job, including the tree removal, is complete and discussed invoicing; the landlord pays the contractor directly.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "The contractor confirmed completion by phone; neither the tenant nor the landlord has confirmed it in writing",
+   "The landlord pays the contractor directly; the agency has no invoice to process"
+  ],
+  "happened": "events 43-44: noted that the job was done and the landlord pays directly; closed without payment."
+ },
+ {
+  "case": "002",
+  "cutBefore": 2,
+  "asOf": "2026-08-07T11:48:43Z",
+  "kind": "determined",
+  "situation": "Tenant reports a blocked toilet with a blockage lodged at the pan connector, needing the toilet removed.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval or standing consent recorded yet"
+  ],
+  "happened": "events 2-3: got the landlord's approval by phone to send a contractor, then rang the contractor.",
+  "note": "If standing consent existed, contractor.assign would be fine, but none is shown at this point."
+ },
+ {
+  "case": "002",
+  "cutBefore": 15,
+  "asOf": "2026-08-12T04:45:11Z",
+  "kind": "judgement",
+  "situation": "The contractor visited on 8 Aug; by 12 Aug no work report has come in and the system flags 'no work results'.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Visit took place but no outcome reported",
+   "No quote received yet"
+  ],
+  "happened": "the contractor's report and quote arrived at event 16 (same minute as the system prompt at event 15)."
+ },
+ {
+  "case": "002",
+  "cutBefore": 17,
+  "asOf": "2026-08-12T06:17:48Z",
+  "kind": "determined",
+  "situation": "Contractor attended and reports the toilet needs repiping; removal risks breaking it (rusted screws, no spare), so he quotes for a new toilet and cistern, with photos.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "tenant.chase"
+  ],
+  "boundaries": [
+   "Landlord approved attendance, not this replacement quote"
+  ],
+  "happened": "event 17: emailed the quote and photos to the landlord for approval."
+ },
+ {
+  "case": "002",
+  "cutBefore": 20,
+  "asOf": "2026-08-13T04:50:33Z",
+  "kind": "determined",
+  "situation": "The landlord replied 'Please approve this quote for works.'",
+  "accept": [
+   "contractor.instruct",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted new toilet and cistern only"
+  ],
+  "happened": "events 21-24: recorded the approval, told the tenant the contractor would book in, and told the contractor to schedule the work and send before/after photos and the invoice."
+ },
+ {
+  "case": "002",
+  "cutBefore": 35,
+  "asOf": "2026-08-19T07:24:30Z",
+  "kind": "judgement",
+  "situation": "The replacement was booked for 15 Aug, and on 19 Aug the contractor confirmed the job complete, attaching a completion image and invoice.",
+  "accept": [
+   "landlord.update",
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "The contractor says it is done; the tenant has not confirmed",
+   "The invoice and image are referenced but not readable in the record"
+  ],
+  "happened": "events 35-40: marked complete, skipped the document upload, and closed after checks.",
+  "note": "Forwarding the invoice to the landlord before closing is the better close-out; the record shows no landlord email."
+ },
+ {
+  "case": "002",
+  "cutBefore": 44,
+  "asOf": "2026-08-21T10:24:30Z",
+  "kind": "judgement",
+  "situation": "The request is already closed after checks, but the system auto-paused it for an exceeded deadline and it keeps reappearing on the dashboard.",
+  "accept": [
+   "case.close",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "landlord.chase",
+   "tenant.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "The work is done and closed; the auto-pause is a system artefact, not a new issue"
+  ],
+  "happened": "events 44-49: raised the system issue internally on Slack, held it, attached the invoice, and a supervisor completed it.",
+  "note": "Noise moment: the stale automated alert should not trigger any outbound message."
+ },
+ {
+  "case": "003",
+  "cutBefore": 2,
+  "asOf": "2025-07-22T16:00:18Z",
+  "kind": "judgement",
+  "situation": "Agency-raised request after checkout: get an estimate for an end-of-tenancy clean, removal of dumped items and a carpet clean; the property is empty.",
+  "accept": [
+   "contractor.assign",
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "tenant.ask",
+   "tenant.update",
+   "case.close"
+  ],
+  "boundaries": [
+   "Asking for an estimate is not approval to do the work",
+   "The tenant has vacated; there is nobody to arrange access with"
+  ],
+  "happened": "events 2-4: assigned a cleaner and emailed the estimate request with the checkout report."
+ },
+ {
+  "case": "003",
+  "cutBefore": 8,
+  "asOf": "2025-07-22T17:38:20Z",
+  "kind": "judgement",
+  "situation": "The cleaner replied 'Please tell me if it didn't attach', which implies an estimate was sent, but its contents are not visible.",
+  "accept": [
+   "landlord.send_quote",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "boundaries": [
+   "The estimate amount is not visible in the record",
+   "Agency receipt of an estimate is not landlord approval"
+  ],
+  "happened": "events 8-10: told the cleaner 'Received, please proceed' and noted 'Estimate approved' with no landlord approval recorded.",
+  "note": "The agency approved the estimate itself. Unless standing consent covers checkout cleans, a good agent sends it to the landlord (or confirms the attachment arrived) before instructing. The final invoice was £125."
+ },
+ {
+  "case": "003",
+  "cutBefore": 15,
+  "asOf": "2025-07-22T17:53:29Z",
+  "kind": "determined",
+  "situation": "The cleaner has been told to proceed and replied 'Lovely thankyou'.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.chase",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "An acknowledgement is not completion"
+  ],
+  "happened": "event 15: put on hold waiting for the provider.",
+  "note": "Noise moment: the acknowledgement needs no reply."
+ },
+ {
+  "case": "003",
+  "cutBefore": 18,
+  "asOf": "2025-07-24T14:30:49Z",
+  "kind": "determined",
+  "situation": "The cleaner says the invoice has been sent to the agency (the invoice lists the end-of-tenancy clean, carpet shampoo and removal of dumped items; £125).",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Completion is evidenced only by the cleaner's invoice; there are no photos"
+  ],
+  "happened": "events 18-22: marked complete, emailed the invoice to the landlord and closed the request."
+ },
+ {
+  "case": "004",
+  "cutBefore": 5,
+  "asOf": "2025-10-24T01:32:44Z",
+  "kind": "determined",
+  "situation": "Agency-raised quote request for a checkout clean (vacuum, light clean, limescale in the en-suite); the gate says landlord approval is confirmed, but the system paused the job as 'NOT TENANTED'.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "tenant.ask",
+   "tenant.update",
+   "case.close"
+  ],
+  "boundaries": [
+   "The NOT TENANTED pause is expected for a checkout job; it is not a blocker",
+   "A quote request is not approval of works"
+  ],
+  "happened": "events 5-6: emailed the cleaner asking for a quote, with the checkout report attached."
+ },
+ {
+  "case": "004",
+  "cutBefore": 10,
+  "asOf": "2025-10-24T01:53:11Z",
+  "kind": "determined",
+  "situation": "The cleaner confirms the quote has been sent.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "The landlord has not approved this quote"
+  ],
+  "happened": "event 10: emailed the quote to the landlord asking whether the cleaner may proceed."
+ },
+ {
+  "case": "004",
+  "cutBefore": 13,
+  "asOf": "2025-10-24T22:30:52Z",
+  "kind": "judgement",
+  "situation": "The landlord replied 'Pls go ahead' to the cleaning quote.",
+  "accept": [
+   "contractor.instruct",
+   "contractor.update",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted clean only"
+  ],
+  "happened": "events 13-16: told the landlord the clean will happen after the checkout works; told the cleaner the quote is approved but to wait for the checkout works to finish."
+ },
+ {
+  "case": "004",
+  "cutBefore": 18,
+  "asOf": "2025-10-25T19:13:11Z",
+  "kind": "determined",
+  "situation": "The cleaner was told the quote is approved and to wait for the checkout works; the cleaner replied 'Thankyou xx'.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "An acknowledgement is not completion"
+  ],
+  "happened": "event 18: put on hold to follow up once the checkout works were done.",
+  "note": "Noise moment: the acknowledgement needs no reply."
+ },
+ {
+  "case": "004",
+  "cutBefore": 34,
+  "asOf": "2025-11-13T22:56:30Z",
+  "kind": "judgement",
+  "situation": "The cleaner confirmed she would attend on the Friday after the checkout works; the agency has heard nothing since about completion or an invoice.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "No completion confirmation yet"
+  ],
+  "happened": "event 34: emailed the cleaner asking whether the clean is done and for the invoice."
+ },
+ {
+  "case": "004",
+  "cutBefore": 37,
+  "asOf": "2025-11-14T00:00:14Z",
+  "kind": "determined",
+  "situation": "The cleaner confirms the job is complete and the invoice is sent.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "No before/after photos; completion rests on the cleaner's word"
+  ],
+  "happened": "events 37-42: forwarded the invoice to the landlord, skipped the photo upload, and closed."
+ },
+ {
+  "case": "005",
+  "cutBefore": 3,
+  "asOf": "2024-11-02T14:01:07Z",
+  "kind": "determined",
+  "situation": "After the tenant vacated, the agency wants an estimate for a full clean, including appliances, freezer defrost and a carpet clean in bedroom two; the system paused the job as NOT TENANTED.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "tenant.ask",
+   "tenant.update",
+   "case.close"
+  ],
+  "boundaries": [
+   "The NOT TENANTED pause is expected for a checkout job"
+  ],
+  "happened": "events 3-4: assigned the cleaner (Ava) and emailed the estimate request."
+ },
+ {
+  "case": "005",
+  "cutBefore": 7,
+  "asOf": "2024-11-10T09:33:42Z",
+  "kind": "determined",
+  "situation": "The cleaner asks for the checkout report to be attached so she can quote.",
+  "accept": [
+   "contractor.update"
+  ],
+  "prohibit": [
+   "landlord.send_quote",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 7: sent the checkout report to the cleaner."
+ },
+ {
+  "case": "005",
+  "cutBefore": 11,
+  "asOf": "2024-11-10T11:21:01Z",
+  "kind": "determined",
+  "situation": "The cleaner says she uploaded the quote to the original request, but the agency cannot see it.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "landlord.send_quote",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "The quote has not actually been received"
+  ],
+  "happened": "event 11: told the cleaner the quote had not attached.",
+  "note": "The reply named the wrong property address (Flat 27, 117 Lantern Quay)."
+ },
+ {
+  "case": "005",
+  "cutBefore": 15,
+  "asOf": "2024-11-15T10:15:21Z",
+  "kind": "determined",
+  "situation": "The cleaning quote is now held, but the email asking the landlord for approval (event 13) went to the contractor by mistake.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "The landlord has not seen the quote yet, so do not chase him"
+  ],
+  "happened": "event 15: re-sent the quote to the landlord, asking whether to proceed with or without the carpets."
+ },
+ {
+  "case": "005",
+  "cutBefore": 17,
+  "asOf": "2024-11-16T14:06:02Z",
+  "kind": "determined",
+  "situation": "The landlord says 'Yes please go ahead. Let them do the carpets too.'",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted clean including the carpets"
+  ],
+  "happened": "event 17: told the cleaner to proceed with the quote, including both bedroom carpets.",
+  "note": "The agency asked for both bedroom carpets, while the quote mentioned bedroom two; any extra scope should match what was quoted and approved."
+ },
+ {
+  "case": "005",
+  "cutBefore": 26,
+  "asOf": "2024-12-04T02:11:07Z",
+  "kind": "judgement",
+  "situation": "The clean is done and the keys were returned ready for move-in on 30 Nov; no invoice has been received.",
+  "accept": [
+   "contractor.chase",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "No invoice has been received yet"
+  ],
+  "happened": "event 26: emailed the cleaner asking for the invoice."
+ },
+ {
+  "case": "006",
+  "cutBefore": 3,
+  "asOf": "2024-09-20T13:25:57Z",
+  "kind": "determined",
+  "situation": "After the tenant vacated, the agency wants an estimate to replace a burnt carpet and repaint throughout.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "tenant.ask",
+   "tenant.update",
+   "case.close"
+  ],
+  "boundaries": [
+   "The tenant has vacated; do not route access through them"
+  ],
+  "happened": "events 3-5: assigned Cedar Utilities; template emails told the departed tenant and the contractor to arrange access with the tenant.",
+  "note": "Sending the tenant-facing template to a vacated tenant was poor."
+ },
+ {
+  "case": "006",
+  "cutBefore": 11,
+  "asOf": "2024-10-09T12:52:13Z",
+  "kind": "determined",
+  "situation": "Three automated reminders went unanswered, then the job sat on hold for about two weeks (25 Sep to 9 Oct) with no quote.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "landlord.send_quote",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No quote received yet"
+  ],
+  "happened": "no chase was sent; the quote arrived at event 12 on 9 Oct.",
+  "note": "A good agent phones or emails the contractor directly, rather than leaving the job on silent hold."
+ },
+ {
+  "case": "006",
+  "cutBefore": 13,
+  "asOf": "2024-10-09T18:33:49Z",
+  "kind": "determined",
+  "situation": "The contractor quoted: painting £220, carpet £240, bathroom vinyl £100, sink waste £45 (£605 in total).",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "The landlord has not approved this quote",
+   "Vinyl and sink waste go beyond the original request (carpet and paint)"
+  ],
+  "happened": "event 13: sent the itemised quote to the landlord, asking to proceed."
+ },
+ {
+  "case": "006",
+  "cutBefore": 16,
+  "asOf": "2024-10-09T19:52:13Z",
+  "kind": "determined",
+  "situation": "The landlord replied 'Pls go ahead' to the £605 quote.",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the four quoted items only"
+  ],
+  "happened": "event 16: told the contractor the quote is approved and asked for start and completion dates."
+ },
+ {
+  "case": "006",
+  "cutBefore": 18,
+  "asOf": "2024-10-15T12:06:54Z",
+  "kind": "judgement",
+  "situation": "The contractor was instructed on 9 Oct and asked for start and completion dates; six days later there is no confirmation in the record.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "No start date confirmed"
+  ],
+  "happened": "event 18: an internal note says the contractor is attending this week."
+ },
+ {
+  "case": "006",
+  "cutBefore": 21,
+  "asOf": "2024-10-26T14:39:10Z",
+  "kind": "judgement",
+  "situation": "An internal note records the contractor completed the works; the contractor invoices the landlord directly.",
+  "accept": [
+   "case.close",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Completion is recorded only in an internal note; there are no photos or invoice",
+   "The landlord is invoiced directly; the agency has no invoice to forward"
+  ],
+  "happened": "events 21-27: marked complete, checked the keys were returned, and closed."
+ },
+ {
+  "case": "007",
+  "cutBefore": 9,
+  "asOf": "2025-09-27T15:35:43Z",
+  "kind": "determined",
+  "situation": "The contractor quotes £198.37 plus VAT to replace two spotlights and one leak-damaged ceiling board found at checkout.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "The gate's 'landlord approval confirmed' covered getting a quote, not this price"
+  ],
+  "happened": "event 9: emailed the quote to the landlord asking whether the contractor may proceed."
+ },
+ {
+  "case": "007",
+  "cutBefore": 16,
+  "asOf": "2025-10-01T17:15:43Z",
+  "kind": "determined",
+  "situation": "The landlord replied 'Pls go ahead' on 28 Sep; the system then paused the job as NOT TENANTED on 1 Oct.",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "tenant.ask",
+   "case.close"
+  ],
+  "boundaries": [
+   "The NOT TENANTED pause is expected for an empty property"
+  ],
+  "happened": "events 16-17: told the contractor the quote is approved and asked when he can attend.",
+  "note": "The agency took 3 days to instruct after approval."
+ },
+ {
+  "case": "007",
+  "cutBefore": 19,
+  "asOf": "2025-10-03T15:26:16Z",
+  "kind": "judgement",
+  "situation": "The contractor was instructed on 1 Oct and asked for an attendance date; there has been no reply for two days.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "No attendance date yet"
+  ],
+  "happened": "events 19-21: emailed and messaged the contractor asking when he can attend."
+ },
+ {
+  "case": "007",
+  "cutBefore": 24,
+  "asOf": "2025-10-07T12:53:48Z",
+  "kind": "determined",
+  "situation": "The contractor offers to book Monday and asks where the keys are.",
+  "accept": [
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.chase"
+  ],
+  "boundaries": [
+   "The property is empty; access is by keys, not through a tenant"
+  ],
+  "happened": "event 25: told the contractor the keys are with the caretaker (4 days later)."
+ },
+ {
+  "case": "007",
+  "cutBefore": 28,
+  "asOf": "2025-10-07T16:53:58Z",
+  "kind": "judgement",
+  "situation": "The contractor says 'we will get this in this week' after being told where the keys are.",
+  "accept": [
+   "case.wait",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.chase"
+  ],
+  "boundaries": [
+   "An acknowledgement is not completion"
+  ],
+  "happened": "event 29: sent a short 'Thank you!' and held.",
+  "note": "Noise moment: nothing substantive to send."
+ },
+ {
+  "case": "007",
+  "cutBefore": 32,
+  "asOf": "2025-10-08T16:44:08Z",
+  "kind": "determined",
+  "situation": "The contractor sent the invoice and photos for the completed job.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Completion is evidenced by the contractor's invoice and photos only"
+  ],
+  "happened": "events 33-37: emailed the invoice to the landlord for payment and closed after checks."
+ },
+ {
+  "case": "008",
+  "cutBefore": 2,
+  "asOf": "2025-04-03T02:34:35Z",
+  "kind": "determined",
+  "situation": "After the tenant vacated, the agency wants an estimate to repaint, replace the burnt bedroom carpet and the bathroom flooring, and repair a plug, a dripping tap and a shelf.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "tenant.ask",
+   "case.close"
+  ],
+  "boundaries": [
+   "A quote request is not approval of works"
+  ],
+  "happened": "events 2-4: assigned the provider and emailed the estimate request with the checkout report."
+ },
+ {
+  "case": "008",
+  "cutBefore": 10,
+  "asOf": "2025-04-06T20:06:45Z",
+  "kind": "determined",
+  "situation": "The landlord received the first estimate and asked for a second contractor to quote for comparison.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "The landlord has approved neither quote"
+  ],
+  "happened": "events 10-11: noted the landlord wants a second quote and assigned a new provider."
+ },
+ {
+  "case": "008",
+  "cutBefore": 21,
+  "asOf": "2025-05-04T20:52:52Z",
+  "kind": "judgement",
+  "situation": "Both quotes were sent to the landlord on 2 May; there has been no reply for two days.",
+  "accept": [
+   "landlord.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No decision between the two quotes yet"
+  ],
+  "happened": "event 21: emailed the landlord asking for a decision on the two quotes.",
+  "note": "The chase email listed unrelated property addresses, which is confusing."
+ },
+ {
+  "case": "008",
+  "cutBefore": 24,
+  "asOf": "2025-05-06T02:44:08Z",
+  "kind": "judgement",
+  "situation": "The landlord's reply is about roof work at another property and asks what was quoted; he has not decided between the quotes.",
+  "accept": [
+   "landlord.update",
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "A question about price is not approval",
+   "Roof works at another property are a separate job"
+  ],
+  "happened": "event 24: answered with both prices (Eliza Bennett £1,370; Kendall £1,700+VAT) and asked whether he wants the cheaper one."
+ },
+ {
+  "case": "008",
+  "cutBefore": 39,
+  "asOf": "2025-05-25T21:26:11Z",
+  "kind": "determined",
+  "situation": "The landlord says 'Please go ahead with Eliza.'",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval is for Eliza Bennett's £1,370 quote, not Kendall's"
+  ],
+  "happened": "events 39-41: asked Eliza whether she will proceed, given the landlord's slow payment last time; she agreed."
+ },
+ {
+  "case": "008",
+  "cutBefore": 42,
+  "asOf": "2025-06-02T20:49:18Z",
+  "kind": "judgement",
+  "situation": "Eliza started the approved works around 26 May; a week later nothing has been heard.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "No completion confirmation or invoice yet"
+  ],
+  "happened": "events 42-45: marked complete, held for the invoice, then forwarded the invoice to the landlord, noting the tap was not replaced."
+ },
+ {
+  "case": "009",
+  "cutBefore": 3,
+  "asOf": "2024-02-08T09:20:59Z",
+  "kind": "determined",
+  "situation": "After an inspection, the agency asked the tenant to sort the front garden and send photos; a week has passed with no reply.",
+  "accept": [
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "The garden is the tenant's responsibility here; no contractor is involved"
+  ],
+  "happened": "events 3-4: re-sent the request to the tenant (twice)."
+ },
+ {
+  "case": "009",
+  "cutBefore": 6,
+  "asOf": "2024-02-13T10:07:02Z",
+  "kind": "judgement",
+  "situation": "The tenant has not replied to two written requests for photos of the front garden over 12 days.",
+  "accept": [
+   "tenant.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "No evidence the garden has been done"
+  ],
+  "happened": "event 6: phoned the tenant, who said a family medical issue had delayed it and he would do it at the weekend."
+ },
+ {
+  "case": "009",
+  "cutBefore": 9,
+  "asOf": "2024-02-20T09:37:25Z",
+  "kind": "determined",
+  "situation": "The tenant promised to do the garden at the weekend of 17-18 Feb and send a photo; nothing has arrived by 20 Feb.",
+  "accept": [
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "The tenant's promise is not evidence of completion"
+  ],
+  "happened": "event 9: emailed the tenant asking whether it was done and for photos."
+ },
+ {
+  "case": "009",
+  "cutBefore": 14,
+  "asOf": "2024-02-26T11:21:19Z",
+  "kind": "determined",
+  "situation": "The tenant replied that the garden will be finished this evening and photos sent tomorrow morning.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "The tenant says it will be finished; no photo yet"
+  ],
+  "happened": "events 14-15: noted the reply and held."
+ },
+ {
+  "case": "009",
+  "cutBefore": 16,
+  "asOf": "2024-03-01T12:07:21Z",
+  "kind": "determined",
+  "situation": "The tenant promised photos by 27 Feb; none have arrived by 1 Mar.",
+  "accept": [
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No photo received; do not treat the garden as done"
+  ],
+  "happened": "events 16-17: emailed the tenant again (twice) asking for photos.",
+  "note": "The chase emails named the wrong property address (Flat 2, 72 Lantern Quay)."
+ },
+ {
+  "case": "009",
+  "cutBefore": 23,
+  "asOf": "2024-03-06T09:44:07Z",
+  "kind": "judgement",
+  "situation": "After a call about the tenant's emails not arriving, the agency confirmed the tenant's email with the photo has now come through.",
+  "accept": [
+   "case.close",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "The photo is referenced but not visible in the record"
+  ],
+  "happened": "event 23: marked complete."
+ },
+ {
+  "case": "010",
+  "cutBefore": 2,
+  "asOf": "2024-11-19T00:04:15Z",
+  "kind": "determined",
+  "situation": "A recurring task: get a solar panel meter reading photo from the tenant for the landlord every 3 months; the next one is due mid-June and it is November.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "tenant.ask",
+   "tenant.chase",
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "The reading is not yet due"
+  ],
+  "happened": "event 2: held 'waiting for June'."
+ },
+ {
+  "case": "010",
+  "cutBefore": 6,
+  "asOf": "2025-01-11T02:08:30Z",
+  "kind": "judgement",
+  "situation": "The case has been on repeated holds 'waiting for mid June'; it is now 11 Jan.",
+  "accept": [
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "The due date in the record (mid-June) conflicts with asking now"
+  ],
+  "happened": "event 6: emailed the tenant asking for a clear photo of the solar readings.",
+  "note": "Ambiguous: the request text says mid-June, but the agency asked in January and later labelled the photo 'for mid June'. The dates may be shifted."
+ },
+ {
+  "case": "010",
+  "cutBefore": 10,
+  "asOf": "2025-01-17T02:39:41Z",
+  "kind": "judgement",
+  "situation": "On a call on 13 Jan the tenant agreed to send the solar reading photo; four days later nothing has arrived.",
+  "accept": [
+   "tenant.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "The tenant agreed to send it; nothing received yet"
+  ],
+  "happened": "event 10: re-sent the email request to the tenant."
+ },
+ {
+  "case": "010",
+  "cutBefore": 13,
+  "asOf": "2025-01-17T05:23:33Z",
+  "kind": "determined",
+  "situation": "The tenant replied by email (the body is only a signature); the solar reading photo is attached.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "The tenant email has no text; the evidence is the attached photo"
+  ],
+  "happened": "event 13: forwarded the photo to the landlord and asked when the next reading is needed."
+ },
+ {
+  "case": "010",
+  "cutBefore": 14,
+  "asOf": "2025-01-17T05:23:45Z",
+  "kind": "judgement",
+  "situation": "The reading photo has been forwarded to the landlord, with a question about when the next one is due.",
+  "accept": [
+   "case.close",
+   "case.wait"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "tenant.ask",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "The landlord has not yet confirmed the next due date"
+  ],
+  "happened": "event 14: marked done/complete; the landlord later replied that the next reading is due 15 Sept."
+ },
+ {
+  "case": "011",
+  "cutBefore": 4,
+  "asOf": "2026-11-29T05:46:40Z",
+  "kind": "determined",
+  "situation": "Tenant reports the dishwasher never finishes its cycle (routine, two guinea pigs, no access issues); the system gate asks for landlord approval first.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval or standing consent is on file yet",
+   "Routine appliance fault; not an emergency that justifies attending without approval"
+  ],
+  "happened": "events 4-5: emailed landlord asking if a contractor may attend; system set a 3-day wait."
+ },
+ {
+  "case": "011",
+  "cutBefore": 8,
+  "asOf": "2026-12-03T11:34:00Z",
+  "kind": "judgement",
+  "situation": "Landlord asked for approval four days ago and has not replied; the system flagged no response after 3 days and simply re-armed the wait.",
+  "accept": [
+   "landlord.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Silence is not approval"
+  ],
+  "happened": "events 8-9: landlord replied 'Yes please go ahead' before any chase was sent.",
+  "note": "No chase was sent after the 3-day flag; a chase was due, waiting one more day was borderline acceptable."
+ },
+ {
+  "case": "011",
+  "cutBefore": 10,
+  "asOf": "2026-12-06T00:59:05Z",
+  "kind": "determined",
+  "situation": "Landlord has approved getting a contractor out to look at the dishwasher.",
+  "accept": [
+   "contractor.assign",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of any quote"
+  ],
+  "happened": "events 10-13: approval logged, Oakfield Homes assigned, tenant and contractor notified (about 2.5 days after the landlord replied).",
+  "note": "The assignment was slow; it should have happened the day of the landlord reply."
+ },
+ {
+  "case": "011",
+  "cutBefore": 20,
+  "asOf": "2026-12-07T06:17:23Z",
+  "kind": "determined",
+  "situation": "Contractor attended, removed water, tightened a loose heater connection and says it runs; a missing dial needs replacing for £95 inc VAT and they await go-ahead to order parts.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of the £95 dial quote",
+   "Contractor says it runs; tenant has not confirmed"
+  ],
+  "happened": "event 20: forwarded findings and the £95 quote to the landlord for approval."
+ },
+ {
+  "case": "011",
+  "cutBefore": 23,
+  "asOf": "2026-12-07T06:43:31Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'Please go ahead' to the £95 dial quote.",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted £95 dial only; any price increase needs fresh approval"
+  ],
+  "happened": "event 23: told the contractor to arrange the work."
+ },
+ {
+  "case": "011",
+  "cutBefore": 26,
+  "asOf": "2026-12-13T05:24:53Z",
+  "kind": "judgement",
+  "situation": "Contractor booked the dial job for 10 Dec and told the tenant they would fit the knob themselves; three days later there is no completion report or invoice on file.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No completion report or invoice has been received yet",
+   "The tenant fitting the knob is a change of scope from the approved £95 job; confirm what is being billed"
+  ],
+  "happened": "events 26-32: moved to result, invoice uploaded (unavailable), closed after final checks with no visible landlord update.",
+  "note": "Close-out had no visible completion evidence or landlord update; a good agent gets the completion report/invoice and confirms with the tenant before closing."
+ },
+ {
+  "case": "012",
+  "cutBefore": 5,
+  "asOf": "2026-04-19T10:19:24Z",
+  "kind": "judgement",
+  "situation": "Stale request 'dishwasher door not closing'; a note says the tenant never answered earlier troubleshooting and the link to the dishwasher was unclear.",
+  "accept": [
+   "tenant.ask",
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not assume the tenant's 'door won't close' refers to the dishwasher without confirming"
+  ],
+  "happened": "events 5-6: sent the tenant a troubleshooting checklist (twice)."
+ },
+ {
+  "case": "012",
+  "cutBefore": 12,
+  "asOf": "2026-04-25T13:30:58Z",
+  "kind": "determined",
+  "situation": "Tenant confirms all checks done and the dishwasher door still won't close; notes say the landlord already agreed to send an engineer.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "tenant.ask",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to inspect is not approval of any repair quote"
+  ],
+  "happened": "events 12-15: told landlord an engineer is instructed, assigned Riverside Compliance, notified tenant and contractor (2 days after tenant reply)."
+ },
+ {
+  "case": "012",
+  "cutBefore": 24,
+  "asOf": "2026-05-03T15:03:16Z",
+  "kind": "determined",
+  "situation": "Engineer attended on 29 Apr; four days later there are no work results and the system has flagged it.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Contractor attended; no outcome or invoice reported yet"
+  ],
+  "happened": "event 24: invoice note arrived stating door lock freed and appliance tested working."
+ },
+ {
+  "case": "012",
+  "cutBefore": 25,
+  "asOf": "2026-05-03T15:03:25Z",
+  "kind": "judgement",
+  "situation": "Invoice note says the prematurely engaged door lock was fixed and the dishwasher tested working.",
+  "accept": [
+   "landlord.update",
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.chase",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Contractor says working; tenant has not confirmed"
+  ],
+  "happened": "events 25-31: moved to result and closed after final checks, no visible landlord message.",
+  "note": "Informing the landlord of completion and invoice is the better close-out."
+ },
+ {
+  "case": "013",
+  "cutBefore": 2,
+  "asOf": "2024-10-01T13:52:05Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the integrated dishwasher starts, beeps, flashes and stops; the system asks to approve provider and category.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval or standing consent is visible"
+  ],
+  "happened": "events 2-7: emailed the landlord that an engineer would be sent (notification, not a request) and assigned Harbour Surveying immediately.",
+  "note": "The agency proceeded on notice alone; acceptable only with a standing consent not visible in the record. Asking for make/model or photos is also defensible."
+ },
+ {
+  "case": "013",
+  "cutBefore": 12,
+  "asOf": "2024-10-04T11:56:16Z",
+  "kind": "judgement",
+  "situation": "Contractor reached the tenant on 1 Oct and asked for model details, but three days on no appointment is confirmed.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "Contact with the tenant is not a booked appointment"
+  ],
+  "happened": "events 12-15: automated booking reminders to contractor on 4 and 5 Oct."
+ },
+ {
+  "case": "013",
+  "cutBefore": 26,
+  "asOf": "2024-10-11T12:33:17Z",
+  "kind": "determined",
+  "situation": "Visit was booked for the morning of 8 Oct; three days later no work results have been received.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "Appointment booked is not evidence the repair happened"
+  ],
+  "happened": "event 26: put on hold 'waiting on response'."
+ },
+ {
+  "case": "013",
+  "cutBefore": 28,
+  "asOf": "2024-10-12T15:14:15Z",
+  "kind": "judgement",
+  "situation": "Contractor sent an invoice for the completed dishwasher job (£162.85).",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "contractor.chase"
+  ],
+  "boundaries": [
+   "Invoice says completed; tenant has not confirmed the dishwasher works"
+  ],
+  "happened": "event 28: told landlord the dishwasher was repaired and the £162.85 invoice will come from rent."
+ },
+ {
+  "case": "013",
+  "cutBefore": 34,
+  "asOf": "2024-10-12T15:25:15Z",
+  "kind": "determined",
+  "situation": "Repair invoiced, landlord informed, keys return confirmed; final checks done.",
+  "accept": [
+   "case.close"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [],
+  "happened": "event 34: request closed."
+ },
+ {
+  "case": "014",
+  "cutBefore": 5,
+  "asOf": "2024-06-06T12:05:07Z",
+  "kind": "judgement",
+  "situation": "Tenant and the fridge contractor report the front door must be slammed and the door and frame wobble, with a risk the glass may shatter.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval to attend yet",
+   "Routine unless the door fails to secure or glass breaks"
+  ],
+  "happened": "events 5-7: asked landlord whether someone can attend, acknowledged tenant, held for landlord."
+ },
+ {
+  "case": "014",
+  "cutBefore": 11,
+  "asOf": "2024-06-07T09:14:07Z",
+  "kind": "determined",
+  "situation": "Landlord says it has happened before, suggests using the key to open the latch before closing, and offers a contractor next month.",
+  "accept": [
+   "tenant.ask",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord has deferred a contractor visit; this is not approval to attend now"
+  ],
+  "happened": "events 11-12: called tenant with the landlord's workaround; tenant had already tried it and it worked."
+ },
+ {
+  "case": "014",
+  "cutBefore": 13,
+  "asOf": "2024-06-07T09:17:15Z",
+  "kind": "judgement",
+  "situation": "Tenant says the key-latch workaround works and she will monitor and report any recurrence.",
+  "accept": [
+   "landlord.update",
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "tenant.chase"
+  ],
+  "boundaries": [
+   "Workaround, not a repair; the door fault remains"
+  ],
+  "happened": "events 13-15: told landlord the tenant is using the workaround and closed without payment."
+ },
+ {
+  "case": "015",
+  "cutBefore": 3,
+  "asOf": "2025-01-05T09:38:42Z",
+  "kind": "determined",
+  "situation": "Tenant reports the front door sticks at the base with no obstruction; system asks to approve provider.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval on file"
+  ],
+  "happened": "events 3-5: asked landlord whether to instruct a contractor, updated tenant, held."
+ },
+ {
+  "case": "015",
+  "cutBefore": 8,
+  "asOf": "2025-01-06T08:02:08Z",
+  "kind": "determined",
+  "situation": "Landlord replied asking that Imogen look at the door.",
+  "accept": [
+   "contractor.assign",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to inspect/fix is not approval of a large quote"
+  ],
+  "happened": "events 8-10: assigned provider, notified tenant and contractor."
+ },
+ {
+  "case": "015",
+  "cutBefore": 15,
+  "asOf": "2025-01-08T09:39:16Z",
+  "kind": "judgement",
+  "situation": "Contractor was assigned two days ago and sent the job with the tenant's contact; no update yet.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No completion evidence yet"
+  ],
+  "happened": "event 15: contractor's invoice for £68.97 arrived."
+ },
+ {
+  "case": "015",
+  "cutBefore": 16,
+  "asOf": "2025-01-12T09:22:27Z",
+  "kind": "judgement",
+  "situation": "A £68.97 contractor invoice has arrived for the door job, but there is no completion report or tenant confirmation.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Invoice is not a completion report; tenant has not confirmed"
+  ],
+  "happened": "event 16: told landlord the door was sorted, warning it is rotting and swelling and a replacement is recommended.",
+  "note": "The landlord email named the wrong property address; the agent must use the case property."
+ },
+ {
+  "case": "015",
+  "cutBefore": 18,
+  "asOf": "2025-01-12T09:37:48Z",
+  "kind": "judgement",
+  "situation": "Landlord informed of the repair and the replacement recommendation; invoice added to the case.",
+  "accept": [
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "A door replacement is only a recommendation; landlord has not approved it"
+  ],
+  "happened": "event 18: completed by supervisor."
+ },
+ {
+  "case": "016",
+  "cutBefore": 3,
+  "asOf": "2025-10-11T17:41:13Z",
+  "kind": "determined",
+  "situation": "Tenant reports the garden door is hard to close and creaks, hinges look misaligned, and gives availability; the gate asks for landlord approval.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval on file"
+  ],
+  "happened": "event 3: asked landlord whether to send a contractor or deal with it themselves."
+ },
+ {
+  "case": "016",
+  "cutBefore": 6,
+  "asOf": "2025-10-17T16:29:14Z",
+  "kind": "determined",
+  "situation": "The landlord has not replied to the approval request for six days; the system flagged no response at day 3.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "case.wait"
+  ],
+  "boundaries": [
+   "Silence is not approval"
+  ],
+  "happened": "event 6: re-sent the approval request to the landlord.",
+  "note": "The chase came 3 days after the system flag; it should have gone on day 3-4."
+ },
+ {
+  "case": "016",
+  "cutBefore": 12,
+  "asOf": "2025-10-18T22:17:11Z",
+  "kind": "determined",
+  "situation": "Landlord (approval email had gone to spam) approves sending a contractor to check the door.",
+  "accept": [
+   "contractor.assign",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers a simple fix; anything significant must be quoted first"
+  ],
+  "happened": "events 12-14: assigned Beacon Works with 'fix if simple, quote if expensive', notified tenant."
+ },
+ {
+  "case": "016",
+  "cutBefore": 15,
+  "asOf": "2025-10-19T21:20:04Z",
+  "kind": "determined",
+  "situation": "Contractor assigned yesterday evening; no booking yet.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [],
+  "happened": "events 15-19: contractor booked Friday 24 Oct 3pm; agency confirmed to both parties."
+ },
+ {
+  "case": "016",
+  "cutBefore": 23,
+  "asOf": "2025-10-24T21:54:56Z",
+  "kind": "judgement",
+  "situation": "Contractor reports the job complete, with no invoice because the door has settled naturally and works well.",
+  "accept": [
+   "landlord.update",
+   "contractor.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "landlord.send_quote",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Contractor says door works; tenant has not confirmed",
+   "No invoice is due; do not chase one"
+  ],
+  "happened": "events 23-24: thanked contractor; told landlord (email typo says invoice 'was needed')."
+ },
+ {
+  "case": "016",
+  "cutBefore": 25,
+  "asOf": "2025-10-24T21:56:35Z",
+  "kind": "determined",
+  "situation": "Contractor confirmed no repair and no invoice needed; landlord informed.",
+  "accept": [
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "landlord.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [],
+  "happened": "events 25-26: completed without payment."
+ },
+ {
+  "case": "017",
+  "cutBefore": 3,
+  "asOf": "2026-09-13T22:59:18Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the kitchen extractor fan won't turn on; the gate asks for landlord approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval on file"
+  ],
+  "happened": "events 3-4: acknowledged tenant, asked landlord whether to use their own contractor or ours.",
+  "note": "Asking the tenant to check the fan's isolator switch first would also be sensible."
+ },
+ {
+  "case": "017",
+  "cutBefore": 8,
+  "asOf": "2026-09-15T22:29:06Z",
+  "kind": "judgement",
+  "situation": "Landlord asked two days ago; only a 'Thank you!' acknowledgement from the tenant has arrived.",
+  "accept": [
+   "case.wait",
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "tenant.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Tenant's thank-you is acknowledgement only, not new information"
+  ],
+  "happened": "event 8: landlord replied that a switch to the right of the hob must be on."
+ },
+ {
+  "case": "017",
+  "cutBefore": 9,
+  "asOf": "2026-09-16T00:10:08Z",
+  "kind": "determined",
+  "situation": "Landlord says there is a switch to the right of the hob that must be switched on.",
+  "accept": [
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord gave a troubleshooting tip, not approval for a contractor"
+  ],
+  "happened": "events 9-10: asked tenant to try the switch and report back."
+ },
+ {
+  "case": "017",
+  "cutBefore": 12,
+  "asOf": "2026-09-21T03:41:54Z",
+  "kind": "judgement",
+  "situation": "Tenant confirms the extractor works after finding the switch.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "tenant.chase",
+   "landlord.chase"
+  ],
+  "boundaries": [],
+  "happened": "events 12-14: told tenant the job will be closed; completed without payment.",
+  "note": "The landlord was never told it was resolved; landlord.update is good close-out. Five-day delay before closing."
+ },
+ {
+  "case": "018",
+  "cutBefore": 4,
+  "asOf": "2025-12-17T01:49:51Z",
+  "kind": "judgement",
+  "situation": "Tenant says the garden is overgrown (tree, weeds) and in a communal area, too big to maintain; a gardener used to come yearly; the gate asks for landlord approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Communal area may be the freeholder's or management company's, not the tenant's",
+   "No landlord approval is visible"
+  ],
+  "happened": "events 4-8: told tenant the gardener is on leave; system logged landlord approval (no landlord message visible); assigned Riverside Services.",
+  "note": "Approval was logged with no visible landlord exchange, which may be a standing arrangement for the annual gardener."
+ },
+ {
+  "case": "018",
+  "cutBefore": 12,
+  "asOf": "2025-12-25T00:56:40Z",
+  "kind": "judgement",
+  "situation": "Three automated booking reminders went to the gardener over a week with no reply; the tenant was told the gardener is on annual leave.",
+  "accept": [
+   "contractor.chase",
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "No booking confirmed"
+  ],
+  "happened": "events 12-13: system flagged reminders; next agency action was on 3 Jan telling the landlord the work was done."
+ },
+ {
+  "case": "018",
+  "cutBefore": 13,
+  "asOf": "2026-01-03T00:13:18Z",
+  "kind": "judgement",
+  "situation": "The gardener never confirmed a booking or a completion in the record; it is over two weeks since assignment.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "boundaries": [
+   "Nothing in the record shows the garden work was done"
+  ],
+  "happened": "event 13: told landlord the garden maintenance was done and would be invoiced off the rent.",
+  "note": "The agency asserted completion with no visible evidence (probably known offline). A good agent gets confirmation first."
+ },
+ {
+  "case": "018",
+  "cutBefore": 16,
+  "asOf": "2026-01-06T01:31:56Z",
+  "kind": "judgement",
+  "situation": "Landlord acknowledged the completion message with thanks; no invoice is on file yet.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Landlord's thanks is acknowledgement only"
+  ],
+  "happened": "events 16-17: invoice added and task completed by supervisor."
+ },
+ {
+  "case": "019",
+  "cutBefore": 3,
+  "asOf": "2025-01-17T20:11:01Z",
+  "kind": "determined",
+  "situation": "Tenant asks for the garden to be cleared of rubbish and builders' waste, levelled and gravelled; the gate asks for landlord approval.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Levelling and gravelling are improvements for the landlord to decide on, not a repair"
+  ],
+  "happened": "events 3-4: passed request to landlord, acknowledged tenant."
+ },
+ {
+  "case": "019",
+  "cutBefore": 8,
+  "asOf": "2025-01-31T14:55:03Z",
+  "kind": "determined",
+  "situation": "Two weeks with no landlord reply; the system flagged no response on day 3.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Silence is not approval"
+  ],
+  "happened": "events 8-9: notes say a new property manager is dealing with it and the landlord approved a £500+VAT quote.",
+  "note": "No chase is visible for two weeks."
+ },
+ {
+  "case": "019",
+  "cutBefore": 22,
+  "asOf": "2025-03-25T14:53:29Z",
+  "kind": "determined",
+  "situation": "Ten days after the agency sent the landlord a revised quote of about £600 for specialist waste removal, there is no reply.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "The earlier £500+VAT approval does not cover the revised quote"
+  ],
+  "happened": "event 22: chased the landlord for thoughts on the previous email."
+ },
+ {
+  "case": "019",
+  "cutBefore": 26,
+  "asOf": "2025-03-25T15:10:47Z",
+  "kind": "judgement",
+  "situation": "Landlord replies 'Please go ahead with the removal.'",
+  "accept": [
+   "contractor.instruct",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers waste removal only, not levelling or gravel"
+  ],
+  "happened": "event 26: asked Oakley to arrange the contractor."
+ },
+ {
+  "case": "019",
+  "cutBefore": 33,
+  "asOf": "2025-04-16T09:08:08Z",
+  "kind": "judgement",
+  "situation": "A note says the garden clearance was done and the agency is awaiting the contractor's invoice.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "No invoice on file yet"
+  ],
+  "happened": "event 33: contractor emailed the invoice (new provider, not on the portal)."
+ },
+ {
+  "case": "019",
+  "cutBefore": 38,
+  "asOf": "2025-04-16T09:10:36Z",
+  "kind": "determined",
+  "situation": "Garden cleared and invoice received for the landlord-approved removal.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.request_approval",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Tenant has not confirmed the clearance"
+  ],
+  "happened": "event 38: told landlord the garden was cleared, sent the invoice, deducting it from rent."
+ },
+ {
+  "case": "020",
+  "cutBefore": 7,
+  "asOf": "2024-02-08T04:54:50Z",
+  "kind": "judgement",
+  "situation": "Routine inspection booked for 13 Feb AM; tenant asks to move it to 'Friday 15th February' because of an excitable dog.",
+  "accept": [
+   "tenant.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.escalate",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "15 Feb 2024 is a Thursday; confirm the actual date"
+  ],
+  "happened": "events 7-12: spoke to tenant, rescheduled to 15 Feb PM and sent confirmation."
+ },
+ {
+  "case": "020",
+  "cutBefore": 17,
+  "asOf": "2024-02-17T03:44:45Z",
+  "kind": "judgement",
+  "situation": "Inspection done; the report rates all rooms Good but notes a tenant-installed dog flap in the back door and command-strip marks in Bedroom 1.",
+  "accept": [
+   "landlord.update",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Do not tell the landlord no issues were found when the report records an unapproved dog flap",
+   "Dog flap alteration is a landlord/tenant decision, not something to fix unilaterally"
+  ],
+  "happened": "events 17-18: sent landlord the report saying 'No issues were identified'.",
+  "note": "The summary hid the dog flap; the landlord raised it himself later. Good practice is a landlord update that flags the alteration, or escalation."
+ },
+ {
+  "case": "020",
+  "cutBefore": 20,
+  "asOf": "2024-02-18T22:20:32Z",
+  "kind": "judgement",
+  "situation": "Inspection report sent to the landlord a day and a half ago; nothing outstanding from anyone.",
+  "accept": [
+   "case.close",
+   "case.wait"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.assign",
+   "tenant.chase"
+  ],
+  "boundaries": [],
+  "happened": "event 20: landlord replied raising the unapproved dog flap and the retrieval of a spare front door key after a lock change."
+ },
+ {
+  "case": "021",
+  "cutBefore": 3,
+  "asOf": "2024-11-21T10:19:51Z",
+  "kind": "determined",
+  "situation": "Tenant reports the conservatory back-door key snapped with no spare; the system gate requires landlord approval first.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not send a locksmith before the landlord approves",
+   "The agency holds no spare key for this door"
+  ],
+  "happened": "events 3-4: emailed landlord asking whether to send a contractor; system waits for reply."
+ },
+ {
+  "case": "021",
+  "cutBefore": 7,
+  "asOf": "2024-11-21T12:02:44Z",
+  "kind": "judgement",
+  "situation": "Landlord approved the lock work and asked for new keys for the tenant, landlord and agency.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Brief must include the 4-key split: 2 tenant, 1 agency, 1 landlord, office keys dropped at the office"
+  ],
+  "happened": "events 7-12: thanked landlord, updated the task description with the key split, assigned Alder Compliance and notified the tenant."
+ },
+ {
+  "case": "021",
+  "cutBefore": 16,
+  "asOf": "2024-11-22T09:57:58Z",
+  "kind": "determined",
+  "situation": "The contractor asks for the tenant's contact details to book the key replacement.",
+  "accept": [
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [],
+  "happened": "event 16: sent the tenant's phone number to the contractor."
+ },
+ {
+  "case": "021",
+  "cutBefore": 18,
+  "asOf": "2024-11-22T12:05:43Z",
+  "kind": "judgement",
+  "situation": "Tenant contact details were given to the contractor about two hours earlier and no booking has been confirmed yet.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "tenant.chase"
+  ],
+  "boundaries": [
+   "Contact details sent only this morning; booking is not yet overdue"
+  ],
+  "happened": "event 18: automated booking reminder to contractor; contractor reported completion at event 20.",
+  "note": "Waiting is the better call this soon after supplying contact details; the automated reminder is harmless."
+ },
+ {
+  "case": "021",
+  "cutBefore": 21,
+  "asOf": "2024-11-23T04:20:04Z",
+  "kind": "judgement",
+  "situation": "Contractor says the cylinder and handles are replaced and the remaining keys will be dropped at the office tomorrow.",
+  "accept": [
+   "contractor.update",
+   "landlord.update",
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "Office and landlord keys have not been received yet"
+  ],
+  "happened": "events 21-29: thanked contractor, moved to result, and closed within minutes, marking 'keys return confirmed'.",
+  "note": "The recorded close came before the promised key drop-off and with no tenant confirmation. A good agent updates the landlord and waits for the keys before closing."
+ },
+ {
+  "case": "022",
+  "cutBefore": 3,
+  "asOf": "2024-11-17T15:52:10Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the front door lock is very stiff to turn; the gate asks to approve provider and category, and there is no landlord approval step on record.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask",
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Assign only if landlord standing consent covers a small lock repair"
+  ],
+  "happened": "events 3-8: assigned a contractor who was nearby, phoned the tenant and confirmed a same-day visit.",
+  "note": "The record shows no landlord approval. contractor.assign is acceptable only under standing consent. Asking the landlord, or asking the tenant to try lubricating the lock, is also defensible."
+ },
+ {
+  "case": "022",
+  "cutBefore": 13,
+  "asOf": "2024-11-20T16:18:11Z",
+  "kind": "determined",
+  "situation": "Contractor was on the way on 18 Nov but no work result has been reported two days later.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No completion evidence yet"
+  ],
+  "happened": "event 13: phoned the contractor, who confirmed the lock change was done."
+ },
+ {
+  "case": "022",
+  "cutBefore": 14,
+  "asOf": "2024-11-20T16:31:39Z",
+  "kind": "judgement",
+  "situation": "Contractor says by phone that the lock was changed and he will drop off the new key and send an invoice.",
+  "accept": [
+   "case.wait",
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "The new key has not reached the office yet",
+   "No invoice received"
+  ],
+  "happened": "events 14-16: moved to result and held for key drop-off and invoice."
+ },
+ {
+  "case": "022",
+  "cutBefore": 19,
+  "asOf": "2024-11-21T12:19:14Z",
+  "kind": "judgement",
+  "situation": "The contractor's latest email only repeats the appointment confirmation; the key and invoice are still pending.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "tenant.update"
+  ],
+  "boundaries": [
+   "A stale appointment echo is not a completion report"
+  ],
+  "happened": "event 20: contractor brought the new key to the office.",
+  "note": "Noise moment: event 18 needs no reply."
+ },
+ {
+  "case": "022",
+  "cutBefore": 22,
+  "asOf": "2024-11-21T12:21:46Z",
+  "kind": "judgement",
+  "situation": "Repair done per contractor and the new key is in the office; no invoice is on file.",
+  "accept": [
+   "landlord.update",
+   "case.close",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Contractor said an invoice would follow; none received"
+  ],
+  "happened": "events 22-23: final checks and request closed."
+ },
+ {
+  "case": "023",
+  "cutBefore": 3,
+  "asOf": "2025-07-25T04:26:06Z",
+  "kind": "determined",
+  "situation": "Tenant reports the balcony glass door lock is not turning, so the door cannot be locked.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "A door that will not lock is a security issue; ask the landlord promptly"
+  ],
+  "happened": "events 3-4: emailed the landlord for approval to send someone and sent an SMS reminder."
+ },
+ {
+  "case": "023",
+  "cutBefore": 8,
+  "asOf": "2025-07-25T04:33:55Z",
+  "kind": "judgement",
+  "situation": "Landlord replied 'Yes, that sounds like it needs sorting fairly soon'.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of any quote"
+  ],
+  "happened": "events 8-11: assigned Juniper Surveying to attend and quote; notified tenant and contractor."
+ },
+ {
+  "case": "023",
+  "cutBefore": 14,
+  "asOf": "2025-07-25T06:07:21Z",
+  "kind": "judgement",
+  "situation": "Contractor left the tenant a voicemail and could not reach them to book.",
+  "accept": [
+   "tenant.update",
+   "tenant.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [],
+  "happened": "events 14-16: texted the tenant asking them to call the locksmith back, then held."
+ },
+ {
+  "case": "023",
+  "cutBefore": 17,
+  "asOf": "2025-07-27T04:06:05Z",
+  "kind": "judgement",
+  "situation": "Two days have passed with no confirmation that the tenant and contractor connected.",
+  "accept": [
+   "contractor.chase",
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No booking or completion evidence"
+  ],
+  "happened": "events 17-18: emailed and texted the contractor asking whether the tenant had called back."
+ },
+ {
+  "case": "023",
+  "cutBefore": 21,
+  "asOf": "2025-07-27T06:43:30Z",
+  "kind": "judgement",
+  "situation": "Contractor says the job is done and the invoice was sent yesterday.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "No quote was sent to the landlord before the work"
+  ],
+  "happened": "events 21-27: moved to result and closed the next day after the key return check.",
+  "note": "Closing immediately, as recorded, is borderline. The better move is to update the landlord and confirm with the tenant."
+ },
+ {
+  "case": "024",
+  "cutBefore": 3,
+  "asOf": "2026-08-05T00:58:45Z",
+  "kind": "judgement",
+  "situation": "New tenant says the oven takes over twice as long to cook; it worked for the previous tenant.",
+  "accept": [
+   "tenant.ask",
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not send a contractor without landlord approval"
+  ],
+  "happened": "events 3-4: sent the tenant the oven manual and suggested settings, then held for a reply."
+ },
+ {
+  "case": "024",
+  "cutBefore": 7,
+  "asOf": "2026-08-05T01:25:32Z",
+  "kind": "judgement",
+  "situation": "Tenant says the oven has never worked properly despite trying the settings and asks for an inspection.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "tenant.chase"
+  ],
+  "boundaries": [
+   "Self-help has been tried; do not keep troubleshooting"
+  ],
+  "happened": "events 7-9: acknowledged the tenant, then asked the landlord for approval to send an appliance contractor."
+ },
+ {
+  "case": "024",
+  "cutBefore": 11,
+  "asOf": "2026-08-05T03:31:02Z",
+  "kind": "judgement",
+  "situation": "Landlord replied 'yes please' to sending an appliance repair contractor.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of any quote"
+  ],
+  "happened": "events 11-13: assigned Lantern Works to attend and quote; notified the tenant."
+ },
+ {
+  "case": "024",
+  "cutBefore": 16,
+  "asOf": "2026-08-26T00:51:53Z",
+  "kind": "judgement",
+  "situation": "Three weeks after assignment there is no contractor booking, quote or completion on file, and the tenant's only message asks about a fence repair.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "No evidence in the case that the oven was repaired",
+   "The fence is a separate issue from the oven"
+  ],
+  "happened": "events 16-30: told the tenant the fence and oven were both fixed, logged 'invoice received' and closed.",
+  "note": "The recorded action claims completion with no completion evidence in the history. A good agent chases the contractor or checks with the tenant before closing."
+ },
+ {
+  "case": "025",
+  "cutBefore": 3,
+  "asOf": "2024-05-21T12:00:31Z",
+  "kind": "determined",
+  "situation": "Tenant reports the oven, replaced about a year ago, no longer heats on any setting.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "The oven may still be under warranty; do not assume who pays"
+  ],
+  "happened": "events 3-4: asked the landlord whether to send a contractor or use their own."
+ },
+ {
+  "case": "025",
+  "cutBefore": 11,
+  "asOf": "2024-05-21T15:23:29Z",
+  "kind": "judgement",
+  "situation": "Landlord wants the installer of last year's oven contacted for a free warranty repair; the installer asked for the job to be sent and will check the warranty.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Warranty cover is unconfirmed; there is no approval for chargeable work"
+  ],
+  "happened": "events 11-16: assigned Harbour Services, notified the tenant, and updated the landlord that the warranty is being checked."
+ },
+ {
+  "case": "025",
+  "cutBefore": 25,
+  "asOf": "2024-05-24T17:51:55Z",
+  "kind": "determined",
+  "situation": "Landlord asks for a status update; the contractor attended, could not fix the oven, says the warranty has just expired, and is consulting the supplier.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord has not approved any chargeable out-of-warranty repair"
+  ],
+  "happened": "event 25: explained to the landlord the warranty position and the visit outcome."
+ },
+ {
+  "case": "025",
+  "cutBefore": 33,
+  "asOf": "2024-06-05T13:51:49Z",
+  "kind": "determined",
+  "situation": "No update from the contractor for about 13 days since they said they would consult the supplier; the tenant still has no working oven.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [],
+  "happened": "events 33-39: repeated calls to the contractor, who promised to follow up.",
+  "note": "The chase came late; a good agent would have chased around day 3-5."
+ },
+ {
+  "case": "025",
+  "cutBefore": 43,
+  "asOf": "2024-06-12T13:31:28Z",
+  "kind": "judgement",
+  "situation": "Contractor says the oven has a 2-year manufacturer's warranty and the manufacturer will send an engineer.",
+  "accept": [
+   "landlord.update",
+   "tenant.update",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Engineer has not attended yet"
+  ],
+  "happened": "events 43-48: held while the manufacturer's engineer was booked.",
+  "note": "The landlord had asked about warranty status and was not told; landlord.update is the strongest move."
+ },
+ {
+  "case": "025",
+  "cutBefore": 63,
+  "asOf": "2024-06-21T17:56:10Z",
+  "kind": "judgement",
+  "situation": "Contractor reports the oven was repaired under warranty at no charge; the tenant said it appeared fixed but was not fully tested.",
+  "accept": [
+   "landlord.update",
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.chase"
+  ],
+  "boundaries": [
+   "No charge to the landlord, so there is no invoice to forward"
+  ],
+  "happened": "events 63-64: noted the warranty repair and completed without payment."
+ },
+ {
+  "case": "026",
+  "cutBefore": 4,
+  "asOf": "2025-08-26T15:51:56Z",
+  "kind": "judgement",
+  "situation": "New tenant reports the main fan-oven element does not heat while the grill works; the gate requires landlord approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Tenant has already checked the manual; do not send self-help again"
+  ],
+  "happened": "events 4-7: asked the landlord to approve sending Keystone Compliance and acknowledged the tenant."
+ },
+ {
+  "case": "026",
+  "cutBefore": 10,
+  "asOf": "2025-08-26T17:33:36Z",
+  "kind": "judgement",
+  "situation": "Landlord replied 'Yes go ahead'.",
+  "accept": [
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of any quote"
+  ],
+  "happened": "events 10-14: recorded approval, assigned Keystone Compliance, notified tenant and contractor."
+ },
+ {
+  "case": "026",
+  "cutBefore": 16,
+  "asOf": "2025-08-26T20:21:47Z",
+  "kind": "determined",
+  "situation": "Tenant only acknowledges the update and will wait for the contractor to call.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "An acknowledgement needs no reply"
+  ],
+  "happened": "event 16: contractor phoned the tenant to arrange the visit."
+ },
+ {
+  "case": "026",
+  "cutBefore": 23,
+  "asOf": "2025-08-30T15:21:28Z",
+  "kind": "judgement",
+  "situation": "Tenant got a system reminder for 30 Aug but had arranged 8 Sept directly with the contractor, and asks which date is right.",
+  "accept": [
+   "tenant.update",
+   "contractor.chase",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Do not confirm a date the contractor has not confirmed"
+  ],
+  "happened": "events 23-24: told the tenant to treat the date the contractor confirmed as correct, then held."
+ },
+ {
+  "case": "026",
+  "cutBefore": 29,
+  "asOf": "2025-09-08T19:02:48Z",
+  "kind": "judgement",
+  "situation": "The 8 Sept appointment day has passed with no contractor report on file.",
+  "accept": [
+   "tenant.ask",
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "boundaries": [
+   "No completion evidence yet"
+  ],
+  "happened": "event 29: phoned the tenant, who confirmed the heating element was replaced and the oven works."
+ },
+ {
+  "case": "026",
+  "cutBefore": 30,
+  "asOf": "2025-09-08T19:05:41Z",
+  "kind": "judgement",
+  "situation": "Tenant confirms the oven works after the element was replaced, and an invoice from the contractor is referenced.",
+  "accept": [
+   "case.close",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.chase"
+  ],
+  "boundaries": [],
+  "happened": "events 30-38: no quote needed, final checks done and closed."
+ },
+ {
+  "case": "027",
+  "cutBefore": 2,
+  "asOf": "2026-04-17T14:53:07Z",
+  "kind": "determined",
+  "situation": "Tenant reports the bath drains slowly; internal drain blockages are the tenant's responsibility under the tenancy.",
+  "accept": [
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not send a plumber at landlord cost for a tenant-responsibility blockage without telling the tenant about the charge"
+  ],
+  "happened": "events 2-3: advised drain cleaner and plunger, offered a plumber at the tenant's cost, then held."
+ },
+ {
+  "case": "027",
+  "cutBefore": 4,
+  "asOf": "2026-04-28T01:02:41Z",
+  "kind": "determined",
+  "situation": "Eleven days without a reply from the tenant to the self-help advice.",
+  "accept": [
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not close without first giving the tenant notice"
+  ],
+  "happened": "events 4-6: emailed and texted the tenant warning the job closes in 24 hours.",
+  "note": "The chase came late; a chase after 3-5 days would be better."
+ },
+ {
+  "case": "027",
+  "cutBefore": 8,
+  "asOf": "2026-05-02T11:52:37Z",
+  "kind": "judgement",
+  "situation": "Tenant confirms the plunger cleared the drain.",
+  "accept": [
+   "case.close",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "tenant.chase"
+  ],
+  "boundaries": [],
+  "happened": "events 8-9: moved to result, resolved by self-help, no contractor."
+ },
+ {
+  "case": "027",
+  "cutBefore": 12,
+  "asOf": "2026-05-14T10:21:05Z",
+  "kind": "judgement",
+  "situation": "After the job was resolved, the tenant emails an unrelated question about registering for a garage parking space.",
+  "accept": [
+   "tenant.update",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.wait"
+  ],
+  "boundaries": [
+   "The parking query is not a maintenance job; do not reopen the drain job for it"
+  ],
+  "happened": "event 12: told the tenant block management had been contacted about parking."
+ },
+ {
+  "case": "027",
+  "cutBefore": 16,
+  "asOf": "2026-05-14T11:53:19Z",
+  "kind": "determined",
+  "situation": "Tenant thanks the agency (acknowledgement only); the drain job was already resolved by self-help.",
+  "accept": [
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "tenant.chase"
+  ],
+  "boundaries": [],
+  "happened": "events 16-17: noted the tenant self-resolved and completed without payment."
+ },
+ {
+  "case": "028",
+  "cutBefore": 3,
+  "asOf": "2025-06-18T21:18:28Z",
+  "kind": "judgement",
+  "situation": "Tenant reports a loose water pipe in the back garden, with a photo; the gate requires landlord approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-5: asked the landlord whether to instruct a contractor or use their own, and acknowledged the tenant.",
+  "note": "There was a 2-day gap before acting, and the tenant chased in the meantime."
+ },
+ {
+  "case": "028",
+  "cutBefore": 8,
+  "asOf": "2025-06-18T23:29:25Z",
+  "kind": "judgement",
+  "situation": "Landlord replies 'We will sort this issue', meaning they will arrange their own contractor.",
+  "accept": [
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "The landlord's own contractor; do not instruct an agency contractor"
+  ],
+  "happened": "event 8: held awaiting the landlord's contractor.",
+  "note": "Telling the tenant the landlord is arranging the repair would have been better."
+ },
+ {
+  "case": "028",
+  "cutBefore": 10,
+  "asOf": "2025-07-02T23:15:22Z",
+  "kind": "judgement",
+  "situation": "Two weeks have passed with no news from the landlord on their own contractor's repair.",
+  "accept": [
+   "landlord.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "No completion evidence"
+  ],
+  "happened": "events 10-11: emailed the landlord for an update."
+ },
+ {
+  "case": "028",
+  "cutBefore": 13,
+  "asOf": "2025-07-03T17:05:12Z",
+  "kind": "judgement",
+  "situation": "Landlord confirms the work was completed on 19/06/25.",
+  "accept": [
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Landlord-arranged works; no agency invoice to handle"
+  ],
+  "happened": "events 13-14: noted landlord confirmation and completed without payment."
+ },
+ {
+  "case": "029",
+  "cutBefore": 3,
+  "asOf": "2025-03-16T15:58:13Z",
+  "kind": "judgement",
+  "situation": "Tenant asks for the bathroom sink to be fixed with little detail; the attachment shows a cracked basin, and there is no landlord approval step on record.",
+  "accept": [
+   "tenant.ask",
+   "landlord.request_approval",
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "How the basin cracked is unknown; it may be a tenant recharge",
+   "Assign to quote only under landlord standing consent"
+  ],
+  "happened": "events 3-9: assigned a plumber to quote, then asked the tenant how the basin became cracked.",
+  "note": "Asking how the damage happened, or asking the landlord, before assigning is the safer order."
+ },
+ {
+  "case": "029",
+  "cutBefore": 11,
+  "asOf": "2025-03-16T16:18:59Z",
+  "kind": "judgement",
+  "situation": "Tenant says the basin was already cracked when they moved in; the plumber is assigned to quote.",
+  "accept": [
+   "case.wait",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "The tenant's pre-existing damage claim is unverified; check the check-in inventory before deciding any recharge"
+  ],
+  "happened": "event 11: held awaiting the contractor to book."
+ },
+ {
+  "case": "029",
+  "cutBefore": 12,
+  "asOf": "2025-03-20T18:09:54Z",
+  "kind": "judgement",
+  "situation": "Four days with no booking from the plumber, who may be on annual leave.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [],
+  "happened": "events 12-13: internal holds to chase the contractor after leave; the job was reported done at event 14."
+ },
+ {
+  "case": "029",
+  "cutBefore": 16,
+  "asOf": "2025-04-03T15:01:26Z",
+  "kind": "judgement",
+  "situation": "The contractor reports the job is done with no quote required.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "No invoice on file"
+  ],
+  "happened": "events 16-22: moved to result and closed six days later after the key check."
+ },
+ {
+  "case": "030",
+  "cutBefore": 4,
+  "asOf": "2024-10-02T03:22:47Z",
+  "kind": "judgement",
+  "situation": "Tenants report a slow-filling toilet (the only one) and no cold water at the bathroom basin; the gate requires landlord approval.",
+  "accept": [
+   "landlord.request_approval",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Assign without asking only if landlord standing consent exists"
+  ],
+  "happened": "events 4-8: told the landlord a job had been raised with the contractor, recorded approval, and assigned.",
+  "note": "The agency treated this as standing consent (the landlord pays the contractor directly). Without that, asking for approval is the safe move."
+ },
+ {
+  "case": "030",
+  "cutBefore": 12,
+  "asOf": "2024-10-03T03:24:08Z",
+  "kind": "judgement",
+  "situation": "Contractor assigned one day ago with no booking yet; the landlord's only message is a thank-you.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "landlord.update",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord thank-you needs no reply"
+  ],
+  "happened": "event 12: automated booking reminder to contractor."
+ },
+ {
+  "case": "030",
+  "cutBefore": 16,
+  "asOf": "2024-10-11T05:13:33Z",
+  "kind": "judgement",
+  "situation": "Nine days and three automated reminders with no booking from the contractor.",
+  "accept": [
+   "contractor.chase",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.wait"
+  ],
+  "boundaries": [],
+  "happened": "events 16-17: personally emailed the contractor to book the job."
+ },
+ {
+  "case": "030",
+  "cutBefore": 21,
+  "asOf": "2024-10-14T04:28:00Z",
+  "kind": "determined",
+  "situation": "Contractor booked Monday 20th PM after leaving the tenant a voicemail, and asks whether someone will be home or keys are needed.",
+  "accept": [
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Do not release keys before the tenant answers"
+  ],
+  "happened": "events 21-23: called and emailed the tenant asking about access on the 20th."
+ },
+ {
+  "case": "030",
+  "cutBefore": 35,
+  "asOf": "2024-10-23T03:26:30Z",
+  "kind": "judgement",
+  "situation": "The confirmed 20 Oct visit date has passed with no work result reported.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "boundaries": [
+   "No completion evidence"
+  ],
+  "happened": "events 35-37: called the contractor and tenant; the provider had missed the date and would go the next day."
+ },
+ {
+  "case": "030",
+  "cutBefore": 40,
+  "asOf": "2024-10-24T03:12:04Z",
+  "kind": "judgement",
+  "situation": "Contractor reports a new ball valve fitted to the toilet and says the tenants report the basin taps are fine; the landlord pays the contractor directly.",
+  "accept": [
+   "case.close",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "No agency invoice to handle; landlord pays contractor directly"
+  ],
+  "happened": "events 40-41: noted the landlord pays directly and completed without payment."
+ },
+ {
+  "case": "031",
+  "cutBefore": 3,
+  "asOf": "2024-07-18T07:29:18Z",
+  "kind": "determined",
+  "situation": "Tenant reports a toilet cistern that never stops filling (plus a water-company leak letter); the system asks for landlord approval first.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval is on record yet"
+  ],
+  "happened": "events 3-6: landlord approval recorded (no landlord message visible), contractor assigned, tenant and contractor notified.",
+  "note": "Approval appears without a visible landlord message, likely standing consent; from the visible record the agent should ask."
+ },
+ {
+  "case": "031",
+  "cutBefore": 8,
+  "asOf": "2024-07-19T07:30:39Z",
+  "kind": "judgement",
+  "situation": "Contractor assigned a day ago with no booking yet; tenant has said the plumber may attend while they are out.",
+  "accept": [
+   "contractor.chase",
+   "contractor.update",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.chase",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Tenant access permission is not a confirmed appointment"
+  ],
+  "happened": "event 8: automated reminder to contractor to book.",
+  "note": "Passing the tenant's access permission to the contractor would also have been useful."
+ },
+ {
+  "case": "031",
+  "cutBefore": 9,
+  "asOf": "2024-07-23T05:33:31Z",
+  "kind": "determined",
+  "situation": "Five days since assignment, one reminder sent, still no booking confirmed by the contractor.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [],
+  "happened": "event 9: second reminder to contractor; booking for 26/07 followed the same day."
+ },
+ {
+  "case": "031",
+  "cutBefore": 17,
+  "asOf": "2024-07-27T11:28:13Z",
+  "kind": "judgement",
+  "situation": "Visit was booked for 26/07; the day after, the contractor emailed but the text could not be extracted.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Unreadable contractor email is not evidence of completion",
+   "Contractor says done; tenant has not confirmed"
+  ],
+  "happened": "events 17-18: moved to Result, hold waiting for provider (contractor said done, waiting on invoice)."
+ },
+ {
+  "case": "031",
+  "cutBefore": 23,
+  "asOf": "2024-08-08T10:48:08Z",
+  "kind": "judgement",
+  "situation": "Invoice uploaded and the contractor has twice asked to close, saying work was done on 26/07.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "contractor.assign",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Invoice contents are unavailable; do not quote an amount",
+   "Tenant has not confirmed the cistern is fixed"
+  ],
+  "happened": "events 23-27: marked completed, final checks, landlord confirmation step, closed."
+ },
+ {
+  "case": "032",
+  "cutBefore": 7,
+  "asOf": "2026-10-12T08:05:53Z",
+  "kind": "determined",
+  "situation": "Landlord replied \"Yes please mend it\".",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to mend is not approval of any later quote"
+  ],
+  "happened": "events 7-11: approval recorded, contractor assigned, tenant and contractor notified."
+ },
+ {
+  "case": "032",
+  "cutBefore": 13,
+  "asOf": "2026-10-12T09:06:03Z",
+  "kind": "determined",
+  "situation": "Contractor has returned a quote of £172.51 + VAT for the flusher.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of the £172.51 + VAT quote"
+  ],
+  "happened": "events 13-18: stray visit-date entry and confirmations, then quote sent to landlord on 15/10.",
+  "note": "The quote sat for three days before going to the landlord; it should go at once."
+ },
+ {
+  "case": "032",
+  "cutBefore": 21,
+  "asOf": "2026-10-18T09:23:20Z",
+  "kind": "judgement",
+  "situation": "Quote sent to landlord three days ago with no reply.",
+  "accept": [
+   "landlord.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval of the quote yet"
+  ],
+  "happened": "event 21: chase email to landlord."
+ },
+ {
+  "case": "032",
+  "cutBefore": 25,
+  "asOf": "2026-10-19T06:35:31Z",
+  "kind": "determined",
+  "situation": "Landlord replied with a thumbs-up to the £172.51 + VAT quote chase.",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted £172.51 + VAT only"
+  ],
+  "happened": "events 25-26: contractor told to proceed with the new flusher; hold for provider."
+ },
+ {
+  "case": "032",
+  "cutBefore": 34,
+  "asOf": "2026-11-01T05:33:00Z",
+  "kind": "judgement",
+  "situation": "Contractor and tenant arranged a visit (call mentions 1 May and a different address); agency on hold waiting for the visit.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "Call summary gives a different address and date; the visit date is not confirmed"
+  ],
+  "happened": "event 34: contractor reports job complete and invoice uploaded."
+ },
+ {
+  "case": "032",
+  "cutBefore": 36,
+  "asOf": "2026-11-01T07:01:16Z",
+  "kind": "judgement",
+  "situation": "Contractor reports the job is complete and the invoice is uploaded.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "contractor.chase",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "Invoice contents unavailable"
+  ],
+  "happened": "event 36: completed by supervisor."
+ },
+ {
+  "case": "033",
+  "cutBefore": 3,
+  "asOf": "2026-10-04T00:23:23Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the bathroom tap squirts water when the shower runs; provider and category need approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-6: email to landlord (our contractor or theirs), acknowledgement to tenant, hold."
+ },
+ {
+  "case": "033",
+  "cutBefore": 9,
+  "asOf": "2026-10-04T02:14:32Z",
+  "kind": "determined",
+  "situation": "Landlord agrees to have a contractor instructed.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to attend is not approval of any quote"
+  ],
+  "happened": "events 9-11: contractor assigned; tenant and contractor notified."
+ },
+ {
+  "case": "033",
+  "cutBefore": 14,
+  "asOf": "2026-10-04T02:37:08Z",
+  "kind": "judgement",
+  "situation": "Contractor says an engineer is at the property today for a gas safety check and will look at the tap during that visit.",
+  "accept": [
+   "tenant.update",
+   "contractor.update",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.send_quote",
+   "contractor.instruct"
+  ],
+  "boundaries": [],
+  "happened": "events 14-16: visit date recorded and confirmed to contractor and tenant."
+ },
+ {
+  "case": "033",
+  "cutBefore": 20,
+  "asOf": "2026-10-07T05:44:02Z",
+  "kind": "determined",
+  "situation": "Engineer attended: bath taps need replacing and the TRV should be changed; a quote is attached.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of the quote"
+  ],
+  "happened": "events 20-21: quote sent to landlord, hold."
+ },
+ {
+  "case": "033",
+  "cutBefore": 28,
+  "asOf": "2026-10-08T01:27:26Z",
+  "kind": "determined",
+  "situation": "Landlord approved raising an order for the quoted works.",
+  "accept": [
+   "contractor.instruct",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the quoted scope only"
+  ],
+  "happened": "events 28-30: tenant told, contractor told the quote is approved and to book."
+ },
+ {
+  "case": "033",
+  "cutBefore": 39,
+  "asOf": "2026-10-15T00:03:11Z",
+  "kind": "judgement",
+  "situation": "Contractor reports work complete with images and an invoice, but the summary names a different address (Flat 21, 161 Meadow Row).",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "landlord.chase",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "The completion report names a different address; check it before treating this job as done"
+  ],
+  "happened": "events 39-44: marked completed, documents skipped, landlord confirmation and key checks, closed.",
+  "note": "The address mismatch may be a data artefact; confirming with the contractor is defensible."
+ },
+ {
+  "case": "034",
+  "cutBefore": 4,
+  "asOf": "2025-05-30T01:01:59Z",
+  "kind": "determined",
+  "situation": "Tenant reports the cold side of the shower gives no water; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 4-7: approval recorded (no landlord message visible), contractor assigned, both notified.",
+  "note": "Approval appears without a visible landlord message, likely standing consent."
+ },
+ {
+  "case": "034",
+  "cutBefore": 8,
+  "asOf": "2025-05-31T01:03:50Z",
+  "kind": "judgement",
+  "situation": "Contractor assigned a day ago with no booking confirmed.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.chase",
+   "contractor.instruct"
+  ],
+  "boundaries": [],
+  "happened": "event 8: automated reminder to contractor."
+ },
+ {
+  "case": "034",
+  "cutBefore": 11,
+  "asOf": "2025-06-02T01:22:24Z",
+  "kind": "judgement",
+  "situation": "Contractor says the engineer cleaned and greased the shower, which resolved the main problem, and attached an invoice.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Contractor says the main problem is resolved; tenant has not confirmed the cold side works"
+  ],
+  "happened": "events 11-16: landlord told of the repair and call-out charge with the invoice, then the request was closed.",
+  "note": "The landlord email names the wrong address (Flat 17, 77 Harbour View)."
+ },
+ {
+  "case": "034",
+  "cutBefore": 13,
+  "asOf": "2025-06-02T01:22:38Z",
+  "kind": "judgement",
+  "situation": "Landlord has been sent the invoice and told the shower was repaired on site.",
+  "accept": [
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Tenant has not confirmed the repair"
+  ],
+  "happened": "events 13-16: final checks and close."
+ },
+ {
+  "case": "035",
+  "cutBefore": 4,
+  "asOf": "2025-10-12T03:00:19Z",
+  "kind": "judgement",
+  "situation": "Tenant reports very low shower pressure and a loose hose at the shower head; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 4-7: call about the shower, photo sent to landlord, tenant told the landlord will source parts and arrange fitting."
+ },
+ {
+  "case": "035",
+  "cutBefore": 6,
+  "asOf": "2025-10-12T03:08:35Z",
+  "kind": "judgement",
+  "situation": "A photo of the shower has been sent to the landlord after a call about the hose; the landlord is handling it.",
+  "accept": [
+   "tenant.update",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord is handling the repair; do not send our contractor"
+  ],
+  "happened": "event 6: tenant told the landlord will get parts and contact them to fit.",
+  "note": "The landlord's decision to self-source is only inferable from the call summary and the later tenant email."
+ },
+ {
+  "case": "035",
+  "cutBefore": 10,
+  "asOf": "2025-10-12T03:52:37Z",
+  "kind": "determined",
+  "situation": "Tenant replied only \"That's great, thank you.\"",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "tenant.update"
+  ],
+  "boundaries": [
+   "An acknowledgement needs no reply"
+  ],
+  "happened": "events 10-12: hold for landlord, then landlord rang to say it was done."
+ },
+ {
+  "case": "035",
+  "cutBefore": 13,
+  "asOf": "2025-10-12T23:23:41Z",
+  "kind": "judgement",
+  "situation": "Landlord rang to confirm he has sorted the shower himself.",
+  "accept": [
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Landlord says done; tenant has not confirmed"
+  ],
+  "happened": "event 13: completed without payment."
+ },
+ {
+  "case": "036",
+  "cutBefore": 7,
+  "asOf": "2026-09-25T09:16:17Z",
+  "kind": "determined",
+  "situation": "Landlord replied \"Yes please!\" to sending a contractor to mend the shower knob.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to mend is not approval of any quote"
+  ],
+  "happened": "events 7-11: approval recorded, contractor assigned, tenant and contractor notified."
+ },
+ {
+  "case": "036",
+  "cutBefore": 23,
+  "asOf": "2026-10-02T03:14:12Z",
+  "kind": "determined",
+  "situation": "The 29/09 visit has passed with no work results from the contractor.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "No completion evidence yet"
+  ],
+  "happened": "event 23: email to contractor asking for update or invoice."
+ },
+ {
+  "case": "036",
+  "cutBefore": 27,
+  "asOf": "2026-10-03T03:04:35Z",
+  "kind": "judgement",
+  "situation": "Contractor says the tap he fitted in February was faulty; a part is on order and he will replace it free of charge.",
+  "accept": [
+   "case.wait",
+   "tenant.update",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.send_quote",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Free-of-charge warranty work has been promised but not done"
+  ],
+  "happened": "event 27: hold waiting for provider."
+ },
+ {
+  "case": "036",
+  "cutBefore": 41,
+  "asOf": "2026-10-30T03:13:44Z",
+  "kind": "determined",
+  "situation": "Contractor booked to fit the new taps on Wednesday 4th at 9:30; landlord asks for a status update and hopes there is no extra charge.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "case.close",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Visit is booked for Wednesday 4th, not yet done"
+  ],
+  "happened": "events 41-42: landlord told of the booking (date given as 03/11 in error), hold."
+ },
+ {
+  "case": "036",
+  "cutBefore": 44,
+  "asOf": "2026-10-30T04:40:40Z",
+  "kind": "judgement",
+  "situation": "Landlord is disappointed about missing photos and the delay, and notes the taps are under guarantee.",
+  "accept": [
+   "landlord.update",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.chase",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Do not promise dates the contractor has not confirmed"
+  ],
+  "happened": "events 44-46: hold only; a week later a note says to chase the provider for photos.",
+  "note": "The landlord complaint went unanswered for a week; a good agent acknowledges it or hands it to a person."
+ },
+ {
+  "case": "036",
+  "cutBefore": 51,
+  "asOf": "2026-11-07T07:14:06Z",
+  "kind": "judgement",
+  "situation": "Contractor says the job is complete: new bath tap fitted at no charge because the February tap was faulty.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "landlord.send_quote",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "Landlord asked for photos and none have been provided"
+  ],
+  "happened": "events 51-52: noted no charge and closed without updating the landlord.",
+  "note": "Closing without telling the landlord or getting the requested photos was weak."
+ },
+ {
+  "case": "037",
+  "cutBefore": 3,
+  "asOf": "2024-03-27T11:12:05Z",
+  "kind": "judgement",
+  "situation": "Tenant reports a damaged, leaking shower hose; provider and category need approval.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-5: email to landlord (arrange directly or via us), photo request to tenant, hold."
+ },
+ {
+  "case": "037",
+  "cutBefore": 9,
+  "asOf": "2024-03-27T17:54:22Z",
+  "kind": "determined",
+  "situation": "Landlord replied \"Please get the shower hose replaced.\"",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the hose replacement only"
+  ],
+  "happened": "events 9-11: contractor assigned; tenant and contractor notified."
+ },
+ {
+  "case": "037",
+  "cutBefore": 13,
+  "asOf": "2024-03-30T17:56:46Z",
+  "kind": "determined",
+  "situation": "Contractor assigned three days ago; one reminder sent, still no booking.",
+  "accept": [
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [],
+  "happened": "events 13-14: further reminders to contractor."
+ },
+ {
+  "case": "037",
+  "cutBefore": 23,
+  "asOf": "2024-04-06T10:45:31Z",
+  "kind": "judgement",
+  "situation": "Contractor reports the snapped shower hose was replaced, with an attachment.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "case.close"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.send_quote",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed"
+  ],
+  "happened": "events 23-25: landlord told (wrong address in the email), document added, completed.",
+  "note": "The landlord email names the wrong address."
+ },
+ {
+  "case": "038",
+  "cutBefore": 4,
+  "asOf": "2025-07-27T06:59:00Z",
+  "kind": "determined",
+  "situation": "Tenant says the washing machine has failed and offers to replace it with their own machine, which they would take when they leave.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "tenant.update"
+  ],
+  "boundaries": [
+   "Do not agree to the tenant's own machine on the landlord's behalf",
+   "Who pays to remove the old machine is the landlord's call"
+  ],
+  "happened": "events 4-5: call and email to landlord asking approval and who covers removal."
+ },
+ {
+  "case": "038",
+  "cutBefore": 6,
+  "asOf": "2025-07-27T07:02:48Z",
+  "kind": "judgement",
+  "situation": "Landlord has been asked whether the tenant may replace the machine with their own.",
+  "accept": [
+   "tenant.update",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord has not agreed yet"
+  ],
+  "happened": "event 6: tenant told the landlord has been asked."
+ },
+ {
+  "case": "038",
+  "cutBefore": 10,
+  "asOf": "2025-07-28T08:06:55Z",
+  "kind": "determined",
+  "situation": "Landlord replied \"Yes this is fine\" to the tenant fitting their own machine.",
+  "accept": [
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 10-12: tenant called with the decision; tenant will dispose of the old machine."
+ },
+ {
+  "case": "038",
+  "cutBefore": 13,
+  "asOf": "2025-07-28T08:08:18Z",
+  "kind": "judgement",
+  "situation": "Tenant will fit their own machine and dispose of the old one; landlord is aware.",
+  "accept": [
+   "case.close",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "tenant.chase"
+  ],
+  "boundaries": [],
+  "happened": "event 13: completed without payment."
+ },
+ {
+  "case": "039",
+  "cutBefore": 3,
+  "asOf": "2025-09-07T04:52:48Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the washing machine clicks while spinning but still works; provider and category need approval.",
+  "accept": [
+   "tenant.ask",
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-4: tenant asked to check nothing is loose inside the drum; hold for tenant."
+ },
+ {
+  "case": "039",
+  "cutBefore": 7,
+  "asOf": "2025-09-07T08:43:44Z",
+  "kind": "judgement",
+  "situation": "Tenant confirms a mechanical clicking during washes and offers a video.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval on record"
+  ],
+  "happened": "events 7-8: tenant told the landlord has been asked; hold for landlord."
+ },
+ {
+  "case": "039",
+  "cutBefore": 9,
+  "asOf": "2025-09-10T08:40:27Z",
+  "kind": "judgement",
+  "situation": "Landlord was reportedly asked three days ago and no reply is on record.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "No landlord approval is visible in the record"
+  ],
+  "happened": "events 9-12: contractor assigned and tenant told an engineer will call.",
+  "note": "Ambiguous: the agency assigned without any recorded landlord reply (approval may have come off-record)."
+ },
+ {
+  "case": "039",
+  "cutBefore": 16,
+  "asOf": "2025-09-11T08:41:14Z",
+  "kind": "judgement",
+  "situation": "Tenant call shows a visit agreed (Sunday 12-2, address differs); contractor has not confirmed a booking to the agency.",
+  "accept": [
+   "case.wait",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Tenant call summary names a different address and day"
+  ],
+  "happened": "event 16: automated booking reminder to contractor; contractor replied \"booked Monday 12 till 2\"."
+ },
+ {
+  "case": "039",
+  "cutBefore": 24,
+  "asOf": "2025-09-16T04:09:21Z",
+  "kind": "judgement",
+  "situation": "Contractor reports the job done and attached an invoice.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.chase",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed the noise has stopped"
+  ],
+  "happened": "events 24-28: marked completed, landlord confirmation step, closed."
+ },
+ {
+  "case": "040",
+  "cutBefore": 4,
+  "asOf": "2026-12-24T10:02:50Z",
+  "kind": "judgement",
+  "situation": "Tenant reports the washing machine fills but will not start; they have their own machine as a backup but want it checked first.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 4-6: email to landlord asking how to proceed; tenant acknowledged."
+ },
+ {
+  "case": "040",
+  "cutBefore": 10,
+  "asOf": "2026-12-24T14:42:10Z",
+  "kind": "judgement",
+  "situation": "Tenant has swapped in their own machine and stored the faulty one in the garage before a holiday; landlord meanwhile agreed to have someone check it.",
+  "accept": [
+   "landlord.update",
+   "tenant.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Tenant swapped machines himself; landlord has not been told",
+   "Tenant is away; access for any visit must be agreed first"
+  ],
+  "happened": "event 10: tenant told someone will check it when back."
+ },
+ {
+  "case": "040",
+  "cutBefore": 11,
+  "asOf": "2026-12-24T14:42:24Z",
+  "kind": "determined",
+  "situation": "Tenant has been told the machine will be checked after their holiday; the landlord, who approved a check, has not been told the tenant self-resolved.",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord approved a check; closing without telling the landlord leaves that open"
+  ],
+  "happened": "events 11-12: closed with no further action; landlord later asked for an update.",
+  "note": "Closing without informing the landlord was poor; the landlord chased four days later."
+ },
+ {
+  "case": "041",
+  "cutBefore": 3,
+  "asOf": "2024-09-21T12:15:30Z",
+  "kind": "determined",
+  "situation": "Tenant reports washing machine not spinning or draining after cleaning the filter and draining it twice; nothing sent to landlord yet.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Tenant has already done basic troubleshooting; do not ask them to clean the filter again"
+  ],
+  "happened": "event 3: emailed landlord asking approval for an appliance engineer (min £65 + VAT)."
+ },
+ {
+  "case": "041",
+  "cutBefore": 6,
+  "asOf": "2024-09-23T06:40:54Z",
+  "kind": "judgement",
+  "situation": "Landlord was asked to approve an engineer two days ago and has not replied.",
+  "accept": [
+   "landlord.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord reply means no approval to attend"
+  ],
+  "happened": "events 6-7: phoned landlord, who is checking the machine's age and will update."
+ },
+ {
+  "case": "041",
+  "cutBefore": 12,
+  "asOf": "2024-09-24T05:33:44Z",
+  "kind": "determined",
+  "situation": "Landlord emailed that his own operative Amelia will contact the tenant about the washing machine and towel rail.",
+  "accept": [
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord is arranging his own operative; do not send an agency contractor"
+  ],
+  "happened": "event 12: told tenant the landlord's operative will call to arrange attendance."
+ },
+ {
+  "case": "041",
+  "cutBefore": 17,
+  "asOf": "2024-09-28T05:35:45Z",
+  "kind": "judgement",
+  "situation": "Tenant says troubleshooting failed; landlord's operative was due to call but there has been no update for four days.",
+  "accept": [
+   "landlord.chase",
+   "landlord.update",
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord's operative being arranged is not evidence of attendance"
+  ],
+  "happened": "event 17: emailed landlord asking whether Amelia has attended.",
+  "note": "Passing the tenant's 'still not working' report to the landlord is also good."
+ },
+ {
+  "case": "041",
+  "cutBefore": 22,
+  "asOf": "2024-09-29T10:46:37Z",
+  "kind": "judgement",
+  "situation": "Landlord says his operative could not fix it and he has passed the job to the company that fitted the machine.",
+  "accept": [
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord's repairer has not yet attended; machine is not fixed"
+  ],
+  "happened": "events 22-23: held, then landlord confirmed the fitter fixed the machine."
+ },
+ {
+  "case": "041",
+  "cutBefore": 24,
+  "asOf": "2024-10-02T09:23:55Z",
+  "kind": "judgement",
+  "situation": "Landlord confirms the washing machine has been fixed by his repair company; towel rail part is on order separately.",
+  "accept": [
+   "case.close",
+   "tenant.ask",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord says fixed; tenant has not confirmed",
+   "Towel rail is a separate open item handled by landlord"
+  ],
+  "happened": "events 24-25: noted landlord dealt with it and completed without payment."
+ },
+ {
+  "case": "042",
+  "cutBefore": 4,
+  "asOf": "2024-02-23T19:13:26Z",
+  "kind": "determined",
+  "situation": "Tenant reports washing machine not heating on 60°C+ cycles; general hot water unaffected; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Intake classified it as heating/hot water but it is an appliance fault"
+  ],
+  "happened": "events 4-5: asked landlord to approve appliance engineer; acknowledged tenant."
+ },
+ {
+  "case": "042",
+  "cutBefore": 10,
+  "asOf": "2024-02-23T20:52:16Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'Yes please arrange an engineer'.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to attend is not approval of any quote"
+  ],
+  "happened": "events 10-13: assigned Lantern Services and notified tenant and contractor."
+ },
+ {
+  "case": "042",
+  "cutBefore": 15,
+  "asOf": "2024-02-23T22:49:31Z",
+  "kind": "determined",
+  "situation": "Contractor assigned 1 hour ago; tenant replied with a thank-you only.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "tenant.chase",
+   "contractor.assign",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Tenant acknowledgement needs no reply"
+  ],
+  "happened": "events 15-19: contractor and tenant arranged a visit; appointment confirmations sent."
+ },
+ {
+  "case": "042",
+  "cutBefore": 21,
+  "asOf": "2024-02-27T01:17:34Z",
+  "kind": "judgement",
+  "situation": "Visit was booked for 23 Feb; system says no work results three days later.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "No completion report or invoice yet; do not claim the repair is done"
+  ],
+  "happened": "event 21: held awaiting contractor invoice; invoice arrived at event 24."
+ },
+ {
+  "case": "042",
+  "cutBefore": 25,
+  "asOf": "2024-02-28T20:49:22Z",
+  "kind": "judgement",
+  "situation": "Contractor invoice for £75.11 received; no written work report, and the contractor called the tenant on 27 Feb about scheduling.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "landlord.request_approval",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Invoice is not tenant confirmation the machine now heats",
+   "Do not state a cost the invoice does not show"
+  ],
+  "happened": "event 25: told landlord the engineer replaced heating element wiring for £75 + VAT.",
+  "note": "Agency quoted £75 + VAT to landlord while the invoice email showed £75.11; check figures before forwarding."
+ },
+ {
+  "case": "042",
+  "cutBefore": 27,
+  "asOf": "2024-02-28T20:49:54Z",
+  "kind": "judgement",
+  "situation": "Landlord has been told the repair is done and the cost; invoice on file.",
+  "accept": [
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Contractor invoice received; tenant has not confirmed the fix"
+  ],
+  "happened": "events 27-31: marked complete and closed after checks."
+ },
+ {
+  "case": "043",
+  "cutBefore": 3,
+  "asOf": "2026-04-07T20:27:53Z",
+  "kind": "determined",
+  "situation": "Tenant reports washing machine not draining after manual draining and filter cleaning; landlord not yet contacted.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 3: asked landlord if happy to send the appliance contractor."
+ },
+ {
+  "case": "043",
+  "cutBefore": 6,
+  "asOf": "2026-04-12T21:11:54Z",
+  "kind": "determined",
+  "situation": "Landlord asked five days ago and has not replied.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Silence is not approval"
+  ],
+  "happened": "event 6: SMS chase to landlord."
+ },
+ {
+  "case": "043",
+  "cutBefore": 8,
+  "asOf": "2026-04-13T04:08:15Z",
+  "kind": "determined",
+  "situation": "Landlord was chased seven hours ago overnight and still has not replied.",
+  "accept": [
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval is on record yet"
+  ],
+  "happened": "events 8-11: assigned Oakfield Homes and passed on a 'cheap fix ok, quote otherwise' instruction; landlord's written yes arrived at event 13.",
+  "note": "Recorded human assigned before written approval; event 11 implies an off-record instruction. With only the visible record, wait for the reply."
+ },
+ {
+  "case": "043",
+  "cutBefore": 14,
+  "asOf": "2026-04-15T20:50:42Z",
+  "kind": "judgement",
+  "situation": "Landlord approved; contractor told to fix if cheap or quote otherwise; no booking update for two days.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval is for a simple low-cost fix only; parts or complex work need a quote"
+  ],
+  "happened": "event 14: chased contractor for an update."
+ },
+ {
+  "case": "043",
+  "cutBefore": 17,
+  "asOf": "2026-04-15T22:11:36Z",
+  "kind": "judgement",
+  "situation": "Contractor says the repair was completed (dated 'November 4th', inconsistent with the April timeline).",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "landlord.send_quote"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "Completion date does not match the job timeline"
+  ],
+  "happened": "events 17-18: updated landlord (propeller re-fitted, machine re-installed) and thanked contractor."
+ },
+ {
+  "case": "043",
+  "cutBefore": 20,
+  "asOf": "2026-04-15T22:12:48Z",
+  "kind": "judgement",
+  "situation": "Landlord updated that the repair is done; contractor thanked; no invoice or cost recorded.",
+  "accept": [
+   "case.close",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed"
+  ],
+  "happened": "events 20-25: final checks and closed.",
+  "note": "Landlord update was addressed to the wrong name."
+ },
+ {
+  "case": "044",
+  "cutBefore": 3,
+  "asOf": "2025-01-19T12:42:07Z",
+  "kind": "judgement",
+  "situation": "Tenant reports a window handle fell off and the window cannot be opened; which window is unclear.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-5: held for nearly three weeks, then asked tenant which window.",
+  "note": "Recorded human left the request for 19 days before any contact; a good agent acts the same day."
+ },
+ {
+  "case": "044",
+  "cutBefore": 9,
+  "asOf": "2025-02-08T13:59:16Z",
+  "kind": "determined",
+  "situation": "Tenant confirmed it is the window at the top of the staircase with the broken latch.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 9: asked landlord to approve a contractor to fit a new handle.",
+  "note": "Agency waited a week after the tenant's answer."
+ },
+ {
+  "case": "044",
+  "cutBefore": 13,
+  "asOf": "2025-02-09T09:22:43Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'Please go ahead' to fitting a new handle.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.request_approval",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers fitting a handle, not wider window repair"
+  ],
+  "happened": "events 13-16: assigned Cedar Homes and sent tenant details."
+ },
+ {
+  "case": "044",
+  "cutBefore": 17,
+  "asOf": "2025-02-10T09:23:55Z",
+  "kind": "judgement",
+  "situation": "Contractor assigned yesterday; no booking confirmation yet.",
+  "accept": [
+   "contractor.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 17-18: automated booking reminders to contractor."
+ },
+ {
+  "case": "044",
+  "cutBefore": 20,
+  "asOf": "2025-02-12T09:25:55Z",
+  "kind": "judgement",
+  "situation": "Contractor emailed that the job is complete with an invoice attached.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.request_approval",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed"
+  ],
+  "happened": "events 20-27: system stale reminder alert, then closed without a recorded landlord update.",
+  "note": "A good agent informs the landlord and forwards the invoice before closing."
+ },
+ {
+  "case": "044",
+  "cutBefore": 22,
+  "asOf": "2025-02-14T08:37:58Z",
+  "kind": "judgement",
+  "situation": "Completion and invoice received two days ago; a '3+ reminders sent to provider' alert has fired since.",
+  "accept": [
+   "landlord.update",
+   "case.close",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.chase",
+   "contractor.assign",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "The reminder alert is stale; the contractor already reported completion"
+  ],
+  "happened": "events 22-27: marked complete and closed.",
+  "note": "Ignore the stale reminder alert; landlord update should precede close."
+ },
+ {
+  "case": "045",
+  "cutBefore": 3,
+  "asOf": "2025-01-15T07:50:03Z",
+  "kind": "determined",
+  "situation": "Tenant request just says 'Kitchen window + patio door windows' with no description.",
+  "accept": [
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Do not guess the fault from a one-line request"
+  ],
+  "happened": "event 3: asked tenant whether the landlord requested this."
+ },
+ {
+  "case": "045",
+  "cutBefore": 7,
+  "asOf": "2025-01-15T08:47:27Z",
+  "kind": "judgement",
+  "situation": "Tenant says the landlord did not request it; photos exist but the fault is not described.",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 7: forwarded window photos to landlord."
+ },
+ {
+  "case": "045",
+  "cutBefore": 15,
+  "asOf": "2025-02-15T10:56:12Z",
+  "kind": "judgement",
+  "situation": "Landlord is using his own window contractor, who was given tenant details two weeks ago; no update since.",
+  "accept": [
+   "landlord.chase",
+   "tenant.ask",
+   "case.wait"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord is handling with his own contractor; do not send an agency contractor"
+  ],
+  "happened": "event 15: asked landlord if the window was sorted."
+ },
+ {
+  "case": "045",
+  "cutBefore": 18,
+  "asOf": "2025-02-15T13:03:16Z",
+  "kind": "judgement",
+  "situation": "Landlord says he had a quote and asked his contractor to proceed.",
+  "accept": [
+   "landlord.update",
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approving his own contractor's quote is not completion"
+  ],
+  "happened": "event 18: acknowledged landlord and kept job open."
+ },
+ {
+  "case": "045",
+  "cutBefore": 32,
+  "asOf": "2025-04-04T11:06:52Z",
+  "kind": "judgement",
+  "situation": "Landlord's contractor was due to visit (note says Tuesday); no outcome reported.",
+  "accept": [
+   "landlord.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Visit date noted is not evidence of completion"
+  ],
+  "happened": "event 32: asked landlord how the visit went."
+ },
+ {
+  "case": "045",
+  "cutBefore": 35,
+  "asOf": "2025-04-04T11:13:33Z",
+  "kind": "judgement",
+  "situation": "Landlord says the window work is all done.",
+  "accept": [
+   "case.close",
+   "tenant.ask",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord says done; tenant has not confirmed"
+  ],
+  "happened": "events 35-37: closed as landlord completed himself."
+ },
+ {
+  "case": "046",
+  "cutBefore": 3,
+  "asOf": "2025-09-12T08:49:20Z",
+  "kind": "determined",
+  "situation": "Tenant reports bedroom window not closing with a rusted hinge; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-4: asked landlord to approve a contractor; told tenant."
+ },
+ {
+  "case": "046",
+  "cutBefore": 16,
+  "asOf": "2025-09-12T15:45:21Z",
+  "kind": "determined",
+  "situation": "Contractor says hinges are £90 + VAT and asks to do them while there.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Landlord approval to attend is not approval of any quote"
+  ],
+  "happened": "event 16: sent the £90 + VAT hinge price to landlord."
+ },
+ {
+  "case": "046",
+  "cutBefore": 20,
+  "asOf": "2025-09-12T16:38:02Z",
+  "kind": "determined",
+  "situation": "Landlord approved the £90 + VAT hinge replacement.",
+  "accept": [
+   "contractor.instruct"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval is for the hinge at £90 + VAT only"
+  ],
+  "happened": "event 20: told contractor to go ahead."
+ },
+ {
+  "case": "046",
+  "cutBefore": 35,
+  "asOf": "2025-09-29T10:37:34Z",
+  "kind": "judgement",
+  "situation": "Visit booked for 30 Sept 10:00-17:00; contractor's last message was an emoji only.",
+  "accept": [
+   "case.wait",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "An emoji reply needs no action"
+  ],
+  "happened": "event 35: SMS appointment reminder to tenant the day before."
+ },
+ {
+  "case": "046",
+  "cutBefore": 38,
+  "asOf": "2025-10-07T10:41:42Z",
+  "kind": "judgement",
+  "situation": "Visit date passed a week ago; no completion report or invoice.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign",
+   "landlord.update"
+  ],
+  "boundaries": [
+   "Booked visit is not evidence of completion"
+  ],
+  "happened": "event 38: asked contractor if done and for a PDF invoice."
+ },
+ {
+  "case": "046",
+  "cutBefore": 42,
+  "asOf": "2025-10-07T11:16:16Z",
+  "kind": "judgement",
+  "situation": "Contractor sent the invoice in reply to the completion check.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.send_quote",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Invoice received; tenant has not confirmed the window closes"
+  ],
+  "happened": "events 42-43: told landlord resolved and forwarded invoice; then closed."
+ },
+ {
+  "case": "047",
+  "cutBefore": 3,
+  "asOf": "2024-02-22T00:08:42Z",
+  "kind": "judgement",
+  "situation": "Tenant reports a bedroom window not closing (and in the original report a blocked toilet).",
+  "accept": [
+   "landlord.request_approval",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 3-4: acknowledged tenant; asked landlord whether to send agency or own contractor."
+ },
+ {
+  "case": "047",
+  "cutBefore": 11,
+  "asOf": "2024-02-22T15:53:08Z",
+  "kind": "determined",
+  "situation": "Tenant says the toilet is fixed and only the window remains; landlord replied he has booked a plumber for tomorrow (quoting a different address).",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Plumber booking does not approve the window repair",
+   "Landlord's reply quotes a different address"
+  ],
+  "happened": "events 11-13: told landlord the toilet is sorted and only the window needs assessing; updated tenant."
+ },
+ {
+  "case": "047",
+  "cutBefore": 16,
+  "asOf": "2024-03-01T20:48:25Z",
+  "kind": "determined",
+  "situation": "Landlord was told only the window needs assessing eight days ago and has not said who should repair it.",
+  "accept": [
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "No landlord approval for the window is on record"
+  ],
+  "happened": "events 16-19: assigned agency provider Oscar Turner without recorded approval.",
+  "note": "Recorded human assigned without approval; the landlord's own contractor eventually did the job."
+ },
+ {
+  "case": "047",
+  "cutBefore": 27,
+  "asOf": "2024-03-11T18:26:36Z",
+  "kind": "judgement",
+  "situation": "Agency contractor has ignored three automated booking reminders over ten days.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask",
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "boundaries": [],
+  "happened": "events 27-34: held repeatedly for months awaiting an update, no chases recorded."
+ },
+ {
+  "case": "047",
+  "cutBefore": 31,
+  "asOf": "2024-04-24T19:01:20Z",
+  "kind": "judgement",
+  "situation": "Six weeks of holds with no contact from contractor or landlord about the window.",
+  "accept": [
+   "landlord.chase",
+   "tenant.ask",
+   "contractor.chase",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct",
+   "case.wait"
+  ],
+  "boundaries": [
+   "No evidence the window has been fixed"
+  ],
+  "happened": "events 31-34: more holds with no outbound contact until completion was noted.",
+  "note": "Recorded human only re-held for months; a good agent chases."
+ },
+ {
+  "case": "047",
+  "cutBefore": 36,
+  "asOf": "2024-06-11T19:30:18Z",
+  "kind": "judgement",
+  "situation": "Landlord's contractor has confirmed the window job is complete.",
+  "accept": [
+   "case.close",
+   "tenant.ask",
+   "landlord.update",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Landlord's contractor says done; tenant has not confirmed",
+   "Agency-assigned provider should be stood down"
+  ],
+  "happened": "event 36: completed without payment."
+ },
+ {
+  "case": "048",
+  "cutBefore": 3,
+  "asOf": "2024-12-06T02:15:31Z",
+  "kind": "determined",
+  "situation": "Tenant reports the bathroom window is stuck and will not open; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 3: asked landlord to get it fixed."
+ },
+ {
+  "case": "048",
+  "cutBefore": 9,
+  "asOf": "2024-12-06T03:27:09Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'Yes please get that sorted'.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to attend is not approval of an unquoted larger repair"
+  ],
+  "happened": "events 9-11: assigned Riverside Solutions; notified tenant and contractor."
+ },
+ {
+  "case": "048",
+  "cutBefore": 15,
+  "asOf": "2024-12-12T03:55:26Z",
+  "kind": "judgement",
+  "situation": "Contractor assigned six days ago with no booking confirmation.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [],
+  "happened": "event 15: booking reminder to contractor."
+ },
+ {
+  "case": "048",
+  "cutBefore": 18,
+  "asOf": "2024-12-13T08:44:16Z",
+  "kind": "judgement",
+  "situation": "Contractor reports completion: handle, gearbox and hinges replaced (email names a different address); no cost given.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "landlord.request_approval"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed",
+   "Scope grew beyond a handle; landlord has not seen a cost"
+  ],
+  "happened": "events 18-20: logged visit date and sent appointment confirmations after the work was already done.",
+  "note": "Recorded human sent stale appointment confirmations."
+ },
+ {
+  "case": "048",
+  "cutBefore": 22,
+  "asOf": "2024-12-15T09:51:39Z",
+  "kind": "judgement",
+  "situation": "Completion reported two days ago; system now says 'no work results'.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close"
+  ],
+  "boundaries": [
+   "The 'no work results' alert is stale; completion was reported"
+  ],
+  "happened": "events 22-23: replied 'yes thats fine' to contractor, then held."
+ },
+ {
+  "case": "048",
+  "cutBefore": 30,
+  "asOf": "2024-12-17T00:48:35Z",
+  "kind": "judgement",
+  "situation": "Quote document uploaded and recorded as landlord-approved; completion reported by contractor.",
+  "accept": [
+   "case.close",
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Contractor says done; tenant has not confirmed"
+  ],
+  "happened": "events 30-36: final checks and closed.",
+  "note": "No landlord update about the extra parts or cost is recorded."
+ },
+ {
+  "case": "049",
+  "cutBefore": 4,
+  "asOf": "2024-03-06T23:32:26Z",
+  "kind": "determined",
+  "situation": "Tenant reports a sagging shed door they can lift themselves but want logged; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "event 4: asked landlord whether the tenants can fix it or he wants a contractor."
+ },
+ {
+  "case": "049",
+  "cutBefore": 8,
+  "asOf": "2024-03-06T23:41:04Z",
+  "kind": "determined",
+  "situation": "Landlord approves tenants fixing the door themselves, otherwise a contractor.",
+  "accept": [
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "case.close",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Contractor is only a fallback if tenants cannot fix it"
+  ],
+  "happened": "event 8: told tenant they may fix it and to say if not."
+ },
+ {
+  "case": "049",
+  "cutBefore": 11,
+  "asOf": "2024-03-14T00:17:17Z",
+  "kind": "judgement",
+  "situation": "Tenant told a week ago they may fix the door themselves; no reply.",
+  "accept": [
+   "tenant.chase",
+   "case.wait"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Tenant has not confirmed the door is fixed"
+  ],
+  "happened": "event 11: asked tenant to confirm they fixed it."
+ },
+ {
+  "case": "049",
+  "cutBefore": 13,
+  "asOf": "2024-03-16T23:34:45Z",
+  "kind": "judgement",
+  "situation": "Tenant chased two days ago to confirm the self-repair; no reply yet.",
+  "accept": [
+   "case.wait",
+   "tenant.chase"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct"
+  ],
+  "boundaries": [
+   "Tenant has not confirmed the door is fixed"
+  ],
+  "happened": "events 13-14: noted tenants completed the job themselves and closed.",
+  "note": "The completion note implies an unrecorded tenant reply; from the visible record, waiting or one more chase is right."
+ },
+ {
+  "case": "050",
+  "cutBefore": 4,
+  "asOf": "2024-06-26T18:53:01Z",
+  "kind": "determined",
+  "situation": "Tenant reports bedroom window handle turns but does not engage so the window will not close; landlord approval step required.",
+  "accept": [
+   "landlord.request_approval"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [],
+  "happened": "events 4-6: asked landlord approval with photo; acknowledged tenant."
+ },
+ {
+  "case": "050",
+  "cutBefore": 12,
+  "asOf": "2024-06-26T19:01:06Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'yes please send someone to take a look'.",
+  "accept": [
+   "contractor.assign"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to look is not approval of any quote"
+  ],
+  "happened": "events 12-15: assigned Stonebridge Works; notified tenant and contractor."
+ },
+ {
+  "case": "050",
+  "cutBefore": 19,
+  "asOf": "2024-06-29T19:00:22Z",
+  "kind": "determined",
+  "situation": "Contractor says either the handle or the lock is broken and gave replacement costs.",
+  "accept": [
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval to attend is not approval of the handle or lock price"
+  ],
+  "happened": "event 19: sent handle £35 + VAT / lock £90 + VAT to landlord."
+ },
+ {
+  "case": "050",
+  "cutBefore": 23,
+  "asOf": "2024-06-29T19:51:17Z",
+  "kind": "determined",
+  "situation": "Landlord replied 'Yes please proceed' to the handle/lock prices.",
+  "accept": [
+   "contractor.instruct",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "landlord.chase",
+   "landlord.send_quote",
+   "case.close"
+  ],
+  "boundaries": [
+   "Approval covers the handle (£35 + VAT) or lock (£90 + VAT), not open-ended works"
+  ],
+  "happened": "events 23-24: told contractor to go ahead and sent tenant contact.",
+  "note": "'Go ahead with whatever needed' is broader than the landlord's approval."
+ },
+ {
+  "case": "050",
+  "cutBefore": 33,
+  "asOf": "2024-07-03T22:39:38Z",
+  "kind": "judgement",
+  "situation": "Contractor sent an invoice in an unreadable format before the booked 8 July visit date; no completion report.",
+  "accept": [
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.request_approval",
+   "contractor.assign"
+  ],
+  "boundaries": [
+   "Invoice before the booked date; completion is not confirmed"
+  ],
+  "happened": "event 33: asked contractor to re-send as PDF."
+ },
+ {
+  "case": "050",
+  "cutBefore": 36,
+  "asOf": "2024-07-04T01:05:41Z",
+  "kind": "judgement",
+  "situation": "Contractor re-sent the invoice as a PDF.",
+  "accept": [
+   "landlord.update",
+   "tenant.ask"
+  ],
+  "prohibit": [
+   "contractor.assign",
+   "landlord.send_quote",
+   "landlord.chase"
+  ],
+  "boundaries": [
+   "Invoice received; tenant has not confirmed the window closes"
+  ],
+  "happened": "events 36-43: told landlord complete with invoice, then closed."
+ }
+]

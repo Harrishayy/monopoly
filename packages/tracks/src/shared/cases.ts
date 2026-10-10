@@ -58,9 +58,14 @@ export async function loadCaseFolder(dir: string, name: string, spec: CaseFolder
   const historyText = await readFile(join(dir, 'history.md'), 'utf8').catch(() => '');
   let events = parseHistory(historyText);
 
+  // Attachments arrive with the event that first links them; date them by it so cuts can hide later ones.
+  const allEvents = events;
+  const arrival = (file: string) => allEvents.find((e) => e.body.includes(file));
+  let cut: string | undefined;
+
   if (withhold === 'outcomes') {
     // "Recorded action: [History event 003]" marks the escalation snapshot; keep only what came before it.
-    const cut = index.sections.get('next action at escalation')?.match(/event[- ](\d+)/i)?.[1];
+    cut = index.sections.get('next action at escalation')?.match(/event[- ](\d+)/i)?.[1];
     if (cut) events = events.filter((e) => Number(e.number) < Number(cut));
   }
 
@@ -100,13 +105,20 @@ export async function loadCaseFolder(dir: string, name: string, spec: CaseFolder
   }
 
   for (const file of await listAttachments(dir)) {
+    const via = arrival(file);
+    if (cut && via && Number(via.number) >= Number(cut)) continue;
     sources.push({
       id: `${ref}:${file}`,
       kind: 'doc',
       title: file,
-      receivedAt: created,
+      receivedAt: via?.at ?? created,
       body: await attachmentText(join(dir, 'attachments', file)),
-      meta: { file: `attachments/${file}`, path: join(dir, 'attachments', file), ext: extname(file).slice(1).toLowerCase() },
+      meta: {
+        file: `attachments/${file}`,
+        path: join(dir, 'attachments', file),
+        ext: extname(file).slice(1).toLowerCase(),
+        ...(via ? { event: Number(via.number) } : {}),
+      },
     });
   }
 

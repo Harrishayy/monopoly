@@ -10,13 +10,16 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "inspect": "tsx src/property/inspect.ts"
   },
   "dependencies": {
     "@casework/core": "workspace:*",
-    "unpdf": "1.8.1"
+    "unpdf": "1.8.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "tsx": "^4.23.15"
   }
 }

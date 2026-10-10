@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
     "reality": "pnpm --filter @casework/cli reality",
-    "replay": "pnpm --filter @casework/cli replay"
+    "replay": "pnpm --filter @casework/cli replay",
+    "eval": "pnpm --filter @casework/cli eval"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

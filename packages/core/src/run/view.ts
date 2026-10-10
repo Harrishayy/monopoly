@@ -1,7 +1,7 @@
-import type { Handover, Outcome, RunEvent, Usage } from '../schema';
+import type { Assessment, Handover, NextStep, Outcome, RunEvent, Usage } from '../schema';
 import { mascotFor, type MascotState } from './mascot';
 
-export type StepKind = 'read' | 'tool' | 'decide' | 'fail' | 'blocked' | 'escalate' | 'resolve';
+export type StepKind = 'read' | 'assess' | 'tool' | 'decide' | 'fail' | 'blocked' | 'escalate' | 'propose' | 'resolve';
 
 export interface TraceStepView {
   seq: number;
@@ -45,6 +45,8 @@ export interface RunView {
   toolCalls: ToolCallView[];
   blocked: { action: string; ruleId: string; why: string }[];
   decisions: DecisionView[];
+  assessment?: Assessment;
+  next?: NextStep;
   handover?: Handover;
   outcome?: Outcome;
   summary?: string;
@@ -136,6 +138,14 @@ export function applyEvent(view: RunView, e: RunEvent): RunView {
         { label: e.label, rationale: e.rationale, confidence: e.confidence, citations: e.citations },
       ];
       step('decide', e.label, e.rationale);
+      break;
+    case 'case.assessed':
+      v.assessment = e.assessment;
+      step('assess', e.assessment.stage, e.assessment.waitingOn ? `Waiting on ${e.assessment.waitingOn.party} since ${e.assessment.waitingOn.since}` : 'Not waiting on anyone');
+      break;
+    case 'next.proposed':
+      v.next = e.next;
+      step('propose', `Next: ${e.next.action} → ${e.next.recipient}`, e.next.reason);
       break;
     case 'escalation.created':
       v.handover = e.handover;
