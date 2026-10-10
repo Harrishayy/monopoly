@@ -12,7 +12,6 @@ import { Mascot } from '@/domain/mascot';
 import { AssessmentPanel, AuditLogRow, DecisionPanel, PipelineStrip, RunTrace } from '@/domain/run';
 import { Panes } from '@/layout';
 import { api, useApi } from '@/lib/api';
-import { VIDEO_DEMO_REF } from '@/lib/demo';
 import type { OutboundView, RunSummary } from '@/lib/api-types';
 import { useLiveSignal } from '@/lib/live';
 import { useRunStream } from '@/lib/sse';
@@ -101,14 +100,7 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
         statusLabel={held.length ? 'Needs approval' : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {ref === VIDEO_DEMO_REF && (
-              <Button size="sm" variant="primary" icon="call" asChild>
-                <a href="/portal?demo=1" target="_blank" rel="noreferrer">
-                  Call on portal
-                </a>
-              </Button>
-            )}
-            <Button size="sm" variant={ref === VIDEO_DEMO_REF ? 'secondary' : 'primary'} icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
+            <Button size="sm" variant="primary" icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
               Run agent again
             </Button>
             <DeleteCase caseRef={ref} title={c.title} noun={vocabulary.case.toLowerCase()} />

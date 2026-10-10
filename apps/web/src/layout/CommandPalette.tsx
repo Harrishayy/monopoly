@@ -15,7 +15,6 @@ const ROUTES: { href: string; label: string; icon: IconName }[] = [
   { href: '/inbox?filter=approval', label: 'Messages waiting for approval', icon: 'propose' },
   { href: '/inbox?filter=escalated', label: 'Go to escalations', icon: 'escalate' },
   { href: '/reality', label: 'Go to Reality Test and eval', icon: 'check' },
-  { href: '/demo', label: 'Go to the 60-second video run', icon: 'play' },
   { href: '/architecture', label: 'Go to architecture', icon: 'tool' },
   { href: '/architecture/rules', label: 'Go to rules', icon: 'check' },
   { href: '/architecture/tools', label: 'Go to tools and policy', icon: 'tool' },

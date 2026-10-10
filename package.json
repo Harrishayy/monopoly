@@ -24,8 +24,7 @@
     "tunnel": "bash scripts/tunnel.sh",
     "tunnel:ngrok": "TUNNEL=ngrok bash scripts/tunnel.sh",
     "voice:setup": "node scripts/voice-setup.mts",
-    "voice:call": "node scripts/voice-call.mts",
-    "demo:video": "node --no-warnings scripts/demo-video.mts"
+    "voice:call": "node scripts/voice-call.mts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
