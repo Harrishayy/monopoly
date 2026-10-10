@@ -87,6 +87,12 @@ export const isExternal = (s: Source) => /tenant|landlord|contractor|provider|su
  * Forced triggers that are still open at `asOf`. Only words written by a tenant, landlord or contractor
  * count (not the agency's own notes or the AI intake), only recent ones count, and noise is skipped.
  */
+/** Words just before a match that mean it is not a report: "no smell of gas", "if you smell gas, call…". */
+const NEGATED = /\b(no|not|never|without|any|if|in case|should you|whether)\b[^.!?\n]{0,30}$/i;
+
+/** Agency notes and call logs that pass on what someone else reported ("Tenant rang: smells gas"). */
+const RELAYS = /\b(tenant|landlord|contractor|caller|resident|occupant|neighbour|she|he|they)\b[^.\n]{0,30}\b(rang|called|phoned|reported|reports|said|says|mentioned|advised|told us|complained)\b/i;
+
 export function openTriggers(c: Case, a: Assessment | undefined, asOf: string): TriggerHit[] {
   const noise = new Set(a?.noise.map((n) => n.sourceId) ?? []);
   const now = Date.parse(asOf);
@@ -94,12 +100,19 @@ export function openTriggers(c: Case, a: Assessment | undefined, asOf: string): 
   const recent = new Set(live.slice(-6).map((s) => s.id));
   const hits: TriggerHit[] = [];
   for (const s of live) {
-    if (!isExternal(s) && s.kind !== 'ticket') continue;
+    // The agency's own words do not count, except a call log or note that passes on someone's report.
+    if (!isExternal(s) && s.kind !== 'ticket' && !(s.kind === 'call' || RELAYS.test(s.body))) continue;
     const fresh = recent.has(s.id) || now - Date.parse(s.receivedAt) <= 7 * 86_400_000;
     if (!fresh) continue;
     for (const rule of TRIGGERS) {
-      const m = s.body.match(rule.re);
-      if (m && !hits.some((h) => h.rule.id === rule.id)) hits.push({ rule, sourceId: s.id, quote: excerpt(s.body, m.index ?? 0) });
+      if (hits.some((h) => h.rule.id === rule.id)) continue;
+      const re = new RegExp(rule.re.source, rule.re.flags.includes('g') ? rule.re.flags : `${rule.re.flags}g`);
+      for (const m of s.body.matchAll(re)) {
+        const before = s.body.slice(Math.max(0, (m.index ?? 0) - 40), m.index ?? 0);
+        if (rule.mode !== 'warn' && NEGATED.test(before)) continue;
+        hits.push({ rule, sourceId: s.id, quote: excerpt(s.body, m.index ?? 0) });
+        break;
+      }
     }
   }
   return hits;

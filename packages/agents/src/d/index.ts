@@ -49,8 +49,8 @@ export const agentD: Agent = {
   async decide(input: RunInput) {
     const started = Date.now();
     try {
-      const { c, pack, note } = await loadForD(input);
-      const r = await decideCase(c, pack, input.asOf, input.offline ? { caller: null } : {});
+      const { c, pack, note, clocks } = await loadForD(input);
+      const r = await decideCase(c, pack, input.asOf, input.offline ? { caller: null, clocks } : { clocks });
       if (note) r.failures.unshift(`loader: ${note}`);
       return toDecision(r, pack);
     } catch (e) {
@@ -63,8 +63,8 @@ export const agentD: Agent = {
       const started = Date.now();
       let decision: AgentDecision;
       try {
-        const { c, pack, note } = await loadForD({ dir, track: opts.track ?? 'property', withhold: opts.withhold });
-        const r = await decideCase(c, pack, undefined, opts.offline ? { caller: null } : {});
+        const { c, pack, note, clocks } = await loadForD({ dir, track: opts.track ?? 'property', withhold: opts.withhold });
+        const r = await decideCase(c, pack, undefined, opts.offline ? { caller: null, clocks } : { clocks });
         if (note) r.failures.unshift(`loader: ${note}`);
         const out = join(outDir, names[i]!);
         await mkdir(out, { recursive: true });

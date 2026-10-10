@@ -7,6 +7,7 @@ import { findCaseDirs } from './b/ingest/casefile';
 import { defaultCaller } from './b/llm/client';
 import { runBench, summarise } from './bench/bench';
 import { ExampleBank } from './bench/examples';
+import { buildPerturbSuite, type Variant, VARIANTS } from './bench/perturb';
 import { escalationLabels, runEval, spread } from './bench/judge';
 import { cutsFor, type LabelSource, loadOutside, loadSplit, OUTSIDE_DIR, REPO } from './bench/labels';
 import type { Split } from './bench/split';
@@ -15,7 +16,7 @@ import { assessmentHint } from './hybrid';
 
 const USAGE = `agents answer --agent a|b --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
               [--examples all|dev|none] [--concurrency 4] [--offline] [--model claude-haiku-5-5]
-agents bench  [--agent a,b] [--suite cuts|outside] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
+agents bench  [--agent a,b] [--suite cuts|outside|perturb] [--variants clean,noise,…] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
               [--concurrency 6] [--offline] [--model …] [--out <dir>]
               agent B stages (defaults chosen on val: 1 sample, no situate, no review): [--samples N] [--situate on] [--review on] [--hints a]  (a = agent A's rules read as advice)
 agents judge  [--limit N] [--manuals off] [--out <dir>]      agent B on the other tracks' escalation examples
@@ -120,6 +121,27 @@ async function main() {
       await writeFile(join(out, 'SUMMARY.md'), md);
       await finish();
       log('\n' + md.split('\n## By expected action')[0]);
+      return;
+    }
+    if (flags.suite === 'perturb') {
+      // Real held-out moments (val + test by default), rewritten as damaged snapshots; labels stay the team's.
+      const sets = (flags.split ?? 'val,test').split(',') as (Split | 'all')[];
+      const base = spread((await Promise.all(sets.map((x) => cutsFor(x, (flags.labels ?? 'both') as LabelSource)))).flat(), flags.limit ? Number(flags.limit) : undefined);
+      const variants = (flags.variants ? flags.variants.split(',') : [...VARIANTS]) as Variant[];
+      const suiteRoot = join(REPO, '.casework/agents/perturb-suite');
+      const labels = await buildPerturbSuite(base, variants, suiteRoot);
+      // Examples come from dev only, so the scored moments never appear in the few-shot memory.
+      const examples = ids.includes('b') ? await bank(flags.examples, 'dev') : undefined;
+      const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+      const categories = Object.fromEntries(labels.map((l) => [l.case, l.variant]));
+      const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/perturb-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
+      const finish = await manifest(out, { kind: kindOf(flags.kind, flags.limit ? 'smoke' : 'test'), name: flags.name ?? 'perturbation suite', note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: process.env.MODEL_DECIDE, split: `perturb:${sets.join('+')}` });
+      log(`bench: agents ${ids.join(', ')} · perturbation suite · ${base.length} moments × ${variants.length} variants = ${labels.length} cases → ${out}`);
+      const rows = await runBench(agents, labels, out, { caseRoot: suiteRoot, withhold: 'none', concurrency: num('concurrency', 8), offline, log });
+      const md = summarise(rows, `Bench · perturbation suite (${sets.join(' + ')})`, categories);
+      await writeFile(join(out, 'SUMMARY.md'), md);
+      await finish();
+      log('\n' + md.split('\n## Every case')[0]);
       return;
     }
     const split = (flags.split ?? 'val') as Split | 'all';

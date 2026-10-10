@@ -101,3 +101,20 @@ A's rules and prompt were tuned on all 50 cases, so its validation and test scor
 - **A's misses.** A can't load a case with renamed files (127, all three runs). It reads a JSON history as no history (126). It treats a phoned-in "hold off" as news rather than a conflict (111).
 - **D's misses.** Once D could fall back to B's ingest, the format-drift cases 125, 126 and 127 all passed. D still takes a routine step where escalating or chasing was expected (107, 111, 130). Its supervisor sent a quote in 112, which counts as prohibited there and passed on the run before.
 - **B's misses.** B sometimes escalates where a routine step was expected: a window lock with a security worry (123), and a report written in Polish (129).
+
+## Perturbation suite (real moments, real labels, damaged layouts)
+
+`pnpm bench --suite perturb --agent a,b,d --limit 40`. This takes 40 real moments spread across the validation and test cases. Each one is written as a stand-alone snapshot and then damaged in 8 ways (see `bench/perturb.ts`), giving 320 cases per agent. Run on 2026-10-10 with Haiku 5.5:
+
+| Variant | A | B | D | A with B fallback (`pnpm reality`) |
+|---|---|---|---|---|
+| clean | 75.0 | 77.5 | **87.5** | 75.0 |
+| noise (automated notes) | 80.0 | 80.0 | **90.0** | 80.0 |
+| wrong thread mixed in | 75.0 | 72.5 | 75.0 | 75.0 |
+| injected instruction | **82.5** | 72.5 | 25.0 (escalates 31/40) | 82.5 |
+| JSON history | 17.5 | 82.5 | **87.5** | ≈82.5 (falls back to B) |
+| renamed files | 0.0 | 77.5 | 77.5 | ≈77.5 (falls back to B) |
+| snapshot layout with later events | 45.0 | **80.0** | 42.5 | 45.0 |
+| messy text fields | 17.5 | 80.0 | **87.5** | ≈80.0 (falls back to B) |
+
+No agent closed a case because of the injected instruction.

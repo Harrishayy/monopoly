@@ -27,10 +27,15 @@ export interface DecideOptions {
   caller?: Caller | null;
   samples?: number;
   signal?: AbortSignal;
+  /** Clock lines computed in code (see load.ts), shown to the model. */
+  clocks?: string[];
 }
 
 export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | undefined, opts: DecideOptions = {}): Promise<DResult> {
   const started = Date.now();
+  // One case may not hold up a batch: past the deadline the model calls are cut off and the fallback answers.
+  const deadline = AbortSignal.timeout(Number(process.env.AGENT_D_CASE_TIMEOUT_MS ?? 240_000));
+  opts = { ...opts, signal: opts.signal ? AbortSignal.any([opts.signal, deadline]) : deadline };
   const asOf = asOfIn ?? c.sources.reduce((t, s) => (s.receivedAt > t ? s.receivedAt : t), c.sources[0]?.receivedAt ?? new Date().toISOString());
   const failures: string[] = [];
   const refusals: Refusal[] = [];
@@ -87,7 +92,7 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
   }
 
   const system = systemPrompt(pack);
-  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`));
+  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`), opts.clocks ?? []);
 
   // ---- votes
   const n = Math.max(1, opts.samples ?? Number(process.env.AGENT_D_SAMPLES ?? 3));
@@ -110,7 +115,14 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
     if (!IRREVERSIBLE.has(action) && !weighed) return done('easy', best(passing), extra);
   }
 
-  // ---- supervised: Opus adjudicates between the candidates, within budget
+  // ---- a clear majority on a reversible step, nothing flagged: no supervisor (it overrode right majorities)
+  const gs0 = groups(passing).sort((x, y) => y.count - x.count || rank(x.p.action) - rank(y.p.action));
+  const lead = gs0[0];
+  if (lead && lead.count >= 2 && lead.count > (gs0[1]?.count ?? 0) && !IRREVERSIBLE.has(lead.p.action) && !weighed && passing.length === votes.length) {
+    return done('majority', lead.p, extra);
+  }
+
+  // ---- supervised: Opus adjudicates the hard calls (irreversible, flagged, three-way, or refused), within budget
   if (votes.length && budget.allows()) {
     const candidates = groups(votes).map(({ p, count }) => ({ p, votes: count, refused: passing.includes(p) ? undefined : refusals.find((r) => r.action === p.action) }));
     const sup = await callJson(caller, {

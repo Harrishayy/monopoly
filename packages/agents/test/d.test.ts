@@ -73,6 +73,14 @@ describe('agent D triggers', () => {
     const c = makeCase([event(1, 'Tenant', 'Agency', 'There is a strong smell of gas by the boiler', '2026-03-02T09:00:00Z')]);
     expect(openTriggers(c, undefined, '2026-03-02T10:00:00Z').map((h) => h.rule.id)).toEqual(['S1_gas_co']);
   });
+  it('ignores negated mentions and safety advice', () => {
+    const c = makeCase([event(1, 'Tenant', 'Agency', 'No smell of gas at all, just the boiler light flashing.', '2026-03-02T09:00:00Z'), event(2, 'Agency / system', 'Tenant', 'If you ever smell gas, call 0800 111 999.', '2026-03-02T09:05:00Z')]);
+    expect(openTriggers(c, undefined, '2026-03-02T10:00:00Z')).toEqual([]);
+  });
+  it('counts a report the agency passes on from a call', () => {
+    const c = makeCase([event(1, 'Agency / system', 'Not specified', 'Tenant rang to say there is a strong smell of gas in the hallway.', '2026-03-02T09:00:00Z')]);
+    expect(openTriggers(c, undefined, '2026-03-02T10:00:00Z').map((h) => h.rule.id)).toEqual(['S1_gas_co']);
+  });
   it('ignores the agency’s own notes and routine reports', () => {
     const c = makeCase([event(1, 'Agency / system', 'Not specified', 'Annual gas leak check and carbon monoxide alarm test booked', '2026-03-02T09:00:00Z')]);
     expect(openTriggers(c, undefined, '2026-03-02T10:00:00Z')).toEqual([]);
@@ -89,6 +97,11 @@ describe('agent D guard', () => {
   const ctx = { c: routine, pack, assessment: pack.assess!(routine, { asOf: '2026-03-02T10:00:00Z' }), forced: [] };
   it('accepts a grounded request for approval', () => {
     expect(check(proposal({}), ctx)).toEqual({ ok: true });
+  });
+  it('accepts amounts listed in the case without a £ sign', () => {
+    const c = makeCase([event(1, 'Contractor', 'Agency', 'Quote\nMixer tap 165.00\nSubtotal 420.00\nVAT 84.00\nTOTAL 504.00', '2026-03-02T09:00:00Z')]);
+    const ctx2 = { c, pack, assessment: pack.assess!(c, { asOf: '2026-03-02T10:00:00Z' }), forced: [] };
+    expect(check(proposal({ citations: ['PM-900:event-001'], message: 'The quote is £420.00 + VAT (£504.00).' }), ctx2)).toEqual({ ok: true });
   });
   it('refuses amounts that are not in the case', () => {
     expect(check(proposal({ message: 'The repair will cost £480 plus VAT.' }), ctx)).toMatchObject({ ok: false, ruleId: 'd.literals.amount' });
@@ -125,8 +138,15 @@ describe('agent D routes', () => {
     expect(r.companion?.message).toMatch(/0800 111 999/);
     expect(caller.models).toHaveLength(0);
   });
-  it('sends a split vote to the supervisor', async () => {
+  it('keeps a clear majority on a reversible step without calling the supervisor', async () => {
     const caller = mockCaller([proposal({}), proposal({}), proposal({ action: 'tenant.update', message: 'Thanks, we have passed this to your landlord.' })]);
+    const r = await decideCase(routine, pack, '2026-03-02T10:00:00Z', { caller });
+    expect(r.route).toBe('majority');
+    expect(r.final.action).toBe('landlord.request_approval');
+    expect(caller.models.some((m) => /opus/.test(m))).toBe(false);
+  });
+  it('sends a three-way split to the supervisor', async () => {
+    const caller = mockCaller([proposal({}), proposal({ action: 'tenant.update', message: 'Thanks, we have passed this on.' }), proposal({ action: 'case.wait', recheckInDays: 2 })]);
     const r = await decideCase(routine, pack, '2026-03-02T10:00:00Z', { caller });
     expect(caller.models.at(-1)).toMatch(/opus/);
     expect(['supervised', 'majority']).toContain(r.route);
