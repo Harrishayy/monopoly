@@ -1,16 +1,5 @@
 # Demo video
 
-Put the final recording here as **`demo/demo.mp4`**. Git LFS tracks it (see `.gitattributes`).
-
-Requirements:
-
-- About 60 seconds at most
-- A screen recording of the real product, not slides
-- Cover what we built, the problem, how it works, the key workflow and the result
-
-Before committing:
-
-```bash
-git lfs install
-git add demo/demo.mp4
-```
+**[`demo.mp4`](demo.mp4)**: the submission demo, about 60 seconds, a screen recording of the real product
+(MP4, H.264, 1920×1080, with audio). Git LFS stores it (see `.gitattributes`), so clone with Git LFS
+installed, or download it from the GitHub file page.
