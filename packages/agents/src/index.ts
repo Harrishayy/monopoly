@@ -10,3 +10,4 @@ export { cutsFor, loadCuts, loadSplit } from './bench/labels';
 export { runCase } from './b/pipeline';
 export { configureEngineB, getEngine, materialise, type AnswersOptions, type Engine, type EngineContext, type EngineId } from './engine';
 export { findCaseDirs } from './b/ingest/casefile';
+export { DEFAULT_MODEL, defaultCaller, structured } from './b/llm/client';

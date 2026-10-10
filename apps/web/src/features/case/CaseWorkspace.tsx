@@ -302,7 +302,6 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
         <>
           <DecisionPanel
             view={view}
-            animateIn={animateIn}
             context={`${selectedRun?.agent === 'b' ? 'Agent B' : 'Agent A'} · ${cut === null ? 'on the full history so far' : `as of just before event ${cut}`}${selectedRun?.mode === 'rules' ? ' · without the model' : ''}`}
             onOpenHandover={() => document.getElementById('handover')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             onViewTrace={() => setTab('trace')}

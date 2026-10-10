@@ -54,8 +54,8 @@ export function AssessmentPanel({ assessment: a }: { assessment: Assessment }) {
       {a.facts.length > 0 && (
         <Section title="Facts">
           <ul className="grid gap-2">
-            {a.facts.map((f) => (
-              <li key={f.text} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-[13px]">
+            {a.facts.map((f, i) => (
+              <li key={`${f.text}:${i}`} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-[13px]">
                 <span className="min-w-[10rem] flex-1">{f.text}</span>
                 <Cites ids={f.sourceIds} />
               </li>
@@ -67,7 +67,7 @@ export function AssessmentPanel({ assessment: a }: { assessment: Assessment }) {
         <Section title="Playbook suggests">
           <ol className="grid gap-1 text-[13px]">
             {a.suggested.map((s, i) => (
-              <li key={s.action} className="grid gap-0.5">
+              <li key={`${s.action}:${i}`} className="grid gap-0.5">
                 <span className="font-mono text-[12.5px] font-semibold">
                   {i + 1}. {s.action}
                 </span>
@@ -80,8 +80,9 @@ export function AssessmentPanel({ assessment: a }: { assessment: Assessment }) {
       {a.barred.length > 0 && (
         <Section title="Barred right now">
           <div className="grid gap-1.5">
-            {a.barred.map((b) => (
-              <BlockedAction key={b.action} action={b.action} ruleId={b.ruleId} why={b.why} heading="The guard will refuse" />
+            {/* One action can be barred by several rules, so the action alone is not a unique key. */}
+            {a.barred.map((b, i) => (
+              <BlockedAction key={`${b.action}:${b.ruleId}:${i}`} action={b.action} ruleId={b.ruleId} why={b.why} heading="The guard will refuse" />
             ))}
           </div>
         </Section>
@@ -89,8 +90,8 @@ export function AssessmentPanel({ assessment: a }: { assessment: Assessment }) {
       {a.boundaries.length > 0 && (
         <Section title="Must not claim or do">
           <ul className="grid list-disc gap-1 pl-4 text-[13px]">
-            {a.boundaries.map((b) => (
-              <li key={b}>{b}</li>
+            {a.boundaries.map((b, i) => (
+              <li key={`${b}:${i}`}>{b}</li>
             ))}
           </ul>
         </Section>

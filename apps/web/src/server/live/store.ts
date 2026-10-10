@@ -123,13 +123,13 @@ export function insertCase(c: Omit<LiveCaseRow, 'track'> & { track?: string }) {
     .run(c.ref, c.track ?? ACTIVE_TRACK, c.title, c.customerName, c.contact, c.channel, c.status, c.createdAt, c.updatedAt);
 }
 
-export function updateCase(ref: string, patch: Partial<Pick<LiveCaseRow, 'title' | 'status' | 'customerName' | 'updatedAt'>>) {
+export function updateCase(ref: string, patch: Partial<Pick<LiveCaseRow, 'title' | 'status' | 'customerName' | 'contact' | 'updatedAt'>>) {
   const cur = getLiveCaseRow(ref);
   if (!cur) return;
   const next = { ...cur, ...patch };
   db()
-    .prepare(`UPDATE cases SET title = ?, status = ?, customer_name = ?, updated_at = ? WHERE ref = ?`)
-    .run(next.title, next.status, next.customerName, next.updatedAt, ref);
+    .prepare(`UPDATE cases SET title = ?, status = ?, customer_name = ?, contact = ?, updated_at = ? WHERE ref = ?`)
+    .run(next.title, next.status, next.customerName, next.contact, next.updatedAt, ref);
 }
 
 export function getLiveCaseRow(ref: string): LiveCaseRow | undefined {
@@ -302,6 +302,10 @@ export function supersedePending(caseRef: string, keepId: string): string[] {
   const rows = db().prepare(`SELECT id FROM outbound WHERE case_ref = ? AND status = 'awaiting_approval' AND id != ?`).all(caseRef, keepId) as { id: string }[];
   db().prepare(`UPDATE outbound SET status = 'superseded', why = COALESCE(why, '') || '; replaced by a newer draft' WHERE case_ref = ? AND status = 'awaiting_approval' AND id != ?`).run(caseRef, keepId);
   return rows.map((r) => r.id);
+}
+
+export function setOutboundAddress(id: string, address: string) {
+  db().prepare(`UPDATE outbound SET address = ? WHERE id = ?`).run(address, id);
 }
 
 export function setOutboundBody(id: string, body: string) {

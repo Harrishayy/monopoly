@@ -35,6 +35,8 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
   const runs = useApi<RunSummary[]>(`/api/runs?case=${encodeURIComponent(ref)}`, { live: true, poll: (d) => !!d?.some((r) => !r.done), intervalMs: 1500 });
   const outbound = useApi<OutboundView[]>(`/api/outbound?case=${encodeURIComponent(ref)}`, { live: true });
   const [runId, setRunId] = useState<string | null>(null);
+  /** Drafts carrying out the decision on the selected run, still waiting for a person. */
+  const followHeld = (outbound.data ?? []).filter((o) => o.runId === runId && o.id.includes(':follow:') && o.status === 'awaiting_approval').length;
   const [starting, setStarting] = useState(false);
 
   // Follow the newest run unless the operator picked an older one.
@@ -212,9 +214,9 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
           <Eyebrow as="h2">Outbound</Eyebrow>
           {held.length > 0 && <span className="font-mono text-[11px] text-ink-2">{held.length} need a person</span>}
         </div>
-        {outbound.data?.length ? (
+        {outbound.data?.some((o) => o.status !== 'superseded') ? (
           <ul className="grid gap-1">
-            {outbound.data.map((o) => (
+            {outbound.data.filter((o) => o.status !== 'superseded').map((o) => (
               <li key={`${o.id}:${o.status}`}>
                 <button
                   type="button"
@@ -226,7 +228,6 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
                     <span className="text-[12.5px] font-semibold">To {o.recipient}</span>
                     <RelativeTime at={o.sentAt ?? o.createdAt} className="ml-auto font-mono text-[11px] text-ink-2" />
                   </span>
-                  <span className="line-clamp-2 text-[12.5px] text-ink-2">{o.body}</span>
                 </button>
               </li>
             ))}
@@ -242,10 +243,17 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
       </section>
       {runId ? (
         <>
-          <DecisionPanel view={view} context="On the whole conversation so far" onOpenHandover={() => document.getElementById('handover')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} onViewTrace={() => setTab('actions')} />
+          <DecisionPanel view={view} showDraft={false} onOpenHandover={() => document.getElementById('handover')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} onViewTrace={() => setTab('actions')} />
           {view.handover && (
             <div id="handover" className="scroll-mt-16">
-              <HandoverCard key={runId} handover={view.handover} caseRef={ref} caseTitle={c.title} runId={runId} decision={selected?.decision} onDecided={() => void runs.reload()} />
+              <HandoverCard key={runId} handover={view.handover} caseRef={ref} caseTitle={c.title} runId={runId} decision={selected?.decision}
+                onDecided={() => void runs.reload()}
+                nextSteps={
+                  followHeld > 0
+                    ? `${followHeld} message${followHeld === 1 ? '' : 's'} carrying out this decision ${followHeld === 1 ? 'is' : 'are'} waiting for you in the conversation. Check the address and wording, then approve to send.`
+                    : 'The messages that carry out this decision are being drafted. They will appear in the conversation for you to check and send. Nothing goes out without your approval.'
+                }
+              />
             </div>
           )}
           {view.assessment && (

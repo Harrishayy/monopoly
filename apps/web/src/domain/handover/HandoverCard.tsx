@@ -18,13 +18,15 @@ export interface HandoverCardProps {
   runId: string;
   decision?: HumanDecision;
   onDecided?: (d: HumanDecision) => void;
+  /** Shown once decided: what the system does next with the decision. */
+  nextSteps?: React.ReactNode;
 }
 
 /**
  * Everything a person needs to decide, in one card that makes sense on its own:
  * why the agent stopped, what it knows (with sources), what it tried, the options, and what it refused.
  */
-export function HandoverCard({ handover: h, caseRef, caseTitle, runId, decision: initial, onDecided }: HandoverCardProps) {
+export function HandoverCard({ handover: h, caseRef, caseTitle, runId, decision: initial, onDecided, nextSteps }: HandoverCardProps) {
   const [decision, setDecision] = useState<HumanDecision | undefined>(initial);
   const [busy, setBusy] = useState<string>();
   const [note, setNote] = useState('');
@@ -84,6 +86,12 @@ export function HandoverCard({ handover: h, caseRef, caseTitle, runId, decision:
             </p>
           )}
           {done && <HumanDecisionRecord decision={done} optionLabel={h.options.find((o) => o.id === done.optionId)?.label} />}
+          {done && nextSteps && (
+            <div className="grid gap-1 rounded-ui border-(length:--bw) border-accent/40 bg-accent-soft/60 px-3 py-2.5 text-[13px]" role="status">
+              <Eyebrow tone="accent">What happens next</Eyebrow>
+              {nextSteps}
+            </div>
+          )}
           {h.refused.map((r) => (
             <BlockedAction key={`${r.action}-${r.ruleId}`} action={r.action} ruleId={r.ruleId} heading="The agent will not" />
           ))}
