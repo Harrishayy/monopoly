@@ -49,8 +49,8 @@ export const agentD: Agent = {
   async decide(input: RunInput) {
     const started = Date.now();
     try {
-      const { c, pack, note, clocks } = await loadForD(input);
-      const r = await decideCase(c, pack, input.asOf, input.offline ? { caller: null, clocks } : { clocks });
+      const { c, pack, note } = await loadForD(input);
+      const r = await decideCase(c, pack, input.asOf, input.offline ? { caller: null } : {});
       if (note) r.failures.unshift(`loader: ${note}`);
       return toDecision(r, pack);
     } catch (e) {
@@ -63,13 +63,15 @@ export const agentD: Agent = {
       const started = Date.now();
       let decision: AgentDecision;
       try {
-        const { c, pack, note, clocks } = await loadForD({ dir, track: opts.track ?? 'property', withhold: opts.withhold });
-        const r = await decideCase(c, pack, undefined, opts.offline ? { caller: null, clocks } : { clocks });
+        const { c, pack, note } = await loadForD({ dir, track: opts.track ?? 'property', withhold: opts.withhold });
+        const r = await decideCase(c, pack, undefined, opts.offline ? { caller: null } : {});
         if (note) r.failures.unshift(`loader: ${note}`);
         const out = join(outDir, names[i]!);
         await mkdir(out, { recursive: true });
-        await writeFile(join(out, 'ANSWER.md'), renderAnswer(r, c, pack, i + 1));
-        await writeFile(join(out, 'REASONING.md'), renderReasoning(r, c, i + 1));
+        // Headed with the supplied case number (folder 007 → "Case 7"), like the ANSWERS folder.
+        const n = /^\d+$/.test(names[i]!) ? Number(names[i]) : i + 1;
+        await writeFile(join(out, 'ANSWER.md'), renderAnswer(r, c, pack, n));
+        await writeFile(join(out, 'REASONING.md'), renderReasoning(r, c, n));
         await writeFile(join(out, 'trace.jsonl'), traceLines(r));
         decision = toDecision(r, pack);
       } catch (e) {

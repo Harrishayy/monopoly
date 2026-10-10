@@ -75,6 +75,33 @@ pnpm reality --agent d --in data/challenges --out ANSWERS          # Reality Tes
 
 Each decision reports tokens and an estimated cost (`AgentDecision.usage`), so bench SUMMARY.md and /costs count it. The prices are estimates; check them against the current price list.
 
+## Robustness pass (v4, 2026-10-10)
+
+Changes. Each is a general mechanism, kept only if it held up beyond run-to-run noise (about ±3 points on 71 cuts):
+
+| Change | Why | Measured effect |
+|---|---|---|
+| Honour a stated snapshot ("snapshot comprises events 001–002", "Recorded action: event 3") through B's ingest, even with withhold=none | D was reading later follow-through as already known | perturb snapshot 42.5% → 87.5% |
+| Text that instructs the agency is a warning, never an escalation reason; the guard refuses injection-only escalations | the old prompt said to escalate on it, and D escalated 31 of 40 routine cases | perturb injection 25% → 90% (0 escalations) |
+| Amount check accepts numbers written without £ (quote tables) | refused every vote on a correct quote (112) | bug fix |
+| Triggers skip negated mentions ("no smell of gas", "if you smell gas…") and count reports the agency relays from calls | false fires and missed relays found in review | still 0 fires on 328 example cuts |
+| No supervisor on a clear 2–1 majority for a reversible step with nothing flagged | Opus overrode a right majority (023@17) | also cuts cost |
+| Close guidance: close once the landlord has heard the outcome; no repeat updates | the old "update rather than close" bias caused 4 misses | no measurable change on its own |
+| Per-case deadline (AGENT_D_CASE_TIMEOUT_MS, 240 s) | one case must not stall the batch | — |
+| Role: works for the landlord, owes the tenant duties no instruction overrides | the principle behind the rules | — |
+| Same-job rule: events about another fault or address are not progress on this job | wrong-thread emails were read as approvals or assignments | perturb wrongthread 70% → 77.5% |
+| Concrete escalations: who takes it, channel, first action | the organisers' escalation answers are specific | — |
+| Tried and removed: clocks computed in code (B's ledger dates and replies) | aimed at wait-versus-chase errors | no gain on val (87.3% vs 88.0%) and none on the targeted cut, so removed |
+
+| Measure | v1 | v4 |
+|---|---|---|
+| Val, mean of 2 runs | 87.3% (88.7, 85.9) | 86.6% (85.9, 87.3) |
+| Test, run once at the end | 90.9% (one run) | 87.9%, 0 prohibited, $0.021 per cut |
+| Perturb, 8 variants × 40 | 71.6% (property-f9's run) | about 85% |
+| Escalations on val | 0 | 0 |
+
+Validation is flat within noise: no cut that passed in both v2 runs failed in both v4 runs. The gains are on damaged and unusual inputs, which is what the Reality Test promises.
+
 ## Results (Haiku 5.5 voters, Opus 5.5 supervisor, 2026-10-10, one run each)
 
 | Set | D | A, same day | D prohibited | D routes | Est. cost |

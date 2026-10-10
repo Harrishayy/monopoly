@@ -27,8 +27,6 @@ export interface DecideOptions {
   caller?: Caller | null;
   samples?: number;
   signal?: AbortSignal;
-  /** Clock lines computed in code (see load.ts), shown to the model. */
-  clocks?: string[];
 }
 
 export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | undefined, opts: DecideOptions = {}): Promise<DResult> {
@@ -92,7 +90,7 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
   }
 
   const system = systemPrompt(pack);
-  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`), opts.clocks ?? []);
+  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`));
 
   // ---- votes
   const n = Math.max(1, opts.samples ?? Number(process.env.AGENT_D_SAMPLES ?? 3));

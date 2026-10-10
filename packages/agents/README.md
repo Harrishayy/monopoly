@@ -86,6 +86,7 @@ Scored as "the chosen action is in the label's accepted list". Validation has 71
 | B: full pipeline without manuals | 45.1% | – | 9.9% |
 | D: A's rules + 3 Haiku votes + gated Opus supervisor | 88.7% | 90.9% | 1.4% / 0% |
 | A, re-run on the same 66 test cuts the same day as D | – | 86.4% | – / 0% |
+| D v4 (robustness pass: snapshots, injection, same-job rule; see docs/plan/12-agent-d.md) | 86.6% (2 runs) | 87.9% | 1.4% / 0% |
 
 A's rules and prompt were tuned on all 50 cases, so its validation and test scores are in-sample. D is built on those rules, so its scores are in-sample too, and its contracts were measured on the same labels. B's numbers are held out. A scored 81.8% and 86.4% on two test runs, so a difference of about 5 points is within run-to-run noise. D used the supervisor on 38% of val cuts and 41% of test cuts. Estimated cost was $0.029 per test cut, against roughly a third of that for A.
 

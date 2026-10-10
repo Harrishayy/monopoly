@@ -4,7 +4,6 @@ import { getPack } from '@casework/tracks';
 import { cutCase, load } from '../a';
 import type { RunInput } from '../agent';
 import { loadCase } from '../b/ingest/casefile';
-import { buildLedger } from '../b/facts/ledger';
 import type { CaseFile } from '../b/types';
 
 /**
@@ -13,7 +12,7 @@ import type { CaseFile } from '../b/types';
  * file), D falls back to agent B's format-tolerant ingest and maps its events onto the same source ids,
  * so the assessment and prompt work unchanged.
  */
-export async function loadForD(input: RunInput): Promise<{ c: Case; pack: TrackPack; note?: string; clocks: string[] }> {
+export async function loadForD(input: RunInput): Promise<{ c: Case; pack: TrackPack; note?: string }> {
   const track = input.track === 'insurance' ? 'claims' : input.track;
   // B's ingest finds the stated decision moment ("the escalation snapshot comprises events 001–002",
   // "Recorded action: event 3") even when nothing is withheld, as in the Reality Test. Later events in
@@ -32,48 +31,16 @@ export async function loadForD(input: RunInput): Promise<{ c: Case; pack: TrackP
     const r = await load(input);
     if (r.c.sources.some((s) => /:event-\d+$/.test(s.id))) {
       if (statedCut !== undefined && (input.cutBefore === undefined || statedCut < input.cutBefore)) {
-        return { c: cutCase(r.c, statedCut), pack: r.pack, note: `the case states its decision moment, so events from ${statedCut} onwards were set aside as later follow-through`, clocks: clockLines(cf, r.c.ref, input.asOf) };
+        return { c: cutCase(r.c, statedCut), pack: r.pack, note: `the case states its decision moment, so events from ${statedCut} onwards were set aside as later follow-through` };
       }
-      return { ...r, clocks: clockLines(cf, r.c.ref, input.asOf) };
+      return { ...r };
     }
     note = 'the standard loader found no events';
   } catch (e) {
     note = `the standard loader failed (${e instanceof Error ? e.message : String(e)})`;
   }
   if (!cf) throw new Error(`Could not load ${input.dir}: ${note}; format-tolerant loader: ${bError}`);
-  const c = fromCaseFile(cf, getPack(track));
-  return { c, pack: getPack(track), note: `${note}; read with the format-tolerant loader instead`, clocks: clockLines(cf, c.ref, input.asOf) };
-}
-
-/**
- * Clocks computed in code from B's ledger: who last wrote to whom and how long ago, requests still
- * unanswered, and dates people promised with whether they have passed. Models are poor at date sums;
- * these lines give them the answer. Ids are mapped to D's source ids.
- */
-export function clockLines(cf: CaseFile | undefined, ref: string, asOf?: string): string[] {
-  if (!cf) return [];
-  try {
-    // Measure from the decision moment, which can be later than the last event kept.
-    const l = buildLedger(asOf && !Number.isNaN(Date.parse(asOf)) ? { ...cf, asOf: new Date(asOf).toISOString() } : cf);
-    const id = (x: string) => x.replace(/^E(\d+)$/, (_, n: string) => `${ref}:event-${n.padStart(3, '0')}`);
-    const days = (d?: number) => (d === undefined ? '' : ` (${d.toFixed(1)} days ago)`);
-    const out: string[] = [];
-    for (const p of l.parties) {
-      if (!p.sent && !p.received) continue;
-      if (/lettings|agency|internal|system|homes\b|estates|property management/i.test(p.name)) continue;
-      const parts = [`${p.name}:`];
-      if (p.lastReceivedId) parts.push(`last wrote to us ${p.lastReceivedAt?.slice(0, 10) ?? ''}${days(p.daysSinceLastReceived)} [${id(p.lastReceivedId)}];`);
-      if (p.lastSentId) parts.push(`we last wrote to them ${p.lastSentAt?.slice(0, 10) ?? ''}${days(p.daysSinceLastSent)} [${id(p.lastSentId)}];`);
-      parts.push(p.unansweredAsks ? `${p.unansweredAsks} request(s) from us still unanswered [${p.unansweredAskIds.map(id).join(', ')}].` : 'nothing we asked is unanswered.');
-      out.push(parts.join(' '));
-    }
-    for (const d of l.dates.slice(-8)) out.push(`Date mentioned${d.by ? ` by ${d.by}` : ''}: "${d.text}" = ${d.iso.slice(0, 10)}, ${d.passed ? 'already passed' : 'not yet reached'} [${id(d.sourceId)}].`);
-    for (const f of l.failures.slice(-5)) out.push(`Failed contact or action: "${f.marker}" [${id(f.sourceId)}].`);
-    if (l.daysSinceLastEvent !== undefined) out.push(`Days since the last event: ${l.daysSinceLastEvent.toFixed(1)}.`);
-    return out;
-  } catch {
-    return [];
-  }
+  return { c: fromCaseFile(cf, getPack(track)), pack: getPack(track), note: `${note}; read with the format-tolerant loader instead` };
 }
 
 /** The first event to hide when the case itself states where its snapshot ends (not an evaluation cut). */
