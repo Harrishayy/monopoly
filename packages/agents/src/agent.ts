@@ -3,7 +3,7 @@
  * Each agent keeps its own engine; an adapter turns its output into an `AgentDecision`.
  */
 
-export type AgentId = 'a' | 'b';
+export type AgentId = 'a' | 'b' | 'd';
 
 export interface CaseRef {
   /** Case folder, e.g. data/public/Property Management/007. */
@@ -38,6 +38,8 @@ export interface AgentDecision {
   confidence?: number;
   ms: number;
   failures: string[];
+  /** Tokens and estimated cost of the model calls behind this decision, when the agent reports them. */
+  usage?: { inputTokens: number; outputTokens: number; cacheReadTokens: number; cacheWriteTokens: number; costUsd: number };
 }
 
 export interface Agent {
