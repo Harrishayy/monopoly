@@ -1,5 +1,7 @@
 # 03 · Architecture
 
+> **Mixed.** NOW: The agent loop, Track packs. LATER (UI/demo): the web and API layers, the UI and mascot columns of the event table, State and storage.
+
 Five layers. Imports only point downwards. Track knowledge lives only in a track pack, so the other layers never name a track.
 
 ```
@@ -16,6 +18,8 @@ Outside         Claude API · ElevenLabs · supplied synthetic tools · data/ ·
 ```
 
 ## One run, end to end
+
+> **Mixed.** NOW: the event names and the ANSWER.md column, because the ANSWERS writer uses them. LATER (UI/demo): the UI and Mascot columns.
 
 Every screen, the mascot and `ANSWERS/` are views of one append-only event stream:
 
@@ -40,6 +44,8 @@ Every screen, the mascot and `ANSWERS/` are views of one append-only event strea
 
 ## The agent loop (`packages/core/src/agent/loop.ts`)
 
+> **NOW (results).** Not implemented yet: `runCase` throws.
+
 1. Emit `run.started`.
 2. Triage each source once with `MODEL_FAST` and emit `step.read`.
 3. Run the tool-use loop with `MODEL_DECIDE`, capped at 12 turns. Every call goes through `guard()` (policy, autonomy, argument validation) and then `withRetry()` (timeout, backoff, idempotency key). Errors go back to the model as a `tool_result` with `is_error`, so it can recover or escalate.
@@ -49,6 +55,8 @@ Every screen, the mascot and `ANSWERS/` are views of one append-only event strea
 Order the prompt for caching: system, then tool definitions, then track policy, then case sources.
 
 ## Track packs
+
+> **NOW (results).** The property tool names and the £300 limit in this table are placeholders. Replace them with what the example cases show.
 
 A pack (`packages/core/src/track.ts` → `TrackPack`) supplies vocabulary, a loader, tools, policy rules, must-escalate conditions, a prompt and a default autonomy. The UI reads its labels from `@casework/tracks/meta`, so a property manager sees "Job" and an insurer sees "Claim" from the same component.
 
@@ -62,6 +70,8 @@ A pack (`packages/core/src/track.ts` → `TrackPack`) supplies vocabulary, a loa
 To add a track, copy a pack folder, add it to `TRACK_META` and `PACKS`, and write its loader. Nothing else changes.
 
 ## State and storage
+
+> **LATER (UI/demo): don't build yet.** 
 
 - Runs are held in memory in `apps/web/src/server/runs.ts`. The next step is an SQLite event store (`src/server/db.ts`, drizzle + better-sqlite3) so runs survive restarts and can be replayed.
 - UI-only state (direction, track, autonomy) lives in Zustand (`src/state/ui.ts`), persisted to localStorage.

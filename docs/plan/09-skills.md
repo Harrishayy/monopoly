@@ -1,5 +1,7 @@
 # 09 · Skills
 
+> **Mixed.** LATER (UI/demo): the skills in the UI area and the `add-component`, `record-fixture` and `demo-script` project skills. NOW: everything else.
+
 Claude Code skills and the job each one is for. Invoke by name (`/frontend-design`) or describe the task.
 
 | Skill | Area | Use it for | Example ask |

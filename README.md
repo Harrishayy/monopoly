@@ -4,11 +4,18 @@ An operations agent for messy real-world cases. It reads calls, emails, document
 
 https://app.notion.com/p/Dwelly-AI-Hackathon-2026-Hacker-Guide-3eaf87e8ff7280c3beb6fb2fab8e2123#a58d6cadf230424dace26b12063fc7ea
 
-> **Status:** project skeleton. The architecture, contracts, UI shell, design system and Reality Test runner are in place. The agent loop (`packages/core/src/agent/loop.ts`) and the track tools come next. Sections marked _TBD_ get filled in as they're built.
+> **Status:** the property agent works end to end: rules-based assessment, model decision behind a policy guard, ANSWERS writer, and an evaluation harness over 258 labelled decision points. The web UI is still a shell. Sections marked _TBD_ get filled in as they're built.
 
 ## 1. What we built
 
-_TBD._ The plan is in [`docs/`](docs/README.md), and the visual reference is [`docs/design/casework-design-directions.html`](docs/design/casework-design-directions.html).
+An agent for property maintenance jobs: the repair requests a letting agency juggles between tenants, landlords and contractors. Given a job's history (emails, calls, SMS, CRM notes, holds, attachments), it works out where the job stands and takes the agency's single best next step. That step is one of 14 actions: ask the landlord, send a quote, chase a contractor, close, escalate, and so on. It explains the step with cited sources and says what it must not claim.
+
+It is two systems working together:
+
+- **Rules (deterministic).** `packages/tracks/src/property/events.ts` and `assess.ts` turn the history into parties, workflow signals and noise. They then derive the stage, who we're waiting on, facts with citations, risk flags, playbook suggestions and *barred* actions. The rules were learned from the 50 example cases ([docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md)).
+- **Model (judgement).** Claude reads the full history plus that assessment and picks one action tool. A policy guard refuses barred or invalid calls, for example sending a contractor with no landlord approval, and hands the refusal back so the model can choose again. If no model is available, or it fails, the top allowed playbook step is taken instead. The run never throws.
+
+The plan is in [`docs/`](docs/README.md), and the visual reference is [`docs/design/casework-design-directions.html`](docs/design/casework-design-directions.html).
 
 ## 2. The operational problem
 
@@ -24,6 +31,8 @@ packages/tracks One pack per track: data loader, tools, policy, prompt, vocabula
 ```
 
 Every screen, the mascot and the `ANSWERS/` files are views of one append-only event stream per run. Details: [docs/plan/03-architecture.md](docs/plan/03-architecture.md).
+
+One run: `run.started → step.read → case.assessed (rules) → tool.called / action.blocked (model + guard) → decision.made → escalation.created? → next.proposed → run.completed`. `ANSWER.md` leads with the next step: action, recipient, channel, message, what not to claim, and the remaining work. `REASONING.md` shows the rules' assessment with citations, every refused action and the decision.
 
 ## 4. How to run it
 
@@ -42,6 +51,19 @@ Reality Test (put the released cases in `data/challenges/` first, see [data/READ
 pnpm reality --track property --in data/challenges --out ANSWERS
 ```
 
+Without `ANTHROPIC_API_KEY` the runner still works using only the rules-based playbook, and the table it prints shows which cases that happened to.
+
+Evaluate on the examples (each labelled cut hides the history from that point on, plus the outcome):
+
+```bash
+pnpm eval --offline                                   # rules only, no network
+pnpm eval                                             # with the model; writes .casework/eval/SUMMARY.md
+pnpm eval --resume .casework/eval                     # re-run only cuts that fell back to the rules
+pnpm --filter @casework/tracks inspect 033 --cut 9    # how the rules read one case at one moment
+```
+
+On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a prohibited one 4.7% of the time. With the model (Haiku 5.5), that becomes 81.0% and 1.6%. The prompt was tuned on these same cuts, so treat 81% as optimistic. Details are in [docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md#evaluation).
+
 The web app (`pnpm dev`) runs the same agent and has these screens:
 
 | Route | What it's for |
@@ -52,7 +74,6 @@ The web app (`pnpm dev`) runs the same agent and has these screens:
 | `/reality` | Run the eval on the labelled examples (rules-only runs are free) and Reality Test batches, and read `ANSWERS/` written by the CLI. |
 | `/tools` | Tools, policy rules, always-escalate triggers, tool health and how a run moves through the pipeline. |
 | `/agents` | For the team: how agent A and agent B work, and their eval results side by side on the same labelled moments. Reads what each agent wrote under `.casework/`. |
-| `/design` | Every component in every state, under all three visual directions. |
 
 Runs started in the UI are kept in memory and disappear when the server restarts. `pnpm reality` is still what writes `ANSWERS/`.
 
@@ -62,9 +83,10 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | yes | Claude API |
-| `MODEL_DECIDE` | no | Decision model (default `claude-opus-5-5`) |
-| `MODEL_FAST` | no | Triage and extraction model (default `claude-haiku-4-5-20251001`) |
+| `ANTHROPIC_API_KEY` | recommended | Claude API. Without it, decisions come from the rules-only playbook |
+| `MODEL_MAX_RETRIES` | no | SDK retries on rate limits and overload (default 8) |
+| `MODEL_DECIDE` | no | Decision model (default `claude-haiku-5-5`) |
+| `MODEL_FAST` | no | Triage and extraction model (default `claude-haiku-5-5`; not used yet) |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID` | voice only | ElevenLabs voice agent |
 | `DATA_DIR` | no | Case folder the web app reads (default `./data/public`) |
 | `DATA_WITHHOLD` | no | `outcomes` (default) hides how example cases ended; `none` loads cases as supplied |
@@ -74,18 +96,24 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 
 ## 5. Models, APIs and services
 
-- Anthropic Claude via `@anthropic-ai/sdk`: Opus 5.5 for decisions, Haiku 4.5 for triage.
+- Anthropic Claude via `@anthropic-ai/sdk`: Haiku 5.5 (`MODEL_DECIDE`, `claude-haiku-5-5`) with adaptive thinking decides the next step. There is no separate triage model yet, because the rules do the triage.
 - ElevenLabs for the voice agent (optional).
 - The hackathon's supplied synthetic tools and data.
 - Libraries: see [docs/plan/02-stack.md](docs/plan/02-stack.md).
 
 ## 6. Assumptions
 
-_TBD._
+- **No live channels.** The organisers supply no live channels for property, so actions are recorded to an outbox, not sent. Every answer says so.
+- **Landlord approval first.** The landlord approves every job and every quote unless the history shows standing consent. The examples contain no agency spending limit.
+- **Inconsistent names are noise.** Names, addresses and company names that vary inside one case are treated as record-keeping noise, not as conflicts.
+- **Decision time.** "Now" is the time of the latest event unless a cut sets it.
 
 ## 7. Known limitations
 
-_TBD._ Current skeleton limits: the agent loop is a stub, runs are held in memory, and the decision, voice and batch-from-UI endpoints return 501.
+- The rules read signals with regular expressions. They miss some informal approvals, quotes with no £ figure, and tenants who fixed the problem themselves. The model catches most of these, but the playbook fallback does not.
+- The eval labels were drafted by model reviewers. They are a strong baseline, not ground truth.
+- Images in attachments are not read.
+- Runs are held in memory, and the decision, voice and batch-from-UI endpoints return 501.
 
 ## 8. What we'd build next
 

@@ -1,5 +1,7 @@
 # 01 · Visual directions
 
+> **LATER (UI/demo): don't build yet.** The visual direction is chosen once the agent works.
+
 Three directions share one component inventory. Choosing a direction only changes the tokens (`apps/web/src/tokens/*.css`) and two skinned components: the mascot and the outcome stamp. Switch between them live at `/design`, or open `docs/design/casework-design-directions.html`.
 
 | | A · Docket | B · Switchboard | C · Relay |

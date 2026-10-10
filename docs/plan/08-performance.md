@@ -4,6 +4,8 @@ Two kinds of speed matter. The UI has to feel instant in the demo, and the agent
 
 ## Budgets
 
+> **Mixed.** NOW: the prompt cache and unhandled errors rows. LATER (UI/demo): the other four rows.
+
 | Budget | Target |
 |---|---|
 | First-load JS on /inbox (gzip) | ≤ 170 KB |
@@ -15,6 +17,8 @@ Two kinds of speed matter. The UI has to feel instant in the demo, and the agent
 
 ## Frontend
 
+> **LATER (UI/demo): don't build yet.** 
+
 - **Server Components by default.** Next splits per route. Only interactive pieces (trace, controls, voice) are client components.
 - **Lightweight motion.** The mascot, chips and stamp use CSS keyframes. If `motion` is added, use `LazyMotion` + `domAnimation`.
 - **One stream per run.** `useRunStream` parses with zod, reduces with `applyEvent`, batches with `startTransition`, and resumes from `Last-Event-ID`.
@@ -24,6 +28,8 @@ Two kinds of speed matter. The UI has to feel instant in the demo, and the agent
 - **Shared clock.** One 30 s ticker drives every RelativeTime and SlaTimer.
 
 ## Agent and API
+
+> **NOW (results).** 
 
 - **Prompt caching.** Order the prompt as system, then tool definitions, then track policy, then case sources, with cache breakpoints after policy and after sources.
 - **Two models.** The fast model summarises each source once (cache by content hash). The decision model sees summaries plus the passages it cites.

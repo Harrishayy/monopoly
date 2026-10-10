@@ -1,5 +1,7 @@
 # 07 · Modules and ownership
 
+> **Mixed.** The folder tree and import rules still apply. Each workstream below is tagged.
+
 The folder tree is the org chart. Each workstream owns a folder and builds against fixtures, so nobody waits on anyone else.
 
 ```
@@ -49,18 +51,20 @@ casework/
 
 ## Workstreams
 
-| Workstream | Owns | Builds against | Main skills | Done when |
-|---|---|---|---|---|
-| Contracts | `packages/core/src/schema` | The supplied data | claude-api | Schemas parse every supplied case; fixtures recorded |
-| Agent core | `packages/core/src/agent`, `run` | Schema + one pack | claude-api | A case runs end to end with a valid event stream |
-| Track pack | `packages/tracks/src/<track>` | TrackPack interface | claude-api, pdf, xlsx | Loader, tools, policy and prompt pass the pack tests |
-| API + CLI | `apps/web/src/app/api`, `src/server`, `apps/cli` | Core functions | security-review | Routes validated, SSE resumes, CLI writes ANSWERS |
-| UI system | `apps/web/src/{tokens,ui,layout}` | The design artifact | frontend-design, impeccable, design:accessibility-review | Every primitive is in /design in every state |
-| Product screens | `apps/web/src/{domain,features}` | msw fixtures | frontend-design, emil-design-eng, dataviz | Demo flow works on fixtures, then live |
-| Voice | `domain/voice`, `app/api/voice` | Pack tools | claude-api | A call reaches a decision through the same tools |
-| Reality Test + submission | `apps/cli`, `ANSWERS/`, README, `demo/` | Everything | webapp-testing, code-review, security-review | A full batch runs unattended; README covers all 8 points |
+| When | Workstream | Owns | Builds against | Main skills | Done when |
+|---|---|---|---|---|---|
+| NOW | Contracts | `packages/core/src/schema` | The supplied data | claude-api | Schemas parse every supplied case; fixtures recorded |
+| NOW | Agent core | `packages/core/src/agent`, `run` | Schema + one pack | claude-api | A case runs end to end with a valid event stream |
+| NOW | Track pack | `packages/tracks/src/<track>` | TrackPack interface | claude-api, pdf, xlsx | Loader, tools, policy and prompt pass the pack tests |
+| NOW for the CLI, LATER for the API | API + CLI | `apps/web/src/app/api`, `src/server`, `apps/cli` | Core functions | security-review | Routes validated, SSE resumes, CLI writes ANSWERS |
+| LATER | UI system | `apps/web/src/{tokens,ui,layout}` | The design artifact | frontend-design, impeccable, design:accessibility-review | Every primitive is in /design in every state |
+| LATER | Product screens | `apps/web/src/{domain,features}` | msw fixtures | frontend-design, emil-design-eng, dataviz | Demo flow works on fixtures, then live |
+| LATER | Voice | `domain/voice`, `app/api/voice` | Pack tools | claude-api | A call reaches a decision through the same tools |
+| NOW (demo/ is LATER) | Reality Test + submission | `apps/cli`, `ANSWERS/`, README, `demo/` | Everything | webapp-testing, code-review, security-review | A full batch runs unattended; README covers all 8 points |
 
 ## Build order
+
+> **NOW (results).** Steps 1 and 2, plus the property tools, policy and Reality Test CLI in step 3. LATER (UI/demo): UI screens in step 3, and step 4.
 
 1. Contracts and one track pack loader, against the real data.
 2. Agent loop on that pack. Record fixtures as soon as one case runs.

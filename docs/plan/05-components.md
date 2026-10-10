@@ -1,8 +1,12 @@
 # 05 · Component catalogue
 
+> **Mixed.** Only the Server section at the end is NOW, minus `run/mascot`, `store/events`, `api/runs`, `api/decisions` and `api/voice`. Primitives, Domain, Layout, Routes and Hooks are LATER (UI/demo): don't build yet.
+
 Every component, hook and server module (112 entries). Generated from `docs/design/casework-design-directions.html`. Edit the artifact's `CAT` array, then regenerate (see docs/README.md).
 
 ## Build brief template
+
+> **LATER (UI/demo): don't build yet.** 
 
 Paste this to a Claude instance, filling in one entry below:
 
@@ -25,6 +29,8 @@ Rules (from CLAUDE.md):
 ```
 
 ## Primitives · apps/web/src/ui
+
+> **LATER (UI/demo): don't build yet.** 
 
 ### Button
 
@@ -361,6 +367,8 @@ Rules (from CLAUDE.md):
 
 ## Domain components · apps/web/src/domain
 
+> **LATER (UI/demo): don't build yet.** 
+
 ### Mascot
 
 - **File:** `apps/web/src/domain/mascot`
@@ -696,6 +704,8 @@ Rules (from CLAUDE.md):
 
 ## Layout · apps/web/src/layout
 
+> **LATER (UI/demo): don't build yet.** 
+
 ### AppShell
 
 - **File:** `apps/web/src/layout/AppShell`
@@ -742,6 +752,8 @@ Rules (from CLAUDE.md):
 - **Notes:** —
 
 ## Routes · apps/web/src/app + src/features
+
+> **LATER (UI/demo): don't build yet.** 
 
 ### /inbox
 
@@ -807,6 +819,8 @@ Rules (from CLAUDE.md):
 - **Notes:** Mirrors this artifact. Hidden from nav.
 
 ## Hooks and lib · apps/web/src/lib
+
+> **LATER (UI/demo): don't build yet.** 
 
 ### useRunStream
 
@@ -891,6 +905,8 @@ Rules (from CLAUDE.md):
 
 ## Server · packages/core, packages/tracks, apps/web/src/app/api, apps/cli
 
+> **NOW (results).** Except `run/mascot`, `store/events`, `api/runs`, `api/decisions` and `api/voice`, which are LATER.
+
 ### schema
 
 - **File:** `packages/core/src/schema`
@@ -965,6 +981,8 @@ Rules (from CLAUDE.md):
 
 ### run/mascot
 
+> **LATER (UI/demo): don't build yet.** 
+
 - **File:** `packages/core/src/run/mascot.ts`
 - **Purpose:** Maps the latest event to a mascot state.
 - **Interface:** `mascotFor(event) → MascotState`
@@ -983,6 +1001,8 @@ Rules (from CLAUDE.md):
 
 ### store/events
 
+> **LATER (UI/demo): don't build yet.** 
+
 - **File:** `apps/web/src/server/db.ts`
 - **Purpose:** Append-only event table and run lookups.
 - **Interface:** `append(event), list(runId, afterSeq?)`
@@ -991,6 +1011,8 @@ Rules (from CLAUDE.md):
 - **Notes:** WAL mode. Exported to trace.jsonl per case.
 
 ### api/runs
+
+> **LATER (UI/demo): don't build yet.** Already works.
 
 - **File:** `apps/web/src/app/api/runs`
 - **Purpose:** Start a run and stream its events.
@@ -1001,6 +1023,8 @@ Rules (from CLAUDE.md):
 
 ### api/decisions
 
+> **LATER (UI/demo): don't build yet.** 
+
 - **File:** `apps/web/src/app/api/cases/[ref]/decisions`
 - **Purpose:** Record a human decision.
 - **Interface:** `POST /api/cases/[ref]/decisions`
@@ -1009,6 +1033,8 @@ Rules (from CLAUDE.md):
 - **Notes:** Emits human.decided.
 
 ### api/voice
+
+> **LATER (UI/demo): don't build yet.** 
 
 - **File:** `apps/web/src/app/api/voice`
 - **Purpose:** ElevenLabs session and server tools.

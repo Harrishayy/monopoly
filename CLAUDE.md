@@ -5,6 +5,21 @@ It resolves what it safely can and hands everything else to a person with full c
 Built for the Real-World Agents Hackathon (see docs/plan/00-hackathon.md). Track-agnostic: track
 knowledge lives only in `packages/tracks/src/<track>`.
 
+## Current focus: results first
+
+Until the agent produces good answers on the Property Management cases, work only on what changes
+those answers. Every plan doc and section is tagged **NOW (results)** or **LATER (UI/demo)**. Don't
+build anything tagged LATER. The UI will be shaped around how the agent ends up working.
+
+NOW:
+1. Learn the property workflow from `data/public/Property Management` (stages, usual next actions, escalation triggers).
+2. Build the property pack from that data: `packages/tracks/src/property` (prompt, tools, policy). The current tool names and the £300 limit are placeholders.
+3. Implement the agent: `packages/core/src/agent` (`runCase`, triage, decide, handover).
+4. Build an evaluation harness that cuts each example history at several points and compares the decision with what happened next.
+5. Make `pnpm reality` write `ANSWERS/` unattended: `apps/cli`, `packages/core/src/answers`.
+
+LATER: anything in `apps/web` (screens, `/design`, tokens, mascot, voice, API routes beyond what exists), visual directions, UI performance budgets, the demo.
+
 ## Commands
 
 ```
@@ -49,5 +64,5 @@ pnpm replay ANSWERS/<n>/trace.jsonl
 
 ## Definition of done
 
-`pnpm typecheck && pnpm test && pnpm build` pass · component is in /design · README updated if behaviour changed.
+`pnpm typecheck && pnpm test && pnpm build` pass · README updated if behaviour changed · (LATER, UI work only) component is in /design.
 See docs/plan/10-playbook.md.

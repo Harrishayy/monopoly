@@ -4,6 +4,8 @@ The code is the source of truth. This page says where each contract lives and wh
 
 ## Schemas (`packages/core/src/schema`, zod v4)
 
+> **NOW (results).** 
+
 | File | Defines | Guarantees |
 |---|---|---|
 | `common.ts` | `TrackId`, `Autonomy`, `Money`, `Usage` | Money is always integer pence, GBP |
@@ -15,6 +17,8 @@ The code is the source of truth. This page says where each contract lives and wh
 Change a contract in its own commit, and update every user of it in the same pull request.
 
 ## API (`apps/web/src/app/api/**/route.ts`)
+
+> **LATER (UI/demo): don't build yet.** The routes that already work stay as they are.
 
 | Method | Route | Returns | Status |
 |---|---|---|---|
@@ -31,11 +35,15 @@ Change a contract in its own commit, and update every user of it in the same pul
 
 ## CLI (`apps/cli`)
 
+> **NOW (results).** This is how the Reality Test runs.
+
 ```
 pnpm reality --track property --in data/challenges --out ANSWERS [--concurrency 6]
 pnpm replay ANSWERS/7/trace.jsonl [--speed 2]
 ```
 
 ## ANSWERS output (`packages/core/src/answers/render.ts`)
+
+> **NOW (results).** 
 
 Each finished case writes `ANSWERS/<n>/ANSWER.md`, `REASONING.md` and `trace.jsonl`. ANSWER.md always has these sections: What the system received · Actions taken · Actions refused · Escalated · What failed · Final result. REASONING.md has one section per decision with citations and confidence, then the handover, then a pointer to the trace.

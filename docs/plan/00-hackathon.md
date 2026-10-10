@@ -1,5 +1,7 @@
 # 00 · The hackathon, in our words
 
+> **NOW (results).** Reference for what we're scored on.
+
 A summary of the Real-World Agents Hackathon rules (10 October 2026). The organisers' PDF is not in this repo. Check it for anything binding.
 
 ## The brief

@@ -1,5 +1,7 @@
 # 02 · Stack and libraries
 
+> **Mixed.** NOW: the `zod`, `@anthropic-ai/sdk`, `p-limit, p-retry`, `pino` and `tsx` rows, and Models. Everything else is LATER (UI/demo): don't build yet.
+
 One language (TypeScript) across web, API and agent, so schemas are written once. Exact versions live in `pnpm-lock.yaml`.
 
 | Package | Layer | Used for | Why this one |
@@ -35,10 +37,12 @@ Already installed in the skeleton: next, react, react-dom, zod, zustand, clsx, t
 
 ## Models
 
+> **NOW (results).** 
+
 | Job | Env var | Default |
 |---|---|---|
-| Decisions, handover, judgement | `MODEL_DECIDE` | `claude-opus-5-5` |
-| Triage, source summaries, extraction | `MODEL_FAST` | `claude-haiku-4-5-20251001` |
+| Decisions, handover, judgement | `MODEL_DECIDE` | `claude-haiku-5-5` |
+| Triage, source summaries, extraction | `MODEL_FAST` | `claude-haiku-5-5` |
 | Voice agent turns | `ELEVENLABS_AGENT_ID` | ElevenLabs agent, Claude as LLM |
 
 All env vars are listed in `.env.example`.

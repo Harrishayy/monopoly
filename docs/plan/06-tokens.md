@@ -1,5 +1,7 @@
 # 06 · Tokens
 
+> **LATER (UI/demo): don't build yet.** 
+
 Components use semantic tokens only. Each direction is one CSS file (`apps/web/src/tokens/<direction>.css`) that sets these variables under `[data-dir]`. Tailwind exposes them as `bg-surface`, `text-ink-2`, `border-line`, `rounded-ui`, `font-display`, and so on (see `app/globals.css`).
 
 | Token | Role | Rule |
