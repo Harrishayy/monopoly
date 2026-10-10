@@ -22,6 +22,8 @@ export function renderAnswer(r: DResult, c: Case, pack: TrackPack, n: number): s
     `**Next step:** \`${f.action}\` → ${recipientOf(pack, f.action)} by ${f.channel}`,
     `**As of:** ${r.asOf}`,
     '',
+    ...glance(r, c, pack),
+    '',
     '## Message',
     '',
     f.message ? quote(f.message) : '_No message: internal step._',
@@ -53,6 +55,26 @@ export function renderAnswer(r: DResult, c: Case, pack: TrackPack, n: number): s
   );
   if (r.failures.length) out.push('', '**What failed**', '', ...r.failures.map((x) => `- ${x}`));
   return out.join('\n') + '\n';
+}
+
+/** The six things a reader needs first: received, actions, refusals, escalation, failures, result. */
+function glance(r: DResult, c: Case, pack: TrackPack): string[] {
+  const f = r.final;
+  const kinds = new Map<string, number>();
+  for (const s of c.sources) kinds.set(s.kind, (kinds.get(s.kind) ?? 0) + 1);
+  const received = [...kinds].map(([k, n]) => `${n} ${k}`).join(', ');
+  const actions = [f.action, ...(r.companion ? [r.companion.action] : [])].map((a) => `\`${a}\``).join(' and ');
+  const refused = [...new Set(r.refusals.map((x) => `\`${x.action}\``))].join(', ');
+  return [
+    '## At a glance',
+    '',
+    `- **What the system received:** ${c.sources.length} sources${received ? ` (${received})` : ''}`,
+    `- **Actions taken:** ${actions}, recorded to the outbox (no live channel connected)`,
+    `- **Refused by the guard:** ${refused || 'none'}`,
+    `- **Escalated:** ${f.action === 'case.escalate' ? `yes, to ${recipientOf(pack, f.action)}` : 'no'}`,
+    `- **What failed:** ${r.failures.length ? r.failures.join('; ') : 'nothing'}`,
+    `- **Final result:** \`${f.action}\` (decided by agent D, route: ${r.route})`,
+  ];
 }
 
 export function renderReasoning(r: DResult, c: Case, n: number): string {
