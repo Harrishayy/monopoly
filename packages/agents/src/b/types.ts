@@ -198,6 +198,14 @@ export const Handover = z.object({
 });
 export type Handover = z.infer<typeof Handover>;
 
+export const SameTurnMessage = z.object({
+  domainAction: z.string().optional(),
+  recipient: z.string(),
+  channel: z.string(),
+  message: z.string(),
+});
+export type SameTurnMessage = z.infer<typeof SameTurnMessage>;
+
 export const Decision = z.object({
   /** The track's own action name, when the track has an action list (e.g. "landlord.send_quote"). */
   domainAction: z.string().optional(),
@@ -215,6 +223,10 @@ export const Decision = z.object({
   alternatives: z.array(z.object({ action: z.string(), whyNot: z.string() })),
   followUpBy: z.string().describe('ISO date to check again, or ""'),
   handover: Handover.optional().describe('Required when action is escalate_to_human'),
+  alsoSend: z
+    .array(SameTurnMessage)
+    .optional()
+    .describe('At most two messages to other parties that belong in the same turn as the main action; empty when it stands alone'),
   confidence: z.number().min(0).max(1),
 });
 export type Decision = z.infer<typeof Decision>;

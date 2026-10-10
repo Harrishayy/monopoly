@@ -1,0 +1,12 @@
+LANDLORD GAS SAFETY RECORD
+Property: 22 Moss Lane, Kingshaven, ZZ3 5ZZ
+Date of inspection: 05/02/2026     Next due: 04/02/2027
+Engineer: K. Osei, Gas Safe reg. no. 000000
+
+Appliance 1: Combi boiler (kitchen)    Flue: PASS   Operating pressure: OK   Safety device: OK   Safe to use: YES
+Appliance 2: Gas hob (kitchen)         Flue: N/A    Operating pressure: OK   Safety device: OK   Safe to use: YES
+
+Gas installation tightness test: PASS
+Carbon monoxide alarm: present, tested, working
+Defects identified: NONE
+Warning notice issued: NO

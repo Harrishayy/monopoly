@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { CaseEdit, EventDraft, RawCase } from '../schema';
 import { FIXTURE_DATA_DIR, FIXTURE_TRACK_FOLDER } from '../testing/fixtures';
 import { applyEdits, cutCase, readRawCase, remapSpec, renderTemplate, templateVars, toEscalationFormat } from './index';
+import { renderEvent } from './raw';
 import { hasPublicData, publicFolders, specAt, suite } from './test-helpers';
+import { introducedText } from './transform';
 
 let original: RawCase;
 let visible: RawCase;
@@ -215,6 +217,43 @@ describe('applyEdits and remapSpec', () => {
     expect(Object.keys(result.renumbering)).toEqual(['001', '002', '003', '004', '005']);
     expect(JSON.parse(JSON.stringify(result.renumbering))).toEqual({ '001': '001', '002': '002', '003': '003', '004': '004', '005': '005' });
     expect(remapSpec(suite.scenarios[0]!, result.renumbering)).toEqual(remapSpec(suite.scenarios[0]!, result.renumbering));
+  });
+});
+
+describe('introducedText', () => {
+  it('lists rendered appended, inserted and padded events, but nothing for unchanged or removed events', () => {
+    const edited = applyEdits(visible, [
+      { op: 'pad_noise', count: 2, seed: 3 },
+      { op: 'insert_event', before: '003', event: { ...draft, at: '2026-02-02 09:20:00 UTC' } },
+      { op: 'remove_event', number: '005' },
+      { op: 'append_event', event: draft },
+    ], { agentSenders: suite.agentSenders });
+    const originalNumbers = new Set(Object.values(edited.renumbering));
+    const added = edited.raw.history.events.filter((event) => !originalNumbers.has(event.number));
+    expect(added).toHaveLength(4);
+    const texts = introducedText(visible, edited);
+    expect(texts).toEqual(added.map(renderEvent));
+    expect(texts.filter((text) => text.includes(`New request for ${visible.index.title}`))).toHaveLength(2);
+    expect(introducedText(visible, applyEdits(visible, [{ op: 'remove_event', number: '002' }]))).toEqual([]);
+    expect(introducedText(visible, applyEdits(visible, []))).toEqual([]);
+  });
+
+  it('lists bodies changed by text replacement and new or changed detail values', () => {
+    const created = visible.index.details.find((detail) => detail.key === 'Created')!.value;
+    const edited = applyEdits(visible, [
+      { op: 'replace_text', in: 'event', number: '002', find: 'routine check', replace: 'check at {{detail:Site}}' },
+      { op: 'replace_text', in: 'initial_request', find: 'two units', replace: 'units at {{detail:Site}}' },
+      { op: 'replace_text', in: 'event', number: '003', find: 'Absent text', replace: 'Unused' },
+      { op: 'set_detail', key: 'site', value: 'Unit 9, Example Centre' },
+      { op: 'set_detail', key: 'Access', value: 'Rear entrance' },
+      { op: 'set_detail', key: 'Created', value: created },
+    ]);
+    expect(edited.raw.history.events[1]!.body).toContain('check at Unit 8, Example Centre');
+    expect(introducedText(visible, edited)).toEqual([
+      renderEvent(edited.raw.history.events[1]!),
+      edited.raw.index.sections.find((section) => section.heading === 'Initial request')!.body,
+      'Unit 9, Example Centre', 'Rear entrance',
+    ]);
   });
 });
 

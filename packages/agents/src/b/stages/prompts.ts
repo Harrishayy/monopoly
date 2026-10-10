@@ -65,9 +65,11 @@ Steps:
    - update_record: only an internal record change is needed now.
    - close_case: the work is verified done and nothing is owed or open.
    - other: none of these fit. Describe it exactly in actionLabel.
-4. Write the message itself: addressed to the recipient, in plain professional British English, with the facts it relies on. Do not include facts that are not in the records.
-5. Boundaries: what this action does not prove, settle or authorise (for example: an approval to attend is not an approval of a quote; "sent" is not "received"; a contractor's word is not evidence of completion).
-6. confidence: your probability that an experienced operations lead would choose this same action and recipient.`;
+4. Write the message itself: addressed to the recipient, in plain professional British English, with the facts it relies on. Do not include facts that are not in the records. When you ask for something, give a reply-by date or period and say what happens if the problem persists or worsens; set followUpBy.
+5. alsoSend: should another party hear from us in this same turn? Typical pairs: asking the decision-maker and acknowledging the person who reported it; any risk to a person, with interim safety advice to whoever is exposed; chasing a provider for missing evidence and asking the occupant to confirm the work. Write each message in full. Leave it empty when the main action stands alone; never use it to approve, assign, instruct, escalate or close.
+6. Boundaries: what this action does not prove, settle or authorise (for example: an approval to attend is not an approval of a quote; "sent" is not "received"; a contractor's word is not evidence of completion).
+7. confidence: your probability that an experienced operations lead would choose this same action and recipient.
+Justify from this case's records. Case numbers in the manuals show where a rule came from; never cite them in the message, rationale or anything else you return.`;
 }
 
 export const CRITIC_INSTRUCTIONS = `You are a strict, experienced operations lead reviewing a junior agent's proposed next action for the case above. Return your review.
@@ -75,7 +77,9 @@ Check, against the records and the manuals:
 - Is every fact in the message and rationale supported by the cited records? Are the citations real?
 - Is it the right next step for the stage, to the right recipient, through a sensible channel?
 - Does it act without authority or approval, promise anything unconfirmed, share personal data with the wrong party, or rely on noise?
-- Does it ignore a conflict, a failed action, a safety risk, or a date a party promised that has not arrived?
+- Does it ignore a conflict, a failed action, a safety risk, or a date a party promised that has not arrived? Is a risk to a person stated plainly, with interim advice to whoever is exposed?
+- Does it rely on content that is unreadable or missing (an attachment that did not come through)? Is a scope gap raised with the party who controls scope?
+- Is a party who should hear from us in the same turn left out of alsoSend, or is alsoSend padding?
 - Is it premature (acting before a needed approval or answer) or late (waiting when action is overdue)?
 - Is the escalation needed? Escalating when the playbook covers the case is a mistake. Not escalating a case that needs a person is a serious mistake.
 - Is the question or chase needed? Asking for information the next step does not need, or chasing someone who has already answered, is a mistake too. Do not ask for revisions that only add caution.

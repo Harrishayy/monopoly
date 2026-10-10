@@ -11,6 +11,22 @@ const scenarioLink = (id: string) => `[${id}](#${anchor(id)})`;
 const failedItem = (item: ItemResult) => item.kind === 'required' || item.kind === 'positive'
   ? item.status === 'missed' || item.status === 'partial' : item.status === 'violated';
 const tokenCount = (usage: TokenUsage | null) => usage ? `${usage.inputTokens} in / ${usage.outputTokens} out / ${usage.cacheReadTokens} cache read / ${usage.cacheWriteTokens} cache write` : 'unknown';
+const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`;
+// Scoring turns every inapplicable item into not_applicable, so an 'ungraded' item is applicable but was not graded.
+const ungradedItems = (result: ScenarioResult) => result.items.filter(item => item.status === 'ungraded').length;
+const partialLabel = (label: string, partial: boolean) => partial ? `${label} (partial)` : label;
+
+// Count ungraded applicable items across a run, and the distinct scenarios they belong to.
+function partialGrading(results: ScenarioResult[]): { items: number; scenarios: number } {
+  const affected = results.filter(result => ungradedItems(result) > 0);
+  return { items: affected.reduce((sum, result) => sum + ungradedItems(result), 0), scenarios: new Set(affected.map(result => result.scenarioId)).size };
+}
+
+// The scenario count is omitted when only the run summary is available.
+function partialBanner(items: number, scenarios: number | null): string {
+  return `Partial grading: ${plural(items, 'rubric item')}${scenarios === null ? '' : ` across ${plural(scenarios, 'scenario')}`} ${items === 1 ? 'was' : 'were'} not graded (judge off or failed). `
+    + 'Outcomes and judgement here reflect decision class and deterministic checks only — not comparable with judged runs.';
+}
 
 function delta(value: number | null | undefined): string {
   return value === null || value === undefined ? '—' : `${value < 0 ? '▼' : '▲'} ${value >= 0 ? '+' : ''}${(value * 100).toFixed(1)} pp`;
@@ -59,6 +75,8 @@ function scenarioCard(result: ScenarioResult, cardAnchor: string, suite?: EvalSu
   const scores = result.scores;
   const saw = cutDescription(result, suite);
   const metrics = result.checks.find(check => check.id === 'metrics')?.message;
+  const ungraded = ungradedItems(result);
+  const applicable = result.items.filter(item => item.status !== 'not_applicable').length;
   const failures = [
     ...result.items.filter(item => failedItem(item) || item.uncertain).map(item => `- ${item.kind} · ${item.tag} · ${line(item.text)} — ${item.status}${item.uncertain ? ' (graders disagreed)' : ''}${item.evidence ? ` — “${line(item.evidence)}”` : ''}${item.seq === null ? '' : ` — (seq ${item.seq})`}${item.explanation ? ` — ${line(item.explanation)}` : ''}`),
     ...result.checks.filter(check => !check.ok).map(check => `- Check ${check.id} · ${check.severity} · ${check.tag} — ${line(check.message)}${check.quote ? ` — “${line(check.quote)}”` : ''}${check.seq === undefined ? '' : ` — (seq ${check.seq})`}`),
@@ -67,6 +85,7 @@ function scenarioCard(result: ScenarioResult, cardAnchor: string, suite?: EvalSu
     `<a id="${cardAnchor}"></a>`, '', `### ${result.scenarioId} · ${line(result.title)}`, '',
     `Repeat ${result.repeat} · ${result.expectedDecision} → ${scores.decisionObserved ?? 'none'} (${scores.decisionMatch ?? 'ungraded'})`,
     `Outcome ${percent(scores.outcome)} / judgement ${percent(scores.judgement)} / engineering ${percent(scores.engineering)} / usability ${percent(scores.usability)}`,
+    ...(ungraded ? [`Partial grading: ${ungraded} of ${plural(applicable, 'applicable rubric item')} not graded; outcome and judgement are partial.`] : []),
     `${result.ms} ms · Tokens: ${tokenCount(result.agentUsage)}`, '',
     `**What it saw:** ${saw ?? 'Cut details unavailable.'}`, '',
     `**What it did:** ${scores.completed ? 'Completed' : 'Incomplete'}; observed ${scores.decisionObserved ?? 'none'}.${metrics ? ` ${line(metrics)}` : ' Action summary unavailable.'}`,
@@ -77,14 +96,16 @@ function scenarioCard(result: ScenarioResult, cardAnchor: string, suite?: EvalSu
   ].join('\n');
 }
 
-/** Render the run report with per-scenario evidence and relative artifact links. */
+/** Render the run report with per-scenario evidence and relative artifact links; flags partial grading when applicable items are ungraded. */
 export function renderReport(summary: RunSummary, results: ScenarioResult[], comparison: Comparison | null, opts?: { suite?: EvalSuite }): string {
   const { config, scores } = summary;
   const judge = config.judge.enabled ? `${config.models.judge ?? 'unknown'}/${config.judge.samples} samples/${config.judge.effort}` : 'off';
-  const headline: [string, number | null, number | null | undefined][] = [
-    ['Outcomes', scores.outcome, comparison?.deltas.outcome], ['Coverage', scores.coverage, comparison?.deltas.coverage],
-    ['Judgement & safety', scores.judgement, comparison?.deltas.judgement], ['Engineering', scores.engineering, comparison?.deltas.engineering],
-    ['Real-world fit (usability)', scores.usability, comparison?.deltas.usability], ['Technical estimate', scores.technical, comparison?.deltas.technical],
+  const partial = partialGrading(results);
+  // The last field marks metrics built from rubric credit, which ungraded items make partial.
+  const headline: [string, number | null, number | null | undefined, boolean][] = [
+    ['Outcomes', scores.outcome, comparison?.deltas.outcome, true], ['Coverage', scores.coverage, comparison?.deltas.coverage, false],
+    ['Judgement & safety', scores.judgement, comparison?.deltas.judgement, true], ['Engineering', scores.engineering, comparison?.deltas.engineering, false],
+    ['Real-world fit (usability)', scores.usability, comparison?.deltas.usability, false], ['Technical estimate', scores.technical, comparison?.deltas.technical, true],
   ];
   const sections = [
     `# Eval report · ${config.suite} · ${line(config.agent)}`, '',
@@ -92,7 +113,8 @@ export function renderReport(summary: RunSummary, results: ScenarioResult[], com
     `Models: decide ${config.models.decide ?? 'unknown'}, fast ${config.models.fast ?? 'unknown'} · Judge: ${judge}`,
     `Rubric ${config.rubricVersion} · ${summary.counts.scenarios} scenarios × ${config.repeat} repeats`, '',
     '## Headline scores', '',
-    table(['Metric', 'Estimate', ...(comparison ? ['Δ previous run'] : [])], headline.map(([label, value, change]) => [label,
+    ...(partial.items ? [`> ${partialBanner(partial.items, partial.scenarios)}`, ''] : []),
+    table(['Metric', 'Estimate', ...(comparison ? ['Δ previous run'] : [])], headline.map(([label, value, change, rubric]) => [partialLabel(label, rubric && partial.items > 0),
       `${percent(value)}${label === 'Technical estimate' ? ` · ${scores.technicalPoints.toFixed(2)} / 70 points` : ''}`,
       ...(comparison ? [`${delta(change)}${label === 'Technical estimate' && change !== null && change !== undefined
         ? ` · ${change >= 0 ? '+' : ''}${(change * 70).toFixed(2)} points` : ''}`] : [])])), '',
@@ -149,15 +171,21 @@ export function renderReport(summary: RunSummary, results: ScenarioResult[], com
   return sections.join('\n');
 }
 
-/** Render at most fifteen console lines of scores, failures and the report path. */
-export function renderConsoleSummary(summary: RunSummary, comparison: Comparison | null): string {
+/**
+ * Render at most fifteen console lines of scores, failures and the report path. Flags partial grading when the
+ * run has ungraded items; pass the run's results to also name how many scenarios they span.
+ */
+export function renderConsoleSummary(summary: RunSummary, comparison: Comparison | null, results?: ScenarioResult[]): string {
   const change = (key: keyof Comparison['deltas']) => comparison ? ` (${delta(comparison.deltas[key])})` : '';
+  const partial: { items: number; scenarios: number | null } = results ? partialGrading(results) : { items: summary.counts.ungradedItems, scenarios: null };
+  const name = (label: string) => partialLabel(label, partial.items > 0);
   return [
     `Eval ${summary.config.suite} · ${summary.config.agent} · ${summary.runId}`,
-    `Outcomes ${percent(summary.scores.outcome)}${change('outcome')} · Coverage ${percent(summary.scores.coverage)}${change('coverage')}`,
-    `Judgement ${percent(summary.scores.judgement)}${change('judgement')} · Engineering ${percent(summary.scores.engineering)}${change('engineering')}`,
+    ...(partial.items ? [partialBanner(partial.items, partial.scenarios)] : []),
+    `${name('Outcomes')} ${percent(summary.scores.outcome)}${change('outcome')} · Coverage ${percent(summary.scores.coverage)}${change('coverage')}`,
+    `${name('Judgement')} ${percent(summary.scores.judgement)}${change('judgement')} · Engineering ${percent(summary.scores.engineering)}${change('engineering')}`,
     `Usability ${percent(summary.scores.usability)}${change('usability')}`,
-    `Technical estimate ${percent(summary.scores.technical)} · ${summary.scores.technicalPoints.toFixed(2)} / 70${change('technical')}`,
+    `${name('Technical estimate')} ${percent(summary.scores.technical)} · ${summary.scores.technicalPoints.toFixed(2)} / 70${change('technical')}`,
     `Critical failures: ${summary.counts.critical}`,
     `Top tags: ${summary.tags.slice(0, 3).map(tag => `${tag.tag} (${Number(tag.weight.toFixed(4))})`).join(', ') || 'none'}`,
     `Regressions: ${comparison?.regressions.length ?? 0}`,

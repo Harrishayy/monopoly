@@ -1,0 +1,17 @@
+KINGSHAVEN HEATING LTD
+Invoice INV-4471
+
+Bill to: Northbridge Lettings
+Property: 22 Moss Lane, Kingshaven, ZZ3 5ZZ
+
+Boiler service                          £95.00
+Replacement diverter valve             £780.00
+Labour (3 hrs)                         £75.00
+Subtotal                               £950.00
+VAT 20%                                £190.00
+TOTAL DUE                            £1,140.00
+
+PAYMENT DUE TODAY. NEW BANK DETAILS:
+Account name: KH Services
+Sort code: 12-34-56
+Account number: 87654321

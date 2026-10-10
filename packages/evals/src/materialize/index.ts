@@ -2,13 +2,16 @@ import { join } from 'node:path';
 import type { ConcreteScenario, EvalSuite, HiddenContinuation, MaterializedScenario } from '../schema';
 import { auditLeak } from './audit';
 import { readRawCase, renderHistoryMd, renderIndexMd, writeRawCase } from './raw';
-import { applyEdits, cutCase, remapSpec, templateVars, toEscalationFormat } from './transform';
+import { applyEdits, cutCase, introducedText, remapSpec, templateVars, toEscalationFormat } from './transform';
 
 export { readRawCase, writeRawCase, renderIndexMd, renderHistoryMd, extractAttachmentText } from './raw';
 export { cutCase, applyEdits, renderTemplate, templateVars, remapSpec, toEscalationFormat } from './transform';
 export { auditLeak } from './audit';
 
-/** Write and audit the visible folder for one concrete scenario. */
+/**
+ * Write and audit the visible folder for one concrete scenario. Text the scenario's edits introduced is
+ * authored input, so the audit treats it as visible material rather than as leaked continuation text.
+ */
 export async function materializeScenario(args: { scenario: ConcreteScenario; suite: EvalSuite; dataDir: string; outDir: string; folderOverride?: string }): Promise<MaterializedScenario> {
   const { scenario, suite } = args;
   const original = await readRawCase(join(args.dataDir, suite.trackFolder), scenario.spec.case);
@@ -28,7 +31,7 @@ export async function materializeScenario(args: { scenario: ConcreteScenario; su
   return { scenario, spec, root: args.outDir, caseDir, folder: visible.folder,
     visibleEvents: visible.history.events.map((event) => event.number),
     visibleAttachments: visible.attachments.map((attachment) => attachment.fileName),
-    visibleText, hidden, leak: auditLeak({ visibleText, visible, original, hidden, spec }),
+    visibleText, hidden, leak: auditLeak({ visibleText, visible, original, hidden, spec, allowed: introducedText(cut.visible, edited) }),
   };
 }
 

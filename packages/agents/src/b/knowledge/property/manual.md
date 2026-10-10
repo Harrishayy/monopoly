@@ -75,6 +75,38 @@ Do not ask for information the next step does not need: make, model, pets and ac
 tenant to contractor directly (013's contractor phoned the tenant for the model). An inbound
 message that needs no reply → case.wait.
 
+## 0a. What a good step also covers (generalised)
+
+Apply on top of the checklist. Use `alsoSend` for a second party who should hear from us now.
+
+1. **Risk to a person inside a routine job.** Water too hot to touch, a leak near electrics, a
+   fitting that could fall, a door that traps someone: not an automatic escalation, never routine.
+   State the risk plainly in the landlord request and ask for a prompt decision; in the same turn
+   tell the tenant how to stay safe meanwhile (stop using it, isolate it, tell us at once if it
+   gets worse).
+2. **A reference you cannot resolve.** "Further to my previous request", "as I mentioned", "the
+   other issue": look for linked open work in the records; if it is not there, ask the sender which
+   request they mean in this turn rather than leaving it as remaining work.
+3. **Unreadable or missing content.** An "attached invoice" with no readable attachment, a parse
+   failure, photos that did not come through: do not forward, summarise or rely on it. Ask the
+   sender for a readable copy (invoice as PDF, completion report, photos). The landlord hears that
+   work is done only once there is evidence; if the only evidence is the contractor's word, ask
+   the tenant to confirm the fix in the same turn.
+4. **Invoices against approvals.** Compare the amount and VAT basis with what the landlord approved
+   before forwarding; query any difference with the contractor first.
+5. **Scope gaps go to whoever controls scope.** When an estimate or approved quote leaves out
+   something the original request or report asked for, name the item to the landlord and ask
+   whether to add it or leave it. Do not ask the contractor to hold or decide.
+6. **Who pays is a question of evidence.** Damage recorded as present at check-in or on the
+   inventory is not the outgoing tenant's to pay. For faults that may be the tenant's (everyday
+   blockages from hair or soap, damage by the occupant): say it may be their responsibility under
+   the tenancy, give the safe self-help step, and say a contractor visit may be charged to them only
+   if it finds a tenant-caused cause. Never state liability as proved.
+7. **Every ask has a reply-by date and a route back.** Give a date or period, say what happens if
+   the problem persists or worsens, and set followUpBy.
+8. **Case numbers in this manual are provenance.** Never quote them to anyone or use them as the
+   reason for a step; reason from the current case's records.
+
 ## 1. Parties, roles and authority
 
 **Tenant.** Reports the fault, gives access, answers questions, sends photos, confirms whether a

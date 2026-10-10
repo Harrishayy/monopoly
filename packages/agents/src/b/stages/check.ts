@@ -55,14 +55,14 @@ export function hardChecks(d: Decision, c: CaseFile, ledger: Ledger, situation?:
     derivable.add(Math.round(a * 0.2));
     for (const b of known) derivable.add(a + b);
   }
-  for (const a of findAmounts(`${d.message}\n${d.actionLabel}`, 'decision')) {
+  for (const a of findAmounts([d.message, d.actionLabel, ...(d.alsoSend ?? []).map((m) => m.message)].join('\n'), 'decision')) {
     const ok = [...derivable].some((k) => Math.abs(k - a.pence) <= 1);
     if (!ok) add('amount-supported', 'major', `States ${a.text}, which is not in the records or derivable from them.`);
   }
 
   // Full dates in the message must be in the records or be in the future (a proposed date, flagged for review).
   const recordDates = new Set([...ledger.dates.map((x) => x.iso.slice(0, 10)), ...c.events.map((e) => e.at?.slice(0, 10))]);
-  for (const x of findDates(d.message).filter((x) => /\d{4}/.test(x.text))) {
+  for (const x of findDates([d.message, ...(d.alsoSend ?? []).map((m) => m.message)].join('\n')).filter((x) => /\d{4}/.test(x.text))) {
     const day = x.iso.slice(0, 10);
     if (!recordDates.has(day) && day < c.asOf.slice(0, 10)) add('date-supported', 'minor', `Message mentions ${x.text}, which is not in the records.`);
   }

@@ -13,12 +13,15 @@ import { cutsFor, type LabelSource, loadOutside, loadSplit, OUTSIDE_DIR, REPO } 
 import type { Split } from './bench/split';
 import { getAgents } from './registry';
 import { assessmentHint } from './hybrid';
+import { cModels } from './c';
 
-const USAGE = `agents answer --agent a|b --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
+const USAGE = `agents answer --agent a|b|c --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
               [--examples all|dev|none] [--concurrency 4] [--offline] [--model claude-haiku-5-5]
-agents bench  [--agent a,b] [--suite cuts|outside|perturb] [--variants clean,noise,…] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
+agents bench  [--agent a,b,c,d] [--suite cuts|outside|perturb] [--variants clean,noise,…] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
               [--concurrency 6] [--offline] [--model …] [--out <dir>]
               agent B stages (defaults chosen on val: 1 sample, no situate, no review): [--samples N] [--situate on] [--review on] [--hints a]  (a = agent A's rules read as advice)
+              stage models: [--decide-model …] [--critic-model …]  (B: default --model; C: opus decides, sonnet reviews)
+              agent C review: [--rounds 2] [--dispute escalate|gate]
 agents judge  [--limit N] [--manuals off] [--out <dir>]      agent B on the other tracks' escalation examples
 agents split                                                  print the fixed dev/val/test split
 Every run takes --kind smoke|train|val|test|full|practice|reality|adhoc, --name "<label>", --note "<text>" (written to run.json).`;
@@ -82,12 +85,27 @@ async function main() {
     review: flags.review ? flags.review !== 'off' : undefined,
     hints: flags.hints === 'a' ? assessmentHint : undefined,
   });
+  const registry = (examples?: ExampleBank) => ({
+    model: flags.model,
+    decideModel: flags['decide-model'],
+    criticModel: flags['critic-model'],
+    b: bOptions(examples),
+    c: { ...bOptions(examples), rounds: flags.rounds ? Number(flags.rounds) : undefined, onDispute: flags.dispute === 'gate' ? ('gate' as const) : undefined },
+  });
+  /** What run.json records as the model: one id, or each stage's for agent C. */
+  const modelLabel = (ids: AgentId[]) => {
+    const c = ids.includes('c') ? cModels({ read: flags.model, decide: flags['decide-model'], critic: flags['critic-model'] }) : undefined;
+    const ab = process.env.MODEL_DECIDE;
+    const cl = c && `c: read ${c.read}, decide ${c.decide}, review ${c.critic}`;
+    return ids.every((i) => i === 'c') ? cl : [ab, cl].filter(Boolean).join('; ');
+  };
+  const usesBank = (ids: AgentId[]) => ids.includes('b') || ids.includes('c');
 
   if (cmd === 'answer') {
     if (!flags.in) throw new Error(`--in is required\n${USAGE}`);
     const id = (flags.agent ?? 'b') as AgentId;
-    const examples = id === 'b' ? await bank(flags.examples, 'all') : undefined;
-    const [agent] = getAgents([id], { model: flags.model, b: bOptions(examples) });
+    const examples = usesBank([id]) ? await bank(flags.examples, 'all') : undefined;
+    const [agent] = getAgents([id], registry(examples));
     let dirs = await findCaseDirs(here(flags.in));
     if (flags.cases) {
       const want = new Set(flags.cases.split(','));
@@ -97,7 +115,7 @@ async function main() {
     const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/answers-${id}${suffix(flags.name)}`);
     const withhold = flags.withhold === 'outcomes' ? 'outcomes' : 'none';
     const kind = kindOf(flags.kind, withhold === 'outcomes' ? 'practice' : /challeng/i.test(flags.in) ? 'reality' : 'adhoc');
-    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'answer', agent: id, track: flags.track ?? 'property', model: process.env.MODEL_DECIDE });
+    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'answer', agent: id, track: flags.track ?? 'property', model: modelLabel([id]) });
     log(`${agent!.label}: ${dirs.length} case(s) → ${out}`);
     const res = await agent!.answer(dirs, out, { track: flags.track ?? 'property', withhold, offline, concurrency: num('concurrency', 4), log });
     await finish();
@@ -109,8 +127,8 @@ async function main() {
     const ids = (flags.agent ?? 'a,b').split(',') as AgentId[];
     if (flags.suite === 'outside') {
       // Our own stress cases: none of them are in the example data, so B may draw on every labelled example.
-      const examples = ids.includes('b') ? await bank(flags.examples, 'all') : undefined;
-      const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+      const examples = usesBank(ids) ? await bank(flags.examples, 'all') : undefined;
+      const agents = getAgents(ids, registry(examples));
       const labels = spread(await loadOutside(), flags.limit ? Number(flags.limit) : undefined);
       const categories = Object.fromEntries(labels.map((l) => [l.case, l.category ?? '']));
       const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/outside-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
@@ -131,8 +149,8 @@ async function main() {
       const suiteRoot = join(REPO, '.casework/agents/perturb-suite');
       const labels = await buildPerturbSuite(base, variants, suiteRoot);
       // Examples come from dev only, so the scored moments never appear in the few-shot memory.
-      const examples = ids.includes('b') ? await bank(flags.examples, 'dev') : undefined;
-      const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+      const examples = usesBank(ids) ? await bank(flags.examples, 'dev') : undefined;
+      const agents = getAgents(ids, registry(examples));
       const categories = Object.fromEntries(labels.map((l) => [l.case, l.variant]));
       const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/perturb-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
       const finish = await manifest(out, { kind: kindOf(flags.kind, flags.limit ? 'smoke' : 'test'), name: flags.name ?? 'perturbation suite', note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: process.env.MODEL_DECIDE, split: `perturb:${sets.join('+')}` });
@@ -146,13 +164,13 @@ async function main() {
     }
     const split = (flags.split ?? 'val') as Split | 'all';
     // Evaluation never shows the agent examples from the set it is scored on.
-    const examples = ids.includes('b') ? await bank(flags.examples, split === 'dev' || split === 'all' ? 'none' : 'dev') : undefined;
-    const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+    const examples = usesBank(ids) ? await bank(flags.examples, split === 'dev' || split === 'all' ? 'none' : 'dev') : undefined;
+    const agents = getAgents(ids, registry(examples));
     const cuts = spread(await cutsFor(split, (flags.labels ?? 'both') as LabelSource), flags.limit ? Number(flags.limit) : undefined);
     const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/${split}-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
     const kind = kindOf(flags.kind, flags.limit ? 'smoke' : ({ dev: 'train', val: 'val', test: 'test', all: 'full' } as const)[split]);
-    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: process.env.MODEL_DECIDE, split });
-    log(`bench: agents ${ids.join(', ')} · split ${split} · ${cuts.length} cuts · model ${process.env.MODEL_DECIDE}${offline ? ' (offline)' : ''} → ${out}`);
+    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: modelLabel(ids), split });
+    log(`bench: agents ${ids.join(', ')} · split ${split} · ${cuts.length} cuts · model ${modelLabel(ids)}${offline ? ' (offline)' : ''} → ${out}`);
     const rows = await runBench(agents, cuts, out, { concurrency: num('concurrency', 6), offline, log });
     const md = summarise(rows, `Bench · property · split ${split}`);
     await writeFile(join(out, 'SUMMARY.md'), md);

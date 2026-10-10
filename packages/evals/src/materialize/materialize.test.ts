@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ConcreteScenario } from '../schema';
 import { FIXTURE_DATA_DIR } from '../testing/fixtures';
-import { materializeScenario, readRawCase, scenarioSlug, writeRawCase } from './index';
+import { auditLeak, materializeScenario, readRawCase, scenarioSlug, writeRawCase } from './index';
 import { suite, visibleText } from './test-helpers';
 
 let root: string;
@@ -68,6 +68,23 @@ describe('materializeScenario', () => {
     expect(written.history.events.at(-1)?.body).toBe('A new note for 001');
     expect(written.history.events.at(-1)?.fields[0]?.value).toBe('Customer 001');
     expect(result.leak.ok).toBe(true);
+  });
+
+  it('accepts edit text that repeats details from hidden events, which an audit without it would report', async () => {
+    const input = scenario('perturbed');
+    input.edits = [
+      { op: 'append_event', event: { fields: [{ key: 'From', value: 'Customer' }], body: 'Reminder for {{detail:Site}}: please include both units in the routine check.' } },
+      { op: 'insert_event', before: '004', event: { fields: [{ key: 'From', value: 'Provider' }], body: 'Draft for {{detail:Site}}: the priced proposal for both units is attached.' } },
+      { op: 'replace_text', in: 'event', number: '003', find: 'No new spend is authorized at this stage.', replace: 'Please obtain authorization before starting.' },
+      { op: 'replace_text', in: 'initial_request', find: 'before work starts.', replace: 'before work starts. Confirmation was sent to the customer and the job was closed.' },
+      { op: 'set_detail', key: 'Note', value: 'The approver authorized the proposal and the provider confirmed completion.' },
+    ];
+    const result = await materializeScenario({ scenario: input, suite, dataDir: FIXTURE_DATA_DIR, outDir: root });
+    expect(result.leak).toEqual({ ok: true, findings: [] });
+    const without = auditLeak({ visibleText: result.visibleText, visible: await readRawCase(join(root, suite.trackFolder), '001'),
+      original: await readRawCase(join(FIXTURE_DATA_DIR, suite.trackFolder), '001'), hidden: result.hidden, spec: result.spec });
+    expect(without.findings.map(({ kind, detail }) => `${kind}: ${detail.slice(0, 'Hidden event 000'.length)}`))
+      .toEqual(['event_text: Hidden event 006', 'event_text: Hidden event 007', 'event_text: Hidden event 008']);
   });
 
   it('handles an escalation input with no attachments and retains hidden later stages', async () => {

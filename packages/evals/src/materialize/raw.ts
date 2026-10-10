@@ -1,7 +1,7 @@
 import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { extractText, getDocumentProxy } from 'unpdf';
-import type { KeyValue, RawCase, RawHistory, RawIndex } from '../schema';
+import type { KeyValue, RawCase, RawEvent, RawHistory, RawIndex } from '../schema';
 import { rememberFolder } from './state';
 
 const FIELD = /^- \*\*([^*]+):\*\*[ \t]*(.*)$/;
@@ -104,11 +104,14 @@ export function renderIndexMd(raw: RawCase): string {
     ...raw.index.sections.map(({ heading, body }) => `## ${heading}\n\n${body}`)].join('\n\n') + '\n';
 }
 
+/** Render one history event block (anchor, heading, fields and body) in organiser markdown format. */
+export function renderEvent(event: RawEvent): string {
+  return `<a id="event-${event.number}"></a>\n## ${event.at} — event ${event.number}\n\n${renderFields(event.fields)}\n\n${event.body}`;
+}
+
 /** Render the raw case history in organiser markdown format. */
 export function renderHistoryMd(raw: RawCase): string {
-  return [`# ${raw.history.h1}`, raw.history.preamble, ...raw.history.events.map((event) =>
-    `<a id="event-${event.number}"></a>\n## ${event.at} — event ${event.number}\n\n${renderFields(event.fields)}\n\n${event.body}`,
-  )].filter(Boolean).join('\n\n') + '\n';
+  return [`# ${raw.history.h1}`, raw.history.preamble, ...raw.history.events.map(renderEvent)].filter(Boolean).join('\n\n') + '\n';
 }
 
 /** Extract readable attachment text, returning null when unavailable. */

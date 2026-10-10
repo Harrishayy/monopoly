@@ -21,8 +21,12 @@ function escapeRegex(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** Audit visible text, index metadata and written files against the hidden continuation. */
-export function auditLeak(args: { visibleText: string; visible: RawCase; original: RawCase; hidden: HiddenContinuation; spec: ScenarioSpec }): LeakAudit {
+/**
+ * Audit visible text, index metadata and written files against the hidden continuation. `allowed` texts
+ * (such as text introduced by scenario edits) count as visible material, like the original visible case,
+ * when looking for hidden event text; they do not affect any other check.
+ */
+export function auditLeak(args: { visibleText: string; visible: RawCase; original: RawCase; hidden: HiddenContinuation; spec: ScenarioSpec; allowed?: string[] }): LeakAudit {
   const { visible, original, hidden, spec } = args;
   const findings: LeakFinding[] = [];
   const visibleText = normalise(args.visibleText);
@@ -39,20 +43,22 @@ export function auditLeak(args: { visibleText: string; visible: RawCase; origina
     },
     history: { ...original.history, events: originalEvents }, attachments: originalAttachments,
   };
-  const originalMaterial = [
+  const allowedMaterial = [
     ...originalVisible.index.sections.map((section) => section.body),
     ...originalEvents.map((event) => event.body),
     ...originalAttachments.map((attachment) => attachment.text ?? ''),
     // Rendered boundaries and field values were visible too; a window may span them.
     renderIndexMd(originalVisible) + '\n\n' + renderHistoryMd(originalVisible),
+    // Authored test input may repeat details, such as an address, that later events also mention.
+    ...(args.allowed ?? []),
   ].map(normalise);
-  const originalFragments = new Set(originalMaterial.flatMap((text) => [...windows(text)]));
+  const allowedFragments = new Set(allowedMaterial.flatMap((text) => [...windows(text)]));
   const visibleFragments = windows(visibleText);
   for (const event of hidden.events) {
     const body = normalise(event.body);
     const sentences = body.split(/(?<=[.!?])\s+/).filter((sentence) => sentence.length >= 40);
-    const sentence = sentences.find((fragment) => !originalMaterial.some((material) => material.includes(fragment)) && visibleText.includes(fragment));
-    const fragment = sentence ?? [...windows(body)].find((candidate) => !originalFragments.has(candidate) && visibleFragments.has(candidate));
+    const sentence = sentences.find((fragment) => !allowedMaterial.some((material) => material.includes(fragment)) && visibleText.includes(fragment));
+    const fragment = sentence ?? [...windows(body)].find((candidate) => !allowedFragments.has(candidate) && visibleFragments.has(candidate));
     if (fragment) findings.push({ kind: 'event_text', detail: `Hidden event ${event.number} text appears in visible material: ${fragment}` });
   }
 

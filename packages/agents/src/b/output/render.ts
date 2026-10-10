@@ -1,4 +1,5 @@
 import { renderLedger } from '../facts/ledger';
+import { renderHandover } from '../stages/gate';
 import type { CaseResult, Decision } from '../types';
 
 const ACTION_WORDS: Record<string, string> = {
@@ -36,6 +37,52 @@ function evidence(r: CaseResult): string {
   );
 }
 
+function received(r: CaseResult): string {
+  const c = r.caseFile;
+  const unreadable = c.attachments.filter((a) => !a.text?.trim() && a.kind !== 'image');
+  return list([
+    `Case record: ${c.sections.map((s) => s.heading).join(', ') || 'no sections'}.`,
+    `History: ${c.events.length} events${c.events.length ? ` (${c.events[0]!.id}–${c.events.at(-1)!.id})` : ''}, decision moment ${c.asOf.slice(0, 16).replace('T', ' ')}.`,
+    `Attachments: ${c.attachments.map((a) => `${a.id} ${a.name} (${a.kind})`).join(', ') || 'none'}.`,
+    ...(unreadable.length ? [`No readable text in: ${unreadable.map((a) => a.name).join(', ')}.`] : []),
+    ...(c.withheld.length ? [`Withheld from the agent: ${c.withheld.join('; ')}.`] : []),
+  ]);
+}
+
+/** The steps this answer records for the team, main action first. Nothing is sent from here. */
+function actionsTaken(d: CaseResult['final']): string {
+  if (d.action === 'escalate_to_human') return '- None with any outside party. The case is handed to a person (see Escalated).';
+  const steps: string[] = [];
+  if (d.action === 'wait') steps.push(`1. **Hold** (\`${d.domainAction ?? 'wait'}\`) until ${d.followUpBy || 'the follow-up date'}. What to check then:`, '', quote(d.message || '(none)'));
+  else steps.push(`1. **${d.actionLabel}** (\`${d.domainAction ?? d.action}\`) → ${d.recipient || '—'} via ${d.channel || '—'}:`, '', quote(d.message || '(none)'));
+  (d.alsoSend ?? []).forEach((m, i) => steps.push('', `${i + 2}. Same turn (\`${m.domainAction ?? 'message'}\`) → ${m.recipient} via ${m.channel || '—'}:`, '', quote(m.message)));
+  steps.push('', '_Recorded for the team to send; no live channel is connected, so nothing has been delivered._');
+  return steps.join('\n');
+}
+
+function actionsRefused(r: CaseResult): string {
+  const d = r.final;
+  const items = [
+    ...d.alternatives.map((a) => `${a.action}: ${a.whyNot}`),
+    ...(d.decidedBy === 'gate' ? [`The proposed action was overruled by a rule check: ${d.gateRule}.`] : []),
+  ];
+  return list(items);
+}
+
+function escalated(d: CaseResult['final']): string {
+  if (d.action !== 'escalate_to_human') return 'No.';
+  const h = d.handover;
+  if (!h || d.decidedBy !== 'model') return [`Yes, to ${d.recipient}.`, '', quote(d.message)].join('\n');
+  return [
+    `Yes, to ${d.recipient}.`, '',
+    `**Why a person is needed:** ${h.blocking}`, '',
+    `**Summary:** ${h.summary}`, '',
+    '**Done so far:**', list(h.done), '',
+    '**Options:**', list(h.options.map((o) => `${o.option}. Risk: ${o.risk}`)), '',
+    `**Recommended:** ${h.recommendation}`,
+  ].join('\n');
+}
+
 export function renderAnswer(r: CaseResult): string {
   const d = r.final;
   const c = r.caseFile;
@@ -44,20 +91,19 @@ export function renderAnswer(r: CaseResult): string {
   out.push(`**Next action:** ${d.actionLabel}`, '');
   out.push('| Action | Recipient | Channel | Confidence | Decided by |', '|---|---|---|---|---|');
   out.push(`| ${ACTION_WORDS[d.action] ?? d.action} (\`${d.action}\`) | ${cell(d.recipient || '—')} | ${cell(d.channel || '—')} | ${Math.round(d.confidence * 100)}% | ${d.decidedBy}${d.decidedBy === 'model' ? '' : ` (${cell(d.gateRule)})`} |`, '');
-  if (d.followUpBy) out.push(`**Follow up by:** ${d.followUpBy}`, '');
-  out.push(d.action === 'escalate_to_human' ? '## Handover to a person' : d.action === 'wait' ? '## What to check, and when' : '## Message', '', quote(d.message || '(none)'), '');
-  out.push('## Why', '', d.rationale, '');
-  out.push('## Expected outcome', '', d.expectedOutcome || '—', '');
-  out.push('## Boundaries (what this does not prove or settle)', '', list(d.boundaries), '');
-  out.push('## Remaining work', '', list(d.remainingWork), '');
-  if (d.assumptions.length) out.push('## Assumptions', '', list(d.assumptions), '');
-  // Forced escalations already carry the handover as their message.
-  if (d.handover && d.action === 'escalate_to_human' && d.decidedBy === 'model') {
-    out.push('## Escalation', '', `**Why a person is needed:** ${d.handover.blocking}`, '', '**Options:**', list(d.handover.options.map((o) => `${o.option}. Risk: ${o.risk}`)), '', `**Recommended:** ${d.handover.recommendation}`, '');
-  }
-  out.push('## Evidence', '', evidence(r), '');
+  out.push('## What the system received', '', received(r), '');
+  out.push('## Actions taken', '', actionsTaken(d), '');
+  out.push('## Actions refused', '', actionsRefused(r), '');
+  out.push('## Escalated', '', escalated(d), '');
   const problems = [...r.failures, ...c.anomalies.map((a) => `Ingest: ${a}`)];
-  out.push('## What failed or was unclear', '', list(problems, '- Nothing failed.'), '');
+  out.push('## What failed', '', list(problems, '- Nothing failed.'), '');
+  out.push('## Final result', '', `${d.expectedOutcome || d.actionLabel}`, '');
+  if (d.followUpBy) out.push(`**Follow up by:** ${d.followUpBy}`, '');
+  out.push('### Why', '', d.rationale, '');
+  out.push('### Boundaries (what this does not prove or settle)', '', list(d.boundaries), '');
+  out.push('### Remaining work', '', list(d.remainingWork), '');
+  if (d.assumptions.length) out.push('### Assumptions', '', list(d.assumptions), '');
+  out.push('### Evidence', '', evidence(r), '');
   out.push('---', '', `Generated by agent-b on ${r.startedAt.slice(0, 19).replace('T', ' ')} UTC from \`${c.dir.split(/[\\/]/).slice(-2).join('/')}\`. Full reasoning in REASONING.md, trace in trace.jsonl.`);
   return out.join('\n') + '\n';
 }
@@ -87,7 +133,7 @@ export function renderReasoning(r: CaseResult): string {
   out.push('## 2. Computed facts (code, no model)', '', '```', renderLedger(r.ledger), '```', '');
 
   out.push('## 3. Situation (model reading)', '');
-  if (!s) out.push('Not available (the stage failed; see section 7).', '');
+  if (!s) out.push('Not available (the stage failed; see Failures and fallbacks).', '');
   else {
     out.push(`**Task:** ${s.task}  `, `**Stage:** ${s.stage} (${s.stageLabel})  `, `**Waiting on:** ${s.whoseMove}`, '', s.summary, '');
     if (s.parties.length) out.push('**Parties**', list(s.parties.map((p) => `${p.name}: ${p.role}. Authority: ${p.authority}`)), '');
@@ -114,16 +160,19 @@ export function renderReasoning(r: CaseResult): string {
   });
   out.push(`Revised after review: ${r.revised ? 'yes' : 'no'}`, '');
 
-  out.push('## 6. Decision', '');
-  out.push(`- **${d.action}** → ${d.recipient || '—'} via ${d.channel || '—'}`);
+  out.push(`## Decision 1: ${d.actionLabel}`, '');
+  out.push(`- **${d.domainAction ?? d.action}** → ${d.recipient || '—'} via ${d.channel || '—'}`);
+  for (const m of d.alsoSend ?? []) out.push(`- Same turn: **${m.domainAction ?? 'message'}** → ${m.recipient} via ${m.channel || '—'}`);
+  out.push(`- Citations: ${d.citations.join(', ') || 'none'}`);
   out.push(`- Gate rule: ${d.gateRule}`);
   out.push(`- Agreement with independent proposals: ${Math.round(d.agreement * 100)}% · confidence ${Math.round(d.confidence * 100)}% · decided by ${d.decidedBy}`);
   out.push(`- Rationale: ${d.rationale}`);
   if (d.alternatives.length) out.push('- Alternatives considered:', ...d.alternatives.map((a) => `  - ${a.action}: ${a.whyNot}`));
   out.push('');
+  if (d.action === 'escalate_to_human' && d.handover) out.push('## Handover', '', renderHandover(d.handover), '');
 
-  out.push('## 7. Failures and fallbacks', '', list(r.failures, '- None.'), '');
-  out.push('## 8. Model calls', '');
+  out.push('## Failures and fallbacks', '', list(r.failures, '- None.'), '');
+  out.push('## Model calls', '');
   if (r.calls.length) {
     out.push('| Stage | Model | OK | ms | In | Out | Cache read | Request |', '|---|---|---|---|---|---|---|---|');
     for (const k of r.calls) out.push(`| ${k.stage} | ${k.model} | ${k.ok ? 'yes' : `no: ${cell(k.error ?? '')}`} | ${k.ms} | ${k.inputTokens ?? ''} | ${k.outputTokens ?? ''} | ${k.cacheReadTokens ?? ''} | ${k.requestId ?? ''} |`);

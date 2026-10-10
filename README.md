@@ -190,6 +190,7 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 | `MODEL_MAX_RETRIES` | no | SDK retries on rate limits and overload (default 8) |
 | `ENGINE` | no | `d` (default), `a` or `b`: which agent the product and `pnpm reality` run |
 | `ELEVENLABS_API_KEY` | voice | ElevenLabs. `ELEVENLABS_AGENT_ID`, `_TOOL_ID`, `_WEBHOOK_ID` and `_WEBHOOK_SECRET` are written by `pnpm tunnel` / `pnpm voice:setup` |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | outbound call | Trial is enough. `pnpm voice:call` imports the number and rings `DEMO_TENANT_PHONE` |
 | `ELEVENLABS_VOICE_ID`, `ELEVENLABS_LLM`, `AGENCY_NAME` | no | Voice agent voice, model and the agency name it uses |
 | `PUBLIC_URL` | voice | Written by `pnpm tunnel`; where ElevenLabs sends the mid-call tool and post-call webhook |
 | `AGENTMAIL_API_KEY` | email | AgentMail. `AGENTMAIL_INBOX` is written by `pnpm email:setup` |

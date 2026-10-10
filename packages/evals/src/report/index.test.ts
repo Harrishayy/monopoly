@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { Comparison, EvalSuite, RunSummary } from '../schema';
+import { Comparison, EvalSuite, RunSummary, type ScenarioResult } from '../schema';
 import { fixtureSuite } from '../testing/fixtures';
 import { compareRuns, summarizeRun } from '../score';
 import { makeConfig, makeItem, makeResult, makeVerdict } from '../score/fixtures';
@@ -126,6 +126,54 @@ describe('renderConsoleSummary', () => {
     expect(output).toContain('Regressions: 0');
     expect(output).toContain('▼');
     expect(output).toContain('Full report: report.md');
+  });
+});
+
+describe('partial grading', () => {
+  const tail = ' (judge off or failed). Outcomes and judgement here reflect decision class and deterministic checks only — not comparable with judged runs.';
+  // Two applicable items ungraded, one graded by a check, one inapplicable.
+  const partial = (overrides: Partial<ScenarioResult> = {}) => makeResult({ items: [makeItem({ status: 'ungraded' }),
+    makeItem({ id: 'scope', kind: 'prohibited', status: 'ungraded' }), makeItem({ id: 'limit', kind: 'critical', status: 'not_violated', source: 'check' }),
+    makeItem({ id: 'later', status: 'not_applicable' })], ...overrides }, { outcome: 0, judgement: 0 });
+  it.each<{ name: string; rows: ScenarioResult[] }>([
+    { name: 'every applicable item is graded', rows: [makeResult(), makeResult({ scenarioId: 'FX-002@002', items: [makeItem({ status: 'missed' })] }, { outcome: 0.5 })] },
+    { name: 'only inapplicable items are unscored', rows: [makeResult({ items: [makeItem(), makeItem({ id: 'later', status: 'not_applicable' })] })] },
+    { name: 'the run is empty', rows: [] },
+  ])('omits the banner and partial labels when $name', ({ rows }) => {
+    const summary = summarizeRun(makeConfig(), rows);
+    for (const output of [renderReport(summary, rows, null), renderConsoleSummary(summary, null, rows), renderConsoleSummary(summary, null)]) {
+      expect(output).not.toContain('Partial grading');
+      expect(output).not.toContain('(partial)');
+    }
+  });
+  it.each<{ name: string; rows: ScenarioResult[]; banner: string; summaryOnly: string; cards: string[] }>([
+    { name: 'a single ungraded item', rows: [makeResult({ items: [makeItem({ status: 'ungraded' })] })],
+      banner: 'Partial grading: 1 rubric item across 1 scenario was not graded', summaryOnly: 'Partial grading: 1 rubric item was not graded',
+      cards: ['Partial grading: 1 of 1 applicable rubric item not graded; outcome and judgement are partial.'] },
+    { name: 'one partially graded scenario beside a fully graded one', rows: [makeResult({ scenarioId: 'FX-002@002' }), partial()],
+      banner: 'Partial grading: 2 rubric items across 1 scenario were not graded', summaryOnly: 'Partial grading: 2 rubric items were not graded',
+      cards: ['Partial grading: 2 of 3 applicable rubric items not graded; outcome and judgement are partial.'] },
+    { name: 'ungraded items across scenarios and repeats', rows: [partial(), partial({ repeat: 2 }), partial({ scenarioId: 'FX-002@002' })],
+      banner: 'Partial grading: 6 rubric items across 2 scenarios were not graded', summaryOnly: 'Partial grading: 6 rubric items were not graded',
+      cards: Array(3).fill('Partial grading: 2 of 3 applicable rubric items not graded; outcome and judgement are partial.') },
+  ])('flags $name in the report and console summary', ({ rows, banner, summaryOnly, cards }) => {
+    const summary = summarizeRun(makeConfig(), rows);
+    const report = renderReport(summary, rows, null);
+    const [headline, rest] = report.split('## Critical failures');
+    expect(headline).toContain(`## Headline scores\n\n> ${banner}${tail}\n\n| Metric | Estimate |`);
+    for (const metric of ['Outcomes (partial)', 'Coverage', 'Judgement & safety (partial)', 'Engineering', 'Real-world fit (usability)', 'Technical estimate (partial)']) {
+      expect(headline).toContain(`\n| ${metric} | `);
+    }
+    expect(report.match(/\(partial\)/g)).toHaveLength(3);
+    expect(rest!.split('\n').filter(text => text.startsWith('Partial grading:'))).toEqual(cards);
+    expect(rest).toContain(`/ usability ungraded\n${cards[0]}\n`);
+    const consoleText = renderConsoleSummary(summary, null, rows);
+    const lines = consoleText.split('\n');
+    expect(lines[1]).toBe(`${banner}${tail}`);
+    expect(lines.length).toBeLessThanOrEqual(15);
+    expect(consoleText.match(/\(partial\)/g)).toHaveLength(3);
+    expect(lines.filter(text => text.includes('(partial)')).map(text => text.split(' (partial) ')[0])).toEqual(['Outcomes', 'Judgement', 'Technical estimate']);
+    expect(renderConsoleSummary(summary, null).split('\n')[1]).toBe(`${summaryOnly}${tail}`);
   });
 });
 

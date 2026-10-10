@@ -2,10 +2,11 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { HiddenContinuation, LeakFinding, RawCase } from '../schema';
+import type { CaseEdit, HiddenContinuation, LeakFinding, RawCase } from '../schema';
 import { FIXTURE_DATA_DIR, FIXTURE_TRACK_FOLDER } from '../testing/fixtures';
-import { applyEdits, auditLeak, cutCase, readRawCase, writeRawCase } from './index';
+import { applyEdits, auditLeak, cutCase, readRawCase, remapSpec, writeRawCase } from './index';
 import { continuation, hasPublicData, publicFolders, specAt, suite, visibleText } from './test-helpers';
+import { introducedText } from './transform';
 
 let root: string;
 let original: RawCase;
@@ -20,8 +21,8 @@ beforeEach(async () => {
 });
 afterEach(async () => { await rm(root, { recursive: true, force: true }); });
 
-function audit(text = visibleText(visible)) {
-  return auditLeak({ visibleText: text, visible, original, hidden, spec: suite.scenarios[0]! });
+function audit(text = visibleText(visible), allowed?: string[]) {
+  return auditLeak({ visibleText: text, visible, original, hidden, spec: suite.scenarios[0]!, allowed });
 }
 
 describe('auditLeak', () => {
@@ -139,6 +140,49 @@ describe('auditLeak', () => {
   it('checks section headings and detail markup rather than ordinary mentions', () => {
     visible.history.events[0]!.body += '\nOutcome and Updated are ordinary words here. quote-02.txt is unavailable.';
     expect(audit()).toEqual({ ok: true, findings: [] });
+  });
+
+  describe('with allowed edit text', () => {
+    const reminder: CaseEdit = { op: 'append_event', event: {
+      fields: [{ key: 'From', value: 'Customer' }], body: 'Reminder for {{detail:Site}}: please include both units in the routine check.',
+    } };
+
+    it('treats allowed text like original visible material when matching hidden event text', () => {
+      const repeated = `Reminder for Unit 8, Example Centre: ${hidden.events[0]!.body}`;
+      const text = visibleText(visible) + '\n' + repeated;
+      expect(audit(text).findings).toEqual([{ kind: 'event_text', detail: expect.stringContaining('Hidden event 006 text') }]);
+      expect(audit(text, [repeated])).toEqual({ ok: true, findings: [] });
+    });
+
+    it.each(leaks.filter(({ kind }) => kind !== 'event_text'))('still reports $kind when allowed text covers every hidden text', ({ kind, modify }) => {
+      modify();
+      const allowed = [
+        ...hidden.events.map((event) => event.body), ...hidden.attachments.map(({ fileName, text }) => `${fileName}\n${text}`),
+        ...hidden.removedSections.map(({ heading, body }) => `## ${heading}\n\n${body}`),
+        ...hidden.removedDetails.map(({ key, value }) => `- **${key}:** ${value}`), '24000 PENCE',
+      ];
+      expect(audit(visibleText(visible), allowed).findings.map((finding) => finding.kind)).toContain(kind);
+    });
+
+    it('still catches hidden event text that a faulty writer pastes beside allowed edit text', () => {
+      const edited = applyEdits(visible, [reminder]);
+      const spec = remapSpec(suite.scenarios[0]!, edited.renumbering);
+      const allowed = introducedText(visible, edited);
+      const check = () => auditLeak({ visibleText: visibleText(edited.raw), visible: edited.raw, original, hidden, spec, allowed });
+      expect(check()).toEqual({ ok: true, findings: [] });
+      edited.raw.history.events[1]!.body += '\n\n' + hidden.events.at(-1)!.body;
+      expect(check().findings).toEqual([{ kind: 'event_text', detail: expect.stringContaining('Hidden event 008 text') }]);
+    });
+
+    it('does not exempt hidden text that was already in the case before the edits', () => {
+      visible.history.events[1]!.body += '\n\n' + hidden.events.at(-1)!.body;
+      const edited = applyEdits(visible, [reminder, { op: 'pad_noise', count: 2, seed: 5 }], { agentSenders: suite.agentSenders });
+      const allowed = introducedText(visible, edited);
+      expect(allowed).toHaveLength(3);
+      expect(auditLeak({ visibleText: visibleText(edited.raw), visible: edited.raw, original, hidden,
+        spec: remapSpec(suite.scenarios[0]!, edited.renumbering), allowed }).findings)
+        .toEqual([{ kind: 'event_text', detail: expect.stringContaining('Hidden event 008 text') }]);
+    });
   });
 });
 

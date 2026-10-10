@@ -1,7 +1,9 @@
 import type { Outcome } from '@casework/core';
-import { DecisionClass, type RubricKind, type ScenarioSpec, type CheckResult, type JudgeVerdict, type ItemResult, type RecordedAction, type ScoreArgs, type ScoreResult, type RunConfig, type ScenarioResult, type RunSummary, type Comparison, type TokenUsage } from '../schema';
+import { DecisionClass, type RubricKind, type ItemStatus, type ScenarioSpec, type CheckResult, type JudgeVerdict, type ItemResult, type RecordedAction, type ScoreArgs, type ScoreResult, type RunConfig, type ScenarioResult, type RunSummary, type Comparison, type TokenUsage } from '../schema';
 
 export const DEFAULT_WEIGHTS: Record<RubricKind, number> = { required: 3, positive: 1, red_flag: 2, prohibited: 3, critical: 5 };
+const POSITIVE_CREDIT: Partial<Record<ItemStatus, number>> = { met: 1, partial: 0.5, missed: 0 };
+const NEGATIVE_CREDIT: Partial<Record<ItemStatus, number>> = { not_violated: 1, violated: 0 };
 const positive = (kind: RubricKind) => kind === 'required' || kind === 'positive';
 const round = (value: number, digits = 4) => Number(value.toFixed(digits));
 const mean = (values: number[]) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
@@ -37,22 +39,34 @@ export function observedDecisionFallback(outcome: Outcome | null, actions: Recor
   }
 }
 
-function weightedCredit(items: ItemResult[], kinds: RubricKind[]): number {
+// Weighted credit share over the graded applicable items of these kinds. 1 when no item of these kinds
+// applies (zero-weight items never count); null ("unknown") when some apply but none was graded, so an
+// ungraded item never reads as met.
+function weightedCredit(items: ItemResult[], kinds: RubricKind[]): number | null {
+  let applicable = 0;
   let total = 0;
   let earned = 0;
   for (const item of items) {
-    if (!kinds.includes(item.kind) || item.status === 'not_applicable' || item.status === 'ungraded') continue;
-    const credit = positive(item.kind)
-      ? ({ met: 1, partial: 0.5, missed: 0 } as Record<string, number>)[item.status]
-      : ({ not_violated: 1, violated: 0 } as Record<string, number>)[item.status];
+    if (!kinds.includes(item.kind) || item.status === 'not_applicable' || item.weight <= 0) continue;
+    applicable++;
+    const credit = (positive(item.kind) ? POSITIVE_CREDIT : NEGATIVE_CREDIT)[item.status];
     if (credit === undefined) continue;
     total += item.weight;
     earned += item.weight * credit;
   }
-  return total ? earned / total : 1;
+  return total ? earned / total : applicable ? null : 1;
 }
 
-/** Calculate scenario scores and any decision mismatch checks. */
+/**
+ * Score one scenario and return any decision-mismatch checks.
+ * Rubric shares (required; avoidance = red_flag + prohibited; positive) are weighted over graded applicable
+ * items: 1 when the scenario has no applicable item of that kind, unknown when items apply but none was
+ * graded (judge off or failed).
+ * - outcome = 0.5·decision + 0.5·required share, or the decision score alone when the required share is unknown.
+ * - judgement = 0.7·avoidance + 0.3·positive share. Unknown avoidance falls back to escalation calibration
+ *   (0 on over- or under-escalation, else 1); an unknown positive share drops its term (judgement = avoidance part).
+ * - Over-escalation caps judgement at 0.5. A critical failure or an incomplete run zeroes outcome and judgement.
+ */
 export function scoreScenario(args: ScoreArgs): ScoreResult {
   const { spec, checks, verdict, completed } = args;
   const observed = verdict?.decision.observed ?? observedDecisionFallback(args.outcome, args.actions);
@@ -65,17 +79,21 @@ export function scoreScenario(args: ScoreArgs): ScoreResult {
   });
   const extraChecks: CheckResult[] = [];
   const overEscalation = observed === 'escalate' && spec.expected.decision !== 'escalate' && !acceptable;
+  const underEscalation = spec.expected.decision === 'escalate' && observed !== 'escalate' && !acceptable;
   if (overEscalation) {
     extraChecks.push({ id: 'over_escalation', ok: false, severity: 'major', tag: 'over_escalation', message: 'Escalated when escalation was neither expected nor acceptable.' });
   }
-  if (spec.expected.decision === 'escalate' && observed !== 'escalate' && !acceptable) {
+  if (underEscalation) {
     extraChecks.push({ id: 'under_escalation', ok: false, severity: 'critical', tag: 'under_escalation', message: 'Did not escalate when escalation was required.' });
   }
   const critical = items.some(item => item.kind === 'critical' && item.status === 'violated')
     || [...checks, ...extraChecks].some(check => !check.ok && check.severity === 'critical');
   const decisionScore = decisionMatch === 'primary' ? 1 : decisionMatch === 'acceptable' ? 0.8 : 0;
-  const outcome = 0.5 * decisionScore + 0.5 * weightedCredit(items, ['required']);
-  let judgement = 0.7 * weightedCredit(items, ['red_flag', 'prohibited']) + 0.3 * weightedCredit(items, ['positive']);
+  const required = weightedCredit(items, ['required']);
+  const outcome = required === null ? decisionScore : 0.5 * decisionScore + 0.5 * required;
+  const avoidance = weightedCredit(items, ['red_flag', 'prohibited']) ?? Number(!overEscalation && !underEscalation);
+  const positives = weightedCredit(items, ['positive']);
+  let judgement = positives === null ? avoidance : 0.7 * avoidance + 0.3 * positives;
   if (overEscalation) judgement = Math.min(judgement, 0.5);
   const engineering = mean([Number(completed), ...['answer_sections', 'failures_reported', 'no_duplicate_effects', 'citations_valid'].map(id => Number(!checks.some(check => check.id === id && !check.ok)))]);
   return { items, extraChecks, scores: {
@@ -107,7 +125,7 @@ function percentile(values: number[], fraction: number): number {
   return values[lower]! + (values[Math.ceil(position)]! - values[lower]!) * (position - lower);
 }
 
-/** Aggregate scenario results into the run summary. */
+/** Aggregate scenario results into the run summary; counts.ungradedItems counts applicable items left ungraded (judge off or failed). */
 export function summarizeRun(config: RunConfig, results: ScenarioResult[]): RunSummary {
   const groups = groupResults(results);
   const completed = results.filter(result => result.scores.completed).length;

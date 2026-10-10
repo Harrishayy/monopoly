@@ -3,7 +3,7 @@
  * Each agent keeps its own engine; an adapter turns its output into an `AgentDecision`.
  */
 
-export type AgentId = 'a' | 'b' | 'd';
+export type AgentId = 'a' | 'b' | 'c' | 'd';
 
 export interface CaseRef {
   /** Case folder, e.g. data/public/Property Management/007. */

@@ -11,6 +11,8 @@ export const DEFAULT_MODEL = 'claude-haiku-5-5';
 export const MODELS = {
   decide: () => process.env.AGENT_B_MODEL_DECIDE || DEFAULT_MODEL,
   read: () => process.env.AGENT_B_MODEL_READ || DEFAULT_MODEL,
+  /** The reviewer; defaults to the decide model, as before. */
+  critic: () => process.env.AGENT_B_MODEL_CRITIC || process.env.AGENT_B_MODEL_DECIDE || DEFAULT_MODEL,
   fallback: () => process.env.AGENT_B_MODEL_FALLBACK || DEFAULT_MODEL,
 };
 

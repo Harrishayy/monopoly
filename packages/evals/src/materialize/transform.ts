@@ -1,4 +1,5 @@
 import type { CaseEdit, EventDraft, HiddenContinuation, KeyValue, RawCase, RawEvent, ScenarioSpec } from '../schema';
+import { renderEvent } from './raw';
 import { editedLastNumber, rememberLastNumber } from './state';
 
 const REMOVED_SECTIONS = new Set(['overview', 'outcome', 'next action at escalation', 'boundaries and remaining work']);
@@ -167,6 +168,25 @@ export function applyEdits(raw: RawCase, edits: CaseEdit[], opts?: { seed?: numb
   updateCount(result);
   rememberLastNumber(renumbering, result.history.events.at(-1)?.number ?? '000');
   return { raw: result, renumbering };
+}
+
+/**
+ * List the text that edits introduced relative to the case they were applied to: rendered blocks of
+ * events with no original counterpart in the renumbering (appended, inserted or padded) or whose body
+ * changed, changed section bodies, and new or changed detail values. Unchanged text is never listed.
+ */
+export function introducedText(before: RawCase, edited: { raw: RawCase; renumbering: Record<string, string | null> }): string[] {
+  const sources = new Map(before.history.events.flatMap((event) => {
+    const number = edited.renumbering[event.number];
+    return number ? [[number, event.body] as const] : [];
+  }));
+  const sections = new Set(before.index.sections.map(({ body }) => body));
+  const details = new Set(before.index.details.map(({ value }) => value));
+  return [
+    ...edited.raw.history.events.filter((event) => sources.get(event.number) !== event.body).map(renderEvent),
+    ...edited.raw.index.sections.flatMap(({ body }) => sections.has(body) ? [] : [body]),
+    ...edited.raw.index.details.flatMap(({ value }) => details.has(value) ? [] : [value]),
+  ];
 }
 
 /** Remap scenario evidence and the cut to edited event numbering, without mutation. */

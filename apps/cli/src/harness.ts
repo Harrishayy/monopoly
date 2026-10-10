@@ -11,6 +11,8 @@ import {
   resolvePreviousRun, runEval, scenarioSlug, selectScenarios, validateSuite, writeRunReport,
   type AgentAdapter, type AnswersLint, type JudgeEffort, type RunSummary,
 } from '@casework/evals';
+import { createAgentBAdapter } from './agent-b';
+import { createAgentCAdapter, createAgentDAdapter } from './agent-cd';
 
 const usage = `Usage: pnpm harness [run|grade|report|scenarios|rehearse|lint|help] [flags]
 
@@ -34,8 +36,8 @@ Selection and paths:
                         All relative paths are resolved from the repository root.
 
 Run options:
-  --agent <name>        runCase|baseline:escalate|baseline:reckless|baseline:replay|cmd
-                        (default: runCase).
+  --agent <name>        runCase|b|c|d|baseline:escalate|baseline:reckless|baseline:replay|cmd
+                        (default: runCase; b, c, d = agents from @casework/agents).
   --cmd <command>       Required for cmd; supports {root} {case} {out} {track}.
   --repeat <n>          Runs per scenario (default: 1).
   --concurrency <n>     Parallel cases (default: REALITY_CONCURRENCY or 4).
@@ -156,8 +158,8 @@ async function main(): Promise<void> {
     throw new UsageError(`--judge-effort must be ${efforts.join('|')}.`);
   }
   const agentName = values.agent ?? 'runCase';
-  if (!['runCase', 'baseline:escalate', 'baseline:reckless', 'baseline:replay', 'cmd'].includes(agentName)) {
-    throw new UsageError('--agent must be runCase|baseline:escalate|baseline:reckless|baseline:replay|cmd.');
+  if (!['runCase', 'b', 'c', 'd', 'baseline:escalate', 'baseline:reckless', 'baseline:replay', 'cmd'].includes(agentName)) {
+    throw new UsageError('--agent must be runCase|b|c|d|baseline:escalate|baseline:reckless|baseline:replay|cmd.');
   }
   nonempty(values.cmd, '--cmd');
   if (agentName === 'cmd' && !values.cmd) throw new UsageError('--agent cmd requires --cmd <command>.');
@@ -243,6 +245,9 @@ async function main(): Promise<void> {
     return;
   }
   const adapter = agentName === 'runCase' ? createInprocAdapter({ pack })
+    : agentName === 'b' ? await createAgentBAdapter({ track, toolNames: pack.tools.map((tool) => tool.name), log: print })
+    : agentName === 'c' ? await createAgentCAdapter({ track, toolNames: pack.tools.map((tool) => tool.name), log: print })
+    : agentName === 'd' ? await createAgentDAdapter({ track, toolNames: pack.tools.map((tool) => tool.name), log: print })
     : agentName === 'cmd' ? createCommandAdapter({ command: values.cmd!, name: 'cmd' })
       : createBaselineAdapter(agentName.slice('baseline:'.length) as 'escalate' | 'reckless' | 'replay', { pack });
   const errors = new Map<string, string>();

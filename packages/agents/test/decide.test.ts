@@ -103,9 +103,26 @@ describe('pipeline', () => {
     const answer = await readFile(join(out, 'plain-history/ANSWER.md'), 'utf8');
     expect(answer).toMatch(/Request information/);
     expect(answer).toMatch(/E003/);
+    for (const section of ['What the system received', 'Actions taken', 'Actions refused', 'Escalated', 'What failed', 'Final result']) {
+      expect(answer).toContain(`\n## ${section}\n`);
+    }
     const reasoning = await readFile(join(out, 'plain-history/REASONING.md'), 'utf8');
     expect(reasoning).toMatch(/## 4. Independent proposals/);
+    expect(reasoning).toMatch(/## Decision 1: /);
     expect((await readFile(join(out, 'plain-history/trace.jsonl'), 'utf8')).trim().split('\n').length).toBeGreaterThan(5);
+  });
+  it('keeps same-turn messages that are plain messages and drops the rest', async () => {
+    const caller = mockCaller({
+      decisions: [decision({
+        citations: ['E003'],
+        alsoSend: [
+          { recipient: 'Tenant', channel: 'Email', message: 'Please avoid using the shower until it is fixed.' },
+          { recipient: '', channel: 'Email', message: 'No recipient.' },
+        ],
+      })],
+    });
+    const r = await runCase(join(FIX, 'plain-history'), { caller, samples: 1 });
+    expect(r.final.alsoSend?.map((m) => m.recipient)).toEqual(['Tenant']);
   });
   it('revises once after a review, then re-reviews', async () => {
     const caller = mockCaller({

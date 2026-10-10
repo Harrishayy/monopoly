@@ -10,6 +10,8 @@ packages/agents/src/
                   @casework/tracks (property pack: assessment, tools, policy, prompt), which the web app also uses
   b/              agent B, a fixed pipeline: ingest → ledger → situate → decide ×3 → check + review → gate → write
                   (design notes in b/PLAN.md)
+  c/              agent C: agent B's pipeline with a stronger decider, a reviewer on a different model and a review
+                  dialogue (docs/plan/12-agent.md, experiments E1–E3)
   d/              agent D: A's rules + forced triggers in code + 3 Haiku votes + gated Opus supervisor + code guard
                   (design and measurements in docs/plan/12-agent-d.md)
   bench/          split.json (fixed dev/val/test), labels, few-shot memory, shared scorer, model judge
@@ -70,6 +72,15 @@ Agent B:
 - decides in code whether to act, ask or escalate
 
 Domain knowledge is written as prose manuals in `b/knowledge/`; there are no keyword rules. If the model fails, every case still gets an honest escalation that says what failed. See `b/PLAN.md` for the design.
+
+## Agent C in one paragraph
+
+Agent C reuses agent B's ingest, ledger, dossier, manuals, situate and decide stages, code checks and gate. It changes three things:
+- **A model for each stage.** By default Haiku reads the case, Opus decides, and Sonnet reviews, so the reviewer never checks its own work. Override with `--model` (read), `--decide-model` and `--critic-model`, or with `AGENT_C_MODEL_READ`, `AGENT_C_MODEL_DECIDE` and `AGENT_C_MODEL_CRITIC`. Agent B now also accepts `--decide-model` and `--critic-model`; without them, B runs on `--model` throughout as before.
+- **A review dialogue.** The reviewer returns numbered issues, each `blocking` or `minor`, each with a tag and cited evidence. Failed code checks join them as blocking issues. The decider answers every blocking issue: *accept* (and fix the plan) or *reject* (with evidence). A second review sees those answers and either drops an issue or keeps it under the same id (`--rounds`, default 2).
+- **Escalating on disagreement.** If the decider rejected an issue with evidence and the reviewer still holds it after the last round, the case goes to a person. The handover lists both positions and the evidence for each. Pass `--dispute gate` to leave these cases to B's gate instead.
+
+REASONING.md shows every round: the issues raised, the decider's answers, the revised plan, and anything still disputed. A failed reviewer call costs a review round, never the case.
 
 ## Results (Property, Haiku 5.5, 2026-10-10)
 
