@@ -7,7 +7,7 @@
  * Each case's folder is written as soon as it finishes, so a crash keeps finished work.
  * Never hand-edit the output; fix the system and re-run.
  * --kind (smoke, practice, reality, …), --name and --note go into <out>/run.json for the UI.
- * --agent a|b picks the engine (default ENGINE or a). It is the same engine the live product runs.
+ * --agent a|b|d picks the engine (default ENGINE, else d). It is the same engine the live product runs.
  */
 import { cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -27,7 +27,7 @@ const { values } = parseArgs({
     out: { type: 'string', default: 'ANSWERS' },
     withhold: { type: 'string', default: 'none' },
     concurrency: { type: 'string', default: process.env.REALITY_CONCURRENCY ?? '6' },
-    agent: { type: 'string', default: process.env.ENGINE ?? 'a' },
+    agent: { type: 'string', default: process.env.ENGINE ?? 'd' },
     ...manifestOptions,
   },
 });

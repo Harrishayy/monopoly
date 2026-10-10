@@ -102,8 +102,9 @@ and `ANSWERS/` are views of identical work. What differs is only what wraps it:
   and hands the refusal back so the model can choose again. If the model is unavailable or fails,
   the top allowed playbook step is taken. The run never throws.
 
-Agents B (a fixed pipeline with a fact ledger and few-shot memory) and D plug into the same engine:
-`ENGINE=b` for the product, or `pnpm reality --agent b`. A case that never had a folder (a live call)
+Agents B (a fixed pipeline with a fact ledger and few-shot memory) and D plug into the same engine. **D is the
+default** (A's rules, forced triggers in code, three Haiku votes, a gated Opus supervisor and a code guard; see
+`docs/plan/12-agent-d.md`). Pick another with `ENGINE=a|b` for the product, or `pnpm reality --agent a`. A case that never had a folder (a live call)
 is written out in the organisers' case layout so folder-based agents read it like any other.
 
 **Outbound gate** (`apps/web/src/server/live/intake.ts`). A message is sent automatically only when
@@ -187,7 +188,7 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 | `ANTHROPIC_API_KEY` | recommended | Claude API. Without it, decisions come from the rules-only playbook |
 | `MODEL_DECIDE` / `MODEL_FAST` | no | Models (default `claude-haiku-5-5`) |
 | `MODEL_MAX_RETRIES` | no | SDK retries on rate limits and overload (default 8) |
-| `ENGINE` | no | `a` (default), `b` or `d`: which agent the product runs |
+| `ENGINE` | no | `d` (default), `a` or `b`: which agent the product and `pnpm reality` run |
 | `ELEVENLABS_API_KEY` | voice | ElevenLabs. `ELEVENLABS_AGENT_ID`, `_TOOL_ID`, `_WEBHOOK_ID` and `_WEBHOOK_SECRET` are written by `pnpm tunnel` / `pnpm voice:setup` |
 | `ELEVENLABS_VOICE_ID`, `ELEVENLABS_LLM`, `AGENCY_NAME` | no | Voice agent voice, model and the agency name it uses |
 | `PUBLIC_URL` | voice | Written by `pnpm tunnel`; where ElevenLabs sends the mid-call tool and post-call webhook |

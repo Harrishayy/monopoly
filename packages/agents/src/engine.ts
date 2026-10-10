@@ -197,10 +197,12 @@ export function configureEngineB(build: () => Promise<Agent>) {
   engines.delete('b');
 }
 
-/** The engine to run. Default comes from ENGINE (a | b), else agent A. */
-/** The engine to run: 'a' natively, 'b' with its configured memory, any other registry agent through its folder adapter. */
+/**
+ * The engine to run: 'a' natively, 'b' with its configured memory, any other registry agent through its folder
+ * adapter. Default: ENGINE, else agent D (the best on val, test and the perturbation suite; docs/plan/12-agent-d.md).
+ */
 export function getEngine(id: EngineId | undefined = (process.env.ENGINE as EngineId | undefined)): Engine {
-  const key: EngineId = id ?? 'a';
+  const key: EngineId = id ?? 'd';
   let e = engines.get(key);
   if (!e) {
     if (key === 'a') e = engineA;
