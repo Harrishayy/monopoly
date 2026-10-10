@@ -5,3 +5,4 @@ export * from './PaneHeader';
 export * from './Panes';
 export * from './SectionHeader';
 export * from './TopNav';
+export * from './SubTabs';

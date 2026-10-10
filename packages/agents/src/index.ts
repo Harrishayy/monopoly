@@ -6,3 +6,5 @@ export { runBench, score, summarise } from './bench/bench';
 export { ExampleBank } from './bench/examples';
 export { cutsFor, loadCuts, loadSplit } from './bench/labels';
 export { runCase } from './b/pipeline';
+export { configureEngineB, getEngine, materialise, type AnswersOptions, type Engine, type EngineContext, type EngineId } from './engine';
+export { findCaseDirs } from './b/ingest/casefile';

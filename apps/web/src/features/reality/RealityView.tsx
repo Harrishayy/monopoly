@@ -44,7 +44,7 @@ export function RealityView() {
 }
 
 function useRefPrefix() {
-  const { data } = useApi<CaseSummary[]>('/api/cases');
+  const { data } = useApi<CaseSummary[]>('/api/cases?examples=1');
   return data?.[0]?.ref.split('-').slice(0, -1).join('-') ?? '';
 }
 

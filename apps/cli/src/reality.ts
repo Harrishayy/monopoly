@@ -7,13 +7,15 @@
  * Each case's folder is written as soon as it finishes, so a crash keeps finished work.
  * Never hand-edit the output; fix the system and re-run.
  * --kind (smoke, practice, reality, …), --name and --note go into <out>/run.json for the UI.
+ * --agent a|b picks the engine (default ENGINE or a). It is the same engine the live product runs.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { renderAnswers, runView, RunEvent, type Case } from '@casework/core';
-import { runCase, type EmitInput } from '@casework/core/agent';
+import type { EmitInput } from '@casework/core/agent';
+import { findCaseDirs, getEngine } from '@casework/agents';
 import { getPack } from '@casework/tracks';
 import { manifestOptions, runKind, writeManifest } from './manifest';
 
@@ -25,6 +27,7 @@ const { values } = parseArgs({
     out: { type: 'string', default: 'ANSWERS' },
     withhold: { type: 'string', default: 'none' },
     concurrency: { type: 'string', default: process.env.REALITY_CONCURRENCY ?? '6' },
+    agent: { type: 'string', default: process.env.ENGINE ?? 'a' },
     ...manifestOptions,
   },
 });
@@ -33,6 +36,10 @@ const pack = getPack(values.track!);
 const inDir = resolve(root, values.in!);
 const outDir = resolve(root, values.out!);
 const limit = Math.max(1, Number(values.concurrency));
+const engine = getEngine(values.agent as Parameters<typeof getEngine>[0]);
+/** Case number → folder, for engines that read the supplied files directly. */
+let folders = new Map<number, string>();
+let dirs: string[] = [];
 
 async function runOne(c: Case, n: number) {
   const runId = randomUUID();
@@ -41,7 +48,7 @@ async function runOne(c: Case, n: number) {
   const emit = (e: EmitInput) => events.push(RunEvent.parse({ ...e, runId, seq: seq++, at: new Date().toISOString() }));
   let error: string | undefined;
   try {
-    await runCase(c, pack, { runId, autonomy: pack.autonomy, emit });
+    await engine.run(c, pack, { runId, autonomy: pack.autonomy, emit, dir: folders.get(n) });
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
   }
@@ -62,18 +69,33 @@ async function main() {
     console.error(`No ${pack.label} cases found in ${inDir}. Nothing written. See data/README.md for the expected layout.`);
     process.exit(1);
   }
+  // Every case folder, whatever it is named ("007", "PM-001", "case_1"). Engines that read folders get the
+  // full list; the number → folder map only serves per-case runs and keys on the folder's trailing digits.
+  dirs = await findCaseDirs(inDir);
+  folders = new Map(dirs.flatMap((d) => {
+    const m = basename(d).match(/(\d+)$/);
+    return m ? [[Number(m[1]), d] as const] : [];
+  }));
   const manifest = {
     kind: runKind(values.kind, withhold === 'outcomes' ? 'practice' : /challenge/i.test(values.in!) ? 'reality' : 'adhoc'),
     name: values.name,
     note: values.note,
     command: 'reality',
-    agent: 'a',
+    agent: engine.id,
     track: pack.id,
     model: process.env.MODEL_DECIDE,
     startedAt: new Date().toISOString(),
   };
   await writeManifest(outDir, manifest);
-  console.log(`Running ${cases.length} ${pack.vocabulary.cases.toLowerCase()} with concurrency ${limit}…`);
+  if (engine.answers) {
+    // The engine writes its own ANSWER.md / REASONING.md / trace.jsonl per case (same decisions, richer render).
+    console.log(`${engine.label}: writing ${dirs.length} answers with concurrency ${limit}…`);
+    const res = await engine.answers(dirs, outDir, { track: pack.id, withhold, concurrency: limit, log: (l) => console.log(l) });
+    await writeManifest(outDir, { ...manifest, finishedAt: new Date().toISOString() });
+    console.table(res.map(({ name, action, decidedBy, failures }) => ({ n: name, next: action, decidedBy, failures: failures.length })));
+    return;
+  }
+  console.log(`${engine.label}: running ${cases.length} ${pack.vocabulary.cases.toLowerCase()} with concurrency ${limit}…`);
   const results: Awaited<ReturnType<typeof runOne>>[] = [];
   let next = 0;
   await Promise.all(

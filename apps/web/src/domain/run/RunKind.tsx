@@ -26,6 +26,7 @@ const KIND_TONE: Record<RunKind, string> = {
   full: 'border-line-strong bg-surface text-ink',
   practice: 'border-line bg-surface-2 text-ink',
   reality: 'border-ink bg-ink text-bg',
+  live: 'border-ok/50 bg-ok/10 text-ok',
   adhoc: 'border-line bg-surface text-ink-2',
 };
 

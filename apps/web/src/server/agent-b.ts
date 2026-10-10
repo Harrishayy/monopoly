@@ -2,10 +2,9 @@ import 'server-only';
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Autonomy, Case, Outcome } from '@casework/core';
-import type { EmitInput } from '@casework/core/agent';
-import { agentB, ExampleBank, type Agent } from '@casework/agents';
-import { DATA_DIR, DATA_WITHHOLD } from './config';
+import type { Case } from '@casework/core';
+import { agentB, configureEngineB, ExampleBank, type Agent } from '@casework/agents';
+import { DATA_DIR } from './config';
 
 /** Agent B reads case folders, not loaded cases: find the folder this case came from. */
 async function caseDir(c: Case): Promise<string | undefined> {
@@ -32,37 +31,10 @@ const agent = () =>
     .then((bank) => agentB({ examples: (c) => bank.render(c) }))
     .catch(() => agentB()));
 
-function outcomeOf(action: string): Outcome {
-  if (/escalat|handover/.test(action)) return 'escalated';
-  if (/request_information|\.ask$|ask_/.test(action)) return 'needs_info';
-  return 'resolved';
-}
+/** Gives the shared engine B its few-shot memory, once per server. */
+configureEngineB(agent);
 
-/**
- * Runs agent B (packages/agents, fixed pipeline) on one case and reports it as the same run events
- * agent A emits, so the case workspace shows both the same way. B returns one decision, so the
- * stream is short: started, read, next step, completed.
- */
-export async function runAgentB(c: Case, opts: { runId: string; track: string; autonomy: Autonomy; cutBefore?: number; asOf?: string; offline?: boolean }, emit: (e: EmitInput) => void) {
-  emit({ type: 'run.started', caseRef: c.ref, autonomy: opts.autonomy });
-  const dir = await caseDir(c);
-  if (!dir) throw new Error(`Agent B needs the case folder for ${c.ref}; none found under ${DATA_DIR}.`);
-  emit({ type: 'step.read', sourceIds: [], summary: `Agent B reads the case folder${opts.cutBefore ? `, up to event ${opts.cutBefore - 1}` : ''}, builds its fact ledger, and decides three times.` });
-  const d = await (await agent()).decide({ dir, track: opts.track, cutBefore: opts.cutBefore, asOf: opts.asOf, withhold: DATA_WITHHOLD, offline: opts.offline });
-  emit({
-    type: 'next.proposed',
-    next: {
-      action: d.action,
-      recipient: d.recipient || '—',
-      channel: d.channel || '—',
-      message: d.message,
-      reason: d.decidedBy === 'model' ? d.reason : `${d.reason}\n\n(Agent B · decided by ${d.decidedBy})`,
-      citations: [],
-      confidence: Math.min(1, Math.max(0, d.confidence ?? 0.5)),
-      boundaries: [],
-      remainingWork: d.failures,
-      decidedBy: d.decidedBy === 'model' || d.decidedBy === 'gate' ? 'model' : 'playbook',
-    },
-  });
-  emit({ type: 'run.completed', outcome: outcomeOf(d.action), summary: d.reason.slice(0, 280), usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 } });
+/** The case folder for an example case, so engine B reads the supplied files rather than a re-render. */
+export async function exampleDir(c: Case): Promise<string | undefined> {
+  return c.ref.startsWith('LIVE-') ? undefined : caseDir(c);
 }

@@ -1,57 +1,153 @@
 # Casework
 
-An operations agent for messy real-world cases. It reads calls, emails, documents, CRM records and tickets, takes actions with real tools, recovers from failures, and resolves what it safely can. Everything else goes to a person as a single handover card that has all the context needed to decide.
+**One inbox for a letting agency's maintenance work, with an AI agent on every case and a person on
+every decision that matters.**
 
-https://app.notion.com/p/Dwelly-AI-Hackathon-2026-Hacker-Guide-3eaf87e8ff7280c3beb6fb2fab8e2123#a58d6cadf230424dace26b12063fc7ea
+Tenants phone, email or use a web form. Each message becomes a case in one console, joined to the
+caller's existing case when there is one. An AI agent reads the whole conversation, works out where
+the job stands and proposes the agency's single best next step. Low-stakes replies to the tenant go
+out on their own. Anything else waits for a person to approve with the full context beside it:
+landlord approvals, contractors, money, safety, complaints, low confidence. When the agent shouldn't
+act at all, it escalates with a handover a person can decide from in seconds.
 
-> **Status:** the property agent works end to end: rules-based assessment, model decision behind a policy guard, ANSWERS writer, and an evaluation harness over 258 labelled decision points. The web UI is still a shell. Sections marked _TBD_ get filled in as they're built.
+The same agent also runs unattended over a folder of cases and writes `ANSWERS/` for the hackathon's
+Reality Test.
 
-## 1. What we built
+> **Draft.** Sections marked _TBD_ are still being written. See [how_to_demo.md](how_to_demo.md) to run the live demo.
 
-An agent for property maintenance jobs: the repair requests a letting agency juggles between tenants, landlords and contractors. Given a job's history (emails, calls, SMS, CRM notes, holds, attachments), it works out where the job stands and takes the agency's single best next step. That step is one of 14 actions: ask the landlord, send a quote, chase a contractor, close, escalate, and so on. It explains the step with cited sources and says what it must not claim.
+---
 
-It is two systems working together:
+## 1. The problem
 
-- **Rules (deterministic).** `packages/tracks/src/property/events.ts` and `assess.ts` turn the history into parties, workflow signals and noise. They then derive the stage, who we're waiting on, facts with citations, risk flags, playbook suggestions and *barred* actions. The rules were learned from the 50 example cases ([docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md)).
-- **Model (judgement).** Claude reads the full history plus that assessment and picks one action tool. A policy guard refuses barred or invalid calls, for example sending a contractor with no landlord approval, and hands the refusal back so the model can choose again. If no model is available, or it fails, the top allowed playbook step is taken instead. The run never throws.
+Real-world operations are rarely clean. A single boiler repair at a letting agency involves a tenant,
+a landlord and a contractor, across phone calls, emails, texts, quotes, invoices and CRM notes. The
+information is incomplete, people change their minds, systems fail and rules conflict. Today a
+coordinator re-reads every thread to work out what's happening, then decides who to chase.
 
-The plan is in [`docs/`](docs/README.md), and the visual reference is [`docs/design/casework-design-directions.html`](docs/design/casework-design-directions.html).
+Casework does the reading and the routine moves, and knows when to stop:
 
-## 2. The operational problem
+- **Continue on its own** when the step is low-stakes and well supported, e.g. acknowledge the
+  tenant or ask for a photo.
+- **Ask for more information** when something's missing.
+- **Stop and involve a person** for safety risks, disputes, complaints, money, conflicting facts,
+  or anything a policy rule forbids. The person gets the case, the agent's reasoning with cited
+  sources, why it stopped, and the options.
 
-_TBD once the track is chosen._ The core idea: a lot of operations work arrives as unstructured, conflicting information and still needs human judgement. Casework handles the routine part on its own, and when it stops it tells a person exactly why, what it knows (with sources), what it already tried, and what the options are.
+## 2. What it does: everything in one place
+
+```
+  Phone call ──► ElevenLabs voice agent ─┐  (case appears mid-call)
+  Email ───────► AgentMail inbox ────────┤
+  Web form ────► Tenant portal ──────────┤
+                                         ▼
+                              intake: open or join a case
+                              + attach the CRM record (tenant, property, landlord, consent limit)
+                                         │
+                                         ▼
+                              store (SQLite): every message, every agent step, every approval
+                                         │
+                                         ▼
+                              ENGINE: rules assessment → Claude decides → policy guard
+                                         │
+                                         ▼
+                              outbound gate ── low-stakes + confident ──► sent to the tenant
+                                         └──── everything else ─────────► Needs approval
+                                         └──── unsafe / disputed ───────► Escalated (handover)
+                                         │
+                                         ▼
+                              console: Inbox · Live runs · Architecture (rules, tools, cost, directory)
+```
+
+| Capability | How |
+|---|---|
+| **Voice** | An ElevenLabs Conversational AI agent answers as the agency's tenant line. Mid-call it calls our `log_issue` tool, so the case appears while the caller is still talking. The post-call webhook (HMAC-verified) files the full transcript and the agent re-runs. A poller files calls that no webhook delivered. |
+| **Email** | A real inbox (AgentMail, e.g. `casework-lettings@agentmail.to`). New mail becomes a case within about 10 s. Replies are sent in the same thread. A follow-up joins the existing case by thread, then by sender. |
+| **Tenant portal** | `/portal`: a "Call us" button (browser voice call) and a report form. |
+| **One record** | Every message, every agent run (each step, tool call and refusal), every outbound message and every human decision is stored and survives restarts. |
+| **Approvals** | The *Needs approval* inbox filter. Each case's **Review messages** tab shows why the gate held the message, the draft in an editor, and who's involved. Approve & send, or reject. |
+| **Escalations** | The *Escalated* filter. A handover card shows the situation, known and missing facts, options with the recommended one first, and the risks. |
+| **Transparency** | **Architecture** tab: the system diagram; the **rules** rendered from the code that enforces them; the agent's **tools**; **cost** per case, autonomy rate and person-time saved; the **directory**. |
 
 ## 3. Architecture
 
 ```
-apps/web        Next.js App Router: UI, API route handlers, run streaming (SSE)
-apps/cli        Reality Test batch runner and replay
-packages/core   Schemas, agent loop, policy guard, retries, run reducer, ANSWERS writer
-packages/tracks One pack per track: data loader, tools, policy, prompt, vocabulary
+apps/web          Next.js: console, tenant portal, channel adapters (voice, email), API routes, SSE
+apps/cli          Reality Test runner (`pnpm reality`), eval and replay
+packages/agents   The engine: one interface over every agent (A, B, D), bench and few-shot memory
+packages/core     Schemas, agent A's guarded tool loop, policy guard, run reducer, ANSWERS writer
+packages/tracks   Track packs: data loader, tools, policy, prompt, vocabulary (property is live)
 ```
 
-Every screen, the mascot and the `ANSWERS/` files are views of one append-only event stream per run. Details: [docs/plan/03-architecture.md](docs/plan/03-architecture.md).
+**One engine, two front ends.** `getEngine(id).run(case, pack, ctx)` (`packages/agents/src/engine.ts`)
+is the only way a case is run. The live product calls it when a call or email arrives. `pnpm reality`
+calls it over a folder of cases. Both get the same append-only event stream, so the console, replay
+and `ANSWERS/` are views of identical work. What differs is only what wraps it:
 
-One run: `run.started → step.read → case.assessed (rules) → tool.called / action.blocked (model + guard) → decision.made → escalation.created? → next.proposed → run.completed`. `ANSWER.md` leads with the next step: action, recipient, channel, message, what not to claim, and the remaining work. `REASONING.md` shows the rules' assessment with citations, every refused action and the decision.
+| | Live product (`apps/web`) | Reality Test (`apps/cli`) |
+|---|---|---|
+| Input | calls, emails, portal → SQLite store | case folders in `data/challenges/` |
+| Around the engine | CRM context, persistence, outbound gate, approvals, live updates | nothing live: unattended, no network channels |
+| Output | sent / held / escalated, visible in the console | `ANSWERS/<n>/ANSWER.md`, `REASONING.md`, `trace.jsonl` |
+
+**Agent A (default)** has two halves:
+
+- **Rules (deterministic).** `packages/tracks/src/property/events.ts` and `assess.ts` turn the
+  history into parties, workflow signals and noise. From those they derive the stage, who we're
+  waiting on, facts with citations, risk flags, playbook suggestions and *barred* actions. The rules
+  were learned from the 50 example cases
+  ([docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md)).
+- **Model (judgement).** Claude reads the full history plus that assessment and picks one of 14
+  action tools (ask the landlord, send a quote, chase a contractor, close, escalate, and so on). A
+  policy guard refuses barred or invalid calls, e.g. sending a contractor without landlord approval,
+  and hands the refusal back so the model can choose again. If the model is unavailable or fails,
+  the top allowed playbook step is taken. The run never throws.
+
+Agents B (a fixed pipeline with a fact ledger and few-shot memory) and D plug into the same engine:
+`ENGINE=b` for the product, or `pnpm reality --agent b`. A case that never had a folder (a live call)
+is written out in the organisers' case layout so folder-based agents read it like any other.
+
+**Outbound gate** (`apps/web/src/server/live/intake.ts`). A message is sent automatically only when
+all of these hold:
+
+- it's a tenant acknowledgement, update or question;
+- confidence is at least 70%;
+- the run didn't escalate;
+- no policy rule blocked an action;
+- the recipient has an address and a live channel.
+
+Everything else is held, and the reasons are shown to the reviewer. A newer run replaces older
+drafts nobody acted on.
+
+One run: `run.started → step.read → case.assessed → tool.called / action.blocked → decision.made →
+escalation.created? → next.proposed → run.completed`. Details:
+[docs/plan/03-architecture.md](docs/plan/03-architecture.md).
 
 ## 4. How to run it
 
-Prerequisites: Node 22 or later, and pnpm 10.
+Prerequisites: Node 22 or later, pnpm 10, and `cloudflared` for the voice webhooks (`brew install cloudflared`).
 
 ```bash
 git clone --recurse-submodules <this repo>   # or: git submodule update --init
 pnpm i
-cp .env.example .env          # add ANTHROPIC_API_KEY
-pnpm dev                      # http://localhost:3000
+cp .env.example .env          # add ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, AGENTMAIL_API_KEY
+pnpm email:setup              # once: creates the agency inbox and writes AGENTMAIL_INBOX
+pnpm demo                     # console on http://localhost:3100 (inbox at /inbox, portal at /portal)
+pnpm tunnel                   # separate terminal: public URL + points the ElevenLabs agent at it
 ```
+
+`pnpm tunnel` creates or updates the ElevenLabs agent through its API (`scripts/voice-setup.mts`). No
+dashboard clicks are needed. The full demo script, with what to prepare and how a colleague calls or
+emails in, is in **[how_to_demo.md](how_to_demo.md)**.
 
 Reality Test (put the released cases in `data/challenges/` first, see [data/README.md](data/README.md)):
 
 ```bash
-pnpm reality --track property --in data/challenges --out ANSWERS
+pnpm reality --track property --in data/challenges --out ANSWERS            # agent A
+pnpm reality --track property --in data/challenges --out ANSWERS --agent b  # same engine, agent B
 ```
 
-Without `ANTHROPIC_API_KEY` the runner still works using only the rules-based playbook, and the table it prints shows which cases that happened to.
+Without `ANTHROPIC_API_KEY` the runner still works using only the rules-based playbook, and the table
+it prints shows which cases that happened to.
 
 Evaluate on the examples (each labelled cut hides the history from that point on, plus the outcome):
 
@@ -62,20 +158,25 @@ pnpm eval --resume .casework/eval                     # re-run only cuts that fe
 pnpm --filter @casework/tracks inspect 033 --cut 9    # how the rules read one case at one moment
 ```
 
-On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a prohibited one 4.7% of the time. With the model (Haiku 5.5), that becomes 81.0% and 1.6%, but the prompt was tuned on those cuts. On 70 held-out cuts labelled afterwards, Haiku scores **74.3%** with no prohibited steps, against 67.1% for the rules alone. Details are in [docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md#evaluation).
+On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a
+prohibited one 4.7% of the time. With the model (Haiku 5.5), that becomes 81.0% and 1.6%, but the
+prompt was tuned on those cuts. On 70 held-out cuts labelled afterwards, Haiku scores **74.3%** with
+no prohibited steps, against 67.1% for the rules alone. Details are in
+[docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md#evaluation).
 
-The web app (`pnpm dev`) runs the same agent and has these screens:
+### Screens
 
 | Route | What it's for |
 |---|---|
-| `/inbox`, `/cases/<ref>` | Step through a case: pick any point in its history, let the agent decide with only what came before it, and compare its choice with what really happened next and the eval label (accepted, missed or prohibited). Also shows the sources, the live run trace, the pipeline strip (Read → Assess → Decide → Guard → Act / hand over), the decision and any handover. `?cut=<n>` and `?run=<id>` open a specific point or run. |
-| `/runs` | Every run in this session as a live card. |
-| `/escalations` | Handover cards waiting for a person. Choosing an option is recorded with the run. |
-| `/reality` | Run the eval on the labelled examples (rules-only runs are free) and Reality Test batches, and read `ANSWERS/` written by the CLI. |
-| `/tools` | Tools, policy rules, always-escalate triggers, tool health and how a run moves through the pipeline. |
-| `/agents` | For the team: how agent A and agent B work, and their eval results side by side on the same labelled moments. Reads what each agent wrote under `.casework/`. |
+| `/inbox`, `/cases/<ref>` | Every live case, newest first. Filters: All · Open · Needs approval · Escalated · Step taken. A live case has **Review messages**, **Conversation** and **Agent actions** tabs. The right panel holds the decision and handover; drag the borders to resize. |
+| `/portal` | The tenant-facing page: call the voice agent, report an issue, or email the agency. |
+| `/runs` | Every agent run as it happens. |
+| `/reality` | Run the eval on the labelled examples and Reality Test batches, and read `ANSWERS/`. |
+| `/architecture` | Overview diagram, plus **Rules**, **Tools**, **Cost** and **Directory** subtabs. |
+| `/agents` | For the team: how the agents work and their eval results side by side. |
 
-Runs started in the UI are kept in memory and disappear when the server restarts. `pnpm reality` is still what writes `ANSWERS/`.
+Example cases from `data/public` are kept for evaluation and hidden from the inbox. Set
+`INBOX_EXAMPLES=show` to list them.
 
 Checks: `pnpm typecheck && pnpm test && pnpm build`.
 
@@ -84,40 +185,64 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 | Variable | Required | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | recommended | Claude API. Without it, decisions come from the rules-only playbook |
+| `MODEL_DECIDE` / `MODEL_FAST` | no | Models (default `claude-haiku-5-5`) |
 | `MODEL_MAX_RETRIES` | no | SDK retries on rate limits and overload (default 8) |
-| `MODEL_DECIDE` | no | Decision model (default `claude-haiku-5-5`) |
-| `MODEL_FAST` | no | Triage and extraction model (default `claude-haiku-5-5`; not used yet) |
-| `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID` | voice only | ElevenLabs voice agent |
-| `DATA_DIR` | no | Case folder the web app reads (default `./data/public`) |
-| `DATA_WITHHOLD` | no | `outcomes` (default) hides how example cases ended; `none` loads cases as supplied |
+| `ENGINE` | no | `a` (default), `b` or `d`: which agent the product runs |
+| `ELEVENLABS_API_KEY` | voice | ElevenLabs. `ELEVENLABS_AGENT_ID`, `_TOOL_ID`, `_WEBHOOK_ID` and `_WEBHOOK_SECRET` are written by `pnpm tunnel` / `pnpm voice:setup` |
+| `ELEVENLABS_VOICE_ID`, `ELEVENLABS_LLM`, `AGENCY_NAME` | no | Voice agent voice, model and the agency name it uses |
+| `PUBLIC_URL` | voice | Written by `pnpm tunnel`; where ElevenLabs sends the mid-call tool and post-call webhook |
+| `AGENTMAIL_API_KEY` | email | AgentMail. `AGENTMAIL_INBOX` is written by `pnpm email:setup` |
+| `AGENTMAIL_USERNAME`, `AGENTMAIL_DISPLAY_NAME`, `EMAIL_POLL_MS`, `SUPPORT_EMAIL` | no | Inbox name, sender name, poll interval, address shown on the portal |
+| `DEMO_TENANT_EMAIL`, `DEMO_TENANT_PHONE`, `DEMO_LANDLORD_EMAIL` | no | Put real inboxes on the seeded demo tenant and their landlord |
+| `DB_PATH` | no | Live store (default `~/.casework/casework.db`; keep it outside the repo, or `next dev` reloads in a loop) |
+| `INBOX_EXAMPLES` | no | `show` lists the example cases in the inbox |
+| `DATA_DIR`, `DATA_WITHHOLD` | no | Example case folder; `outcomes` (default) hides how examples ended |
 | `TRACK` | no | `claims`, `property`, `banking` or `logistics` |
-| `REALITY_CONCURRENCY` | no | Parallel cases in a batch (default 6) |
-| `TOOL_TIMEOUT_MS` | no | Per-tool timeout (default 8000) |
+| `REALITY_CONCURRENCY`, `TOOL_TIMEOUT_MS` | no | Batch parallelism (default 6), per-tool timeout (default 8000) |
 
 ## 5. Models, APIs and services
 
-- Anthropic Claude via `@anthropic-ai/sdk`: Haiku 5.5 (`MODEL_DECIDE`, `claude-haiku-5-5`) with adaptive thinking decides the next step. There is no separate triage model yet, because the rules do the triage.
-- ElevenLabs for the voice agent (optional).
-- The hackathon's supplied synthetic tools and data.
+- **Anthropic Claude** (`@anthropic-ai/sdk`). Haiku 5.5 (`claude-haiku-5-5`) decides every next step.
+  Cost per case is a fraction of a penny; see Architecture → Cost.
+- **ElevenLabs Conversational AI**: the voice agent (`@elevenlabs/react` in the browser; agents,
+  tools, webhooks and conversations APIs on the server).
+- **AgentMail**: the agency's email inbox (REST: poll, reply in thread, send).
+- **Cloudflare quick tunnels** (`cloudflared`): a public URL so ElevenLabs can reach the local app
+  during a call.
+- **SQLite** through Node's built-in `node:sqlite`: no native dependencies.
+- The hackathon's example cases (`data/public`, git submodule) for learning the workflow and for
+  evaluation.
 - Libraries: see [docs/plan/02-stack.md](docs/plan/02-stack.md).
 
 ## 6. Assumptions
 
-- **No live channels.** The organisers supply no live channels for property, so actions are recorded to an outbox, not sent. Every answer says so.
-- **Landlord approval first.** The landlord approves every job and every quote unless the history shows standing consent. The examples contain no agency spending limit.
-- **Inconsistent names are noise.** Names, addresses and company names that vary inside one case are treated as record-keeping noise, not as conflicts.
-- **Decision time.** "Now" is the time of the latest event unless a cut sets it.
+- **Landlord approval first.** The landlord approves every job and every quote unless the history or
+  the directory shows standing consent. The example cases contain no agency spending limit.
+- **Only tenant replies auto-send.** Messages to landlords and contractors always wait for a person.
+  That's the conservative default for a first deployment.
+- **The directory is fictional.** A small seeded register stands in for the agency's CRM. Unknown
+  callers still get a case; the agent says it doesn't know the landlord yet.
+- **Inconsistent names are noise.** Names, addresses and company names that vary within one case are
+  treated as record-keeping noise, not conflicts.
+- **Decision time.** "Now" is the time of the latest event unless an evaluation cut sets it.
 
 ## 7. Known limitations
 
-- The rules read signals with regular expressions. They miss some informal approvals, quotes with no £ figure, and tenants who fixed the problem themselves. The model catches most of these, but the playbook fallback does not.
+- Outbound is live for email only. SMS and phone call-backs are drafted and recorded, not sent.
+- The quick tunnel's URL changes on every restart (the script re-points ElevenLabs), and it exposes
+  the whole app while it runs. A deployment would use a fixed domain and authentication.
+- There is no login or role model yet: anyone with the console URL can approve.
+- The rules read signals with regular expressions. They miss some informal approvals, quotes with
+  no £ figure, and tenants who fixed the problem themselves. The model catches most of these, but
+  the playbook fallback doesn't.
 - The eval labels were drafted by model reviewers. They are a strong baseline, not ground truth.
 - Images in attachments are not read.
-- Runs are held in memory, and the decision, voice and batch-from-UI endpoints return 501.
 
 ## 8. What we'd build next
 
-_TBD._
+_TBD._ Candidates: SMS and WhatsApp channels; contractor and landlord portals; a real CRM connector
+in place of the seeded directory; roles and audit export; learning from approvals (an edited draft
+becomes a few-shot example).
 
 ## Licence
 

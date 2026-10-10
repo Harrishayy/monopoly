@@ -11,8 +11,13 @@ export const DIRECTIONS: { id: Direction; name: string; key: string }[] = [
   { id: 'relay', name: 'Relay', key: 'C' },
 ];
 
+export type InboxFilter = 'all' | 'open' | 'approval' | 'escalated' | 'resolved';
+
 interface UiState {
   direction: Direction;
+  /** Inbox filter, kept while moving between cases. */
+  inboxFilter: InboxFilter;
+  setInboxFilter: (f: InboxFilter) => void;
   track: TrackId;
   autonomy: Autonomy;
   setDirection: (d: Direction) => void;
@@ -25,6 +30,8 @@ export const useUi = create<UiState>()(
   persist(
     (set) => ({
       direction: 'docket',
+      inboxFilter: 'all',
+      setInboxFilter: (inboxFilter) => set({ inboxFilter }),
       track: 'property',
       autonomy: 'ask_first',
       setDirection: (direction) => set({ direction }),

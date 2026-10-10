@@ -4,7 +4,7 @@ import { z } from 'zod';
  * What a run was for, so results can be kept apart: a quick smoke check is not a score,
  * and a score on the dev split is not a held-out one.
  */
-export const RUN_KINDS = ['smoke', 'train', 'val', 'test', 'full', 'practice', 'reality', 'adhoc'] as const;
+export const RUN_KINDS = ['smoke', 'train', 'val', 'test', 'full', 'practice', 'reality', 'live', 'adhoc'] as const;
 export const RunKind = z.enum(RUN_KINDS);
 export type RunKind = z.infer<typeof RunKind>;
 
@@ -16,6 +16,7 @@ export const RUN_KIND_META: Record<RunKind, { label: string; description: string
   full: { label: 'Full', description: 'Every labelled cut or every case' },
   practice: { label: 'Practice', description: 'Example cases run unattended with outcomes hidden' },
   reality: { label: 'Reality Test', description: 'The unseen Reality Test cases' },
+  live: { label: 'Live', description: 'Real calls and emails handled as they arrive' },
   adhoc: { label: 'Ad hoc', description: 'Anything else' },
 };
 

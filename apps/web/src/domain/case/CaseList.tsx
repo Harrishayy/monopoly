@@ -2,20 +2,23 @@
 
 import type { CaseSummary } from '@casework/core';
 import { useRouter } from 'next/navigation';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '@/lib/api';
-import type { RunSummary } from '@/lib/api-types';
+import type { OutboundView, RunSummary } from '@/lib/api-types';
 import { useHotkeys } from '@/lib/hooks';
+import { useUi, type InboxFilter } from '@/state/ui';
 import { Eyebrow, Input, Skeleton, type ChipStatus } from '@/ui';
 import { CaseListItem } from './CaseListItem';
 
-type Filter = 'all' | 'open' | 'escalated' | 'resolved';
+type Filter = InboxFilter;
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'open', label: 'Open' },
+  { value: 'approval', label: 'Needs approval' },
   { value: 'escalated', label: 'Escalated' },
   { value: 'resolved', label: 'Step taken' },
 ];
+const isFilter = (v: string | null): v is Filter => !!v && FILTERS.some((f) => f.value === v);
 
 /** Latest standalone run per case → the status shown in the list. */
 export function runStatuses(runs: RunSummary[] | undefined) {
@@ -40,9 +43,17 @@ export interface CaseListProps {
 export function CaseList({ cases, selectedRef, noun, label, loading }: CaseListProps) {
   const router = useRouter();
   const [q, setQ] = useState('');
-  const [filter, setFilter] = useState<Filter>('all');
-  const { data: runs } = useApi<RunSummary[]>('/api/runs?standalone=1', { poll: true, intervalMs: 4000 });
+  const filter = useUi((s) => s.inboxFilter);
+  const setFilter = useUi((s) => s.setInboxFilter);
+  // Links like /inbox?filter=approval pick the filter.
+  useEffect(() => {
+    const f = new URLSearchParams(window.location.search).get('filter');
+    if (isFilter(f)) setFilter(f);
+  }, [setFilter]);
+  const { data: runs } = useApi<RunSummary[]>('/api/runs?standalone=1', { poll: true, intervalMs: 4000, live: true });
+  const { data: held } = useApi<OutboundView[]>('/api/outbound?status=awaiting_approval', { live: true });
   const statuses = useMemo(() => runStatuses(runs), [runs]);
+  const needsApproval = useMemo(() => new Set((held ?? []).map((o) => o.caseRef)), [held]);
   const listRef = useRef<HTMLUListElement>(null);
 
   const shown = useMemo(() => {
@@ -50,11 +61,18 @@ export function CaseList({ cases, selectedRef, noun, label, loading }: CaseListP
     return cases.filter((c) => {
       const st = statuses.get(c.ref) ?? c.status;
       if (filter === 'open' && !['new', 'running', 'needs_info'].includes(st)) return false;
+      if (filter === 'approval' && !needsApproval.has(c.ref)) return false;
       if (filter === 'escalated' && st !== 'escalated') return false;
       if (filter === 'resolved' && st !== 'resolved') return false;
       return !needle || `${c.ref} ${c.title} ${c.customer.name}`.toLowerCase().includes(needle);
     });
-  }, [cases, q, filter, statuses]);
+  }, [cases, q, filter, statuses, needsApproval]);
+
+  const counts = useMemo(() => {
+    const n = { approval: needsApproval.size, escalated: 0 } as Partial<Record<Filter, number>>;
+    for (const c of cases) if ((statuses.get(c.ref) ?? c.status) === 'escalated') n.escalated = (n.escalated ?? 0) + 1;
+    return n;
+  }, [cases, statuses, needsApproval]);
 
   const move = (d: 1 | -1) => {
     if (!shown.length) return;
@@ -68,6 +86,7 @@ export function CaseList({ cases, selectedRef, noun, label, loading }: CaseListP
 
   return (
     <div className="grid content-start gap-2 p-2">
+      <div className="sticky top-0 z-10 -mx-2 -mt-2 grid gap-2 border-b-(length:--bw) border-line bg-bg px-2 pt-2 pb-2.5 max-[859px]:top-(--nav-h)">
       <div className="flex items-center justify-between px-2 pt-2">
         <Eyebrow>{label}</Eyebrow>
         <Eyebrow>
@@ -85,8 +104,10 @@ export function CaseList({ cases, selectedRef, noun, label, loading }: CaseListP
             className="cursor-pointer rounded-ui border-(length:--bw) border-line px-2 py-1 text-[12px] font-semibold text-ink-2 hover:text-ink aria-pressed:border-accent aria-pressed:bg-accent-soft aria-pressed:text-ink"
           >
             {f.label}
+            {counts[f.value] ? <span className="ml-1 font-mono text-[10.5px]">{counts[f.value]}</span> : null}
           </button>
         ))}
+      </div>
       </div>
       {loading ? (
         Array.from({ length: 6 }, (_, i) => <Skeleton key={i} variant="row" />)
@@ -113,7 +134,13 @@ export function CaseList({ cases, selectedRef, noun, label, loading }: CaseListP
         >
           {shown.map((c) => (
             <li key={c.ref}>
-              <CaseListItem c={c} selected={c.ref === selectedRef} status={statuses.get(c.ref)} />
+              <CaseListItem
+                c={c}
+                selected={c.ref === selectedRef}
+                status={needsApproval.has(c.ref) ? 'escalated' : statuses.get(c.ref)}
+                statusLabel={needsApproval.has(c.ref) ? 'Needs approval' : undefined}
+                live={c.ref.startsWith('LIVE-')}
+              />
             </li>
           ))}
         </ul>

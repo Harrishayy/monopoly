@@ -2,13 +2,13 @@ import { TRACK_META } from '@casework/tracks/meta';
 import type { TrackId } from '@casework/core';
 import { CaseList } from '@/domain/case';
 import { Panes } from '@/layout';
-import { listCases, summarise } from '@/server/cases';
+import { inboxCases, summarise } from '@/server/cases';
 import { ACTIVE_TRACK } from '@/server/config';
 import { EmptyState, Kbd } from '@/ui';
 
 export async function InboxView() {
   const meta = TRACK_META[ACTIVE_TRACK as TrackId];
-  const cases = (await listCases()).map(summarise);
+  const cases = (await inboxCases()).map(summarise);
   const noun = meta.vocabulary.case.toLowerCase();
   if (!cases.length) {
     return (

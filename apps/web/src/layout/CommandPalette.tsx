@@ -12,9 +12,14 @@ import { Icon, toast, type IconName } from '@/ui';
 const ROUTES: { href: string; label: string; icon: IconName }[] = [
   { href: '/inbox', label: 'Go to inbox', icon: 'inbox' },
   { href: '/runs', label: 'Go to live runs', icon: 'play' },
-  { href: '/escalations', label: 'Go to escalations', icon: 'escalate' },
+  { href: '/inbox?filter=approval', label: 'Messages waiting for approval', icon: 'propose' },
+  { href: '/inbox?filter=escalated', label: 'Go to escalations', icon: 'escalate' },
   { href: '/reality', label: 'Go to Reality Test and eval', icon: 'check' },
-  { href: '/tools', label: 'Go to tools and policy', icon: 'tool' },
+  { href: '/architecture', label: 'Go to architecture', icon: 'tool' },
+  { href: '/architecture/rules', label: 'Go to rules', icon: 'check' },
+  { href: '/architecture/tools', label: 'Go to tools and policy', icon: 'tool' },
+  { href: '/architecture/costs', label: 'Go to cost', icon: 'decide' },
+  { href: '/architecture/directory', label: 'Go to directory', icon: 'inbox' },
   { href: '/agents', label: 'Compare the agents', icon: 'decide' },
 ];
 

@@ -174,7 +174,37 @@ export interface NavCounts {
   cases: number;
   running: number;
   escalations: number;
+  /** Outbound messages the gate held for a person to approve. */
+  approvals: number;
 }
+
+export type OutboundStatus = 'sent' | 'awaiting_approval' | 'recorded' | 'failed' | 'rejected' | 'superseded';
+
+/** A message the agent proposed to send on a live case, and what the outbound gate did with it. */
+export interface OutboundView {
+  id: string;
+  caseRef: string;
+  runId: string | null;
+  channel: string;
+  recipient: string;
+  address: string | null;
+  subject: string | null;
+  body: string;
+  status: OutboundStatus;
+  /** Why the gate sent it or held it. */
+  why: string | null;
+  createdAt: string;
+  sentAt: string | null;
+  error: string | null;
+}
+
+/** Signals on /api/live/stream as calls, emails and runs happen. */
+export type LiveSignal =
+  | { kind: 'case.opened'; caseRef: string; title: string; channel: string }
+  | { kind: 'case.updated'; caseRef: string; sourceId: string }
+  | { kind: 'run.started'; caseRef: string; runId: string }
+  | { kind: 'run.finished'; caseRef: string; runId: string; outcome?: string }
+  | { kind: 'outbound'; caseRef: string; id: string; status: string };
 
 export type { CaseSummary };
 
@@ -251,4 +281,38 @@ export interface AgentsOverview {
   runs: AgentRunView[];
   /** Case number → case ref, so cut keys can link to the step-through. */
   refs: Record<string, string>;
+}
+
+export interface CostBucket {
+  label: string;
+  runs: number;
+  /** Fractional pence: one run costs well under a penny. */
+  pence: number;
+}
+
+export interface CostReport {
+  model: string;
+  runs: number;
+  cases: number;
+  totalPence: number;
+  perRunPence: number;
+  perCaseMedianPence: number;
+  perCaseP90Pence: number;
+  tokens: { input: number; output: number; cacheRead: number; cacheWrite: number };
+  byChannel: CostBucket[];
+  byKind: CostBucket[];
+  endings: { ending: 'handled' | 'held' | 'escalated' | 'needs_info' | 'failed'; runs: number }[];
+  minutesSaved: number;
+  personPenceSaved: number;
+  assumptions: string[];
+}
+
+export interface RulesReport {
+  caseNoun: string;
+  autonomy: Autonomy;
+  guard: { id: string; describe: string }[];
+  policy: { id: string; describe: string; appliesTo: string[] }[];
+  mustEscalate: { id: string; describe: string }[];
+  gate: { autoSend: string[]; minConfidence: number; conditions: string[] };
+  tools: { name: string; recipient?: string; effect: ToolEffect; autoSend: boolean; internal: boolean }[];
 }

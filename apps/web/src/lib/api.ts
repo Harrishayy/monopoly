@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Window event fired for every signal on /api/live/stream. */
+export const LIVE_EVENT = 'casework:live';
+
 /** fetch + JSON with a readable error message from the route's { error }. */
 export async function api<T>(url: string, init?: RequestInit & { json?: unknown }): Promise<T> {
   const { json, ...rest } = init ?? {};
@@ -24,7 +27,10 @@ export async function api<T>(url: string, init?: RequestInit & { json?: unknown 
  * Loads a URL and, while `poll` is set, refreshes it every `intervalMs`.
  * Keeps the last good data on refresh errors so screens don't flash.
  */
-export function useApi<T>(url: string | null, { poll, intervalMs = 1500, initial }: { poll?: boolean | ((d: T | undefined) => boolean); intervalMs?: number; initial?: T } = {}) {
+export function useApi<T>(
+  url: string | null,
+  { poll, intervalMs = 1500, initial, live }: { poll?: boolean | ((d: T | undefined) => boolean); intervalMs?: number; initial?: T; live?: boolean } = {},
+) {
   const [data, setData] = useState<T | undefined>(initial);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!!url && initial === undefined);
@@ -47,6 +53,14 @@ export function useApi<T>(url: string | null, { poll, intervalMs = 1500, initial
   useEffect(() => {
     void load();
   }, [load]);
+
+  // `live`: also reload as soon as a live signal arrives (see lib/live.ts), not just on the next poll.
+  useEffect(() => {
+    if (!url || !live) return;
+    const on = () => void load();
+    window.addEventListener(LIVE_EVENT, on);
+    return () => window.removeEventListener(LIVE_EVENT, on);
+  }, [url, live, load]);
 
   useEffect(() => {
     if (!url || !poll) return;

@@ -1,9 +1,11 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { RunEvent, runView, type Autonomy, type Case, type HumanDecision, type RunView, type TrackPack } from '@casework/core';
-import { runCase, type EmitInput } from '@casework/core/agent';
+import type { EmitInput } from '@casework/core/agent';
+import { getEngine } from '@casework/agents';
 import type { AgentId, RunCut, RunMode, RunSummary, RunTag } from '@/lib/api-types';
-import { runAgentB } from './agent-b';
+import { exampleDir } from './agent-b';
+import { finishRun, loadStoredRuns, saveRunDecision, saveRunEvent, saveRunMeta } from './live/store';
 
 export type RunSignal = { kind: 'event'; event: RunEvent } | { kind: 'end'; error?: string };
 
@@ -36,7 +38,36 @@ interface RunRecord {
 
 // In-memory for now; swap for the SQLite event store (src/server/db.ts) so runs survive restarts.
 const g = globalThis as unknown as { __caseworkRuns?: Map<string, RunRecord> };
-const runs: Map<string, RunRecord> = (g.__caseworkRuns ??= new Map<string, RunRecord>());
+const runs: Map<string, RunRecord> = (g.__caseworkRuns ??= hydrate());
+
+/** Only live and ad hoc runs are kept on disk; eval and batch runs are written to .casework by their runners. */
+const persisted = (meta: RunMeta) => !meta.groupId && (meta.tag?.kind === 'live' || meta.caseRef.startsWith('LIVE-'));
+
+/** Reloads stored runs after a restart, so conversations and agent actions survive. */
+function hydrate(): Map<string, RunRecord> {
+  const m = new Map<string, RunRecord>();
+  try {
+    for (const r of loadStoredRuns()) {
+      const events = r.events.flatMap((e) => {
+        const p = RunEvent.safeParse(e);
+        return p.success ? [p.data] : [];
+      });
+      m.set(r.runId, {
+        meta: r.meta as RunMeta,
+        events,
+        view: runView(events),
+        listeners: new Set(),
+        done: Promise.resolve(),
+        finished: true,
+        error: r.error ?? (r.finished ? undefined : 'Interrupted by a restart'),
+        decision: r.decision as HumanDecision | undefined,
+      });
+    }
+  } catch (err) {
+    console.error('Could not load stored runs:', err);
+  }
+  return m;
+}
 
 export interface StartRunOptions {
   autonomy: Autonomy;
@@ -65,24 +96,30 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
   };
   const rec = { meta, events: [], view: runView([]), listeners: new Set(), finished: false } as unknown as RunRecord;
   runs.set(runId, rec);
+  const keep = persisted(meta);
+  if (keep) saveRunMeta(runId, meta.caseRef, meta);
   let seq = 0;
   const emit = (e: EmitInput) => {
     const event = RunEvent.parse({ ...e, runId, seq: seq++, at: new Date().toISOString() });
     rec.events.push(event);
     rec.view = runView(rec.events);
+    if (keep) saveRunEvent(runId, event.seq, event);
     rec.listeners.forEach((l) => l({ kind: 'event', event }));
   };
-  const run =
-    meta.agent === 'b'
-      ? runAgentB(c, { runId, track: pack.id, autonomy: opts.autonomy, cutBefore: opts.cut?.cutBefore, asOf: opts.cut?.asOf, offline: opts.mode === 'rules' }, emit)
-      : runCase(c, pack, {
-          runId,
-          autonomy: opts.autonomy,
-          emit,
-          asOf: opts.cut?.asOf,
-          signal: opts.signal,
-          ...(opts.mode === 'rules' ? { model: null } : {}),
-        });
+  // The same engine the Reality Test runner uses; only persistence and the outbound gate differ.
+  const run = (async () => {
+    const dir = meta.agent === 'b' ? await exampleDir(c) : undefined;
+    await getEngine(meta.agent).run(c, pack, {
+      runId,
+      autonomy: opts.autonomy,
+      emit,
+      asOf: opts.cut?.asOf,
+      cutBefore: opts.cut?.cutBefore,
+      dir,
+      signal: opts.signal,
+      offline: opts.mode === 'rules',
+    });
+  })();
   rec.done = run
     .then(() => undefined)
     .catch((err: unknown) => {
@@ -90,6 +127,7 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
     })
     .finally(() => {
       rec.finished = true;
+      if (keep) finishRun(runId, rec.error);
       rec.listeners.forEach((l) => l({ kind: 'end', error: rec.error }));
     });
   return runId;
@@ -147,6 +185,7 @@ export function recordDecision(d: Omit<HumanDecision, 'at'>): HumanDecision | st
   if (!handover.options.some((o) => o.id === d.optionId)) return `Unknown option ${d.optionId}`;
   if (rec.decision) return 'Already decided';
   rec.decision = { ...d, at: new Date().toISOString() };
+  if (persisted(rec.meta)) saveRunDecision(rec.meta.runId, rec.decision);
   return rec.decision;
 }
 

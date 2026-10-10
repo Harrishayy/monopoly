@@ -1,6 +1,15 @@
 import type { Autonomy } from '../schema';
 import type { AgentTool, Policy, RuleContext, ToolCall } from '../track';
 
+/** The checks `guard` runs, in order, in plain words (shown on the rules page). Keep in step with the function. */
+export const GUARD_CHECKS: { id: string; describe: string }[] = [
+  { id: 'core.unknown_tool', describe: 'The action must be a tool the pack defines.' },
+  { id: 'core.invalid_args', describe: 'Its arguments must match the tool’s schema: message, reason, citations, confidence.' },
+  { id: 'core.autonomy_suggest', describe: 'At Suggest autonomy only read-only tools run; every write waits for a person.' },
+  { id: 'assessment.barred', describe: 'Actions the assessment bars right now are refused, unless the call cites a source that lifts the bar.' },
+  { id: 'pack.policy', describe: 'Every pack policy rule that applies to the tool must pass.' },
+];
+
 export type GuardResult = { allow: true } | { allow: false; ruleId: string; why: string };
 
 /**

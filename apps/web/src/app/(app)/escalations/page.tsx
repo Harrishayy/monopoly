@@ -1,7 +1,6 @@
-import { EscalationsView } from '@/features/escalations';
+import { redirect } from 'next/navigation';
 
-export const metadata = { title: 'Escalations' };
-
+/** Escalations live in the inbox as a filter. */
 export default function Page() {
-  return <EscalationsView />;
+  redirect('/inbox?filter=escalated');
 }

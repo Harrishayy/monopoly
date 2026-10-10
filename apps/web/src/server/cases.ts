@@ -4,6 +4,7 @@ import { getPack } from '@casework/tracks';
 import type { CaseTimeline, HistoryEventView } from '@/lib/api-types';
 import { ACTIVE_TRACK, DATA_DIR, DATA_WITHHOLD } from './config';
 import { labelsFor } from './labels';
+import { listLiveCases, liveCase } from './live/store';
 
 type Withhold = NonNullable<LoadCasesOptions['withhold']>;
 
@@ -22,12 +23,32 @@ export function loadCases(track: string, dir: string, withhold: Withhold): Promi
   return p;
 }
 
+/** Live cases (calls, emails) first, newest first, then the example cases from data/. */
 export async function listCases(track = ACTIVE_TRACK): Promise<Case[]> {
-  return loadCases(track, DATA_DIR, DATA_WITHHOLD);
+  const live = safeLive().filter((c) => c.track === track);
+  return [...live, ...(await loadCases(track, DATA_DIR, DATA_WITHHOLD))];
+}
+
+/**
+ * What the agency's inbox shows: live cases only. The organisers' example cases stay in the repo for
+ * evaluation and the Reality Test views; set INBOX_EXAMPLES=show to list them here too.
+ */
+export async function inboxCases(track = ACTIVE_TRACK): Promise<Case[]> {
+  return process.env.INBOX_EXAMPLES === 'show' ? listCases(track) : safeLive().filter((c) => c.track === track);
+}
+
+function safeLive(): Case[] {
+  try {
+    return listLiveCases();
+  } catch (err) {
+    console.error('Live store unavailable:', err);
+    return [];
+  }
 }
 
 export async function getCase(ref: string, track = ACTIVE_TRACK): Promise<Case | undefined> {
-  return (await listCases(track)).find((c) => c.ref === ref);
+  if (ref.startsWith('LIVE-')) return liveCase(ref);
+  return (await loadCases(track, DATA_DIR, DATA_WITHHOLD)).find((c) => c.ref === ref);
 }
 
 export function summarise(c: Case): CaseSummary {

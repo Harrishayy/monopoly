@@ -16,13 +16,12 @@ import { Avatar, Count, Kbd } from '@/ui';
 import { CommandPalette } from './CommandPalette';
 import './shell.css';
 
-type CountKey = keyof NavCounts;
+type CountKey = keyof NavCounts | 'attention';
 const TABS: { href: string; label: string; count?: CountKey }[] = [
-  { href: '/inbox', label: 'Inbox', count: 'cases' },
+  { href: '/inbox', label: 'Inbox', count: 'attention' },
   { href: '/runs', label: 'Live runs', count: 'running' },
-  { href: '/escalations', label: 'Escalations', count: 'escalations' },
   { href: '/reality', label: 'Reality Test' },
-  { href: '/tools', label: 'Tools' },
+  { href: '/architecture', label: 'Architecture' },
 ];
 
 /** Brand with the live mascot, route tabs with counts, search (/ or ⌘K), track and operator. */
@@ -31,7 +30,7 @@ export function TopNav() {
   const track = useUi((s) => s.track);
   const meta = TRACK_META[track];
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const { data: counts } = useApi<NavCounts>('/api/counts', { poll: true, intervalMs: 4000 });
+  const { data: counts } = useApi<NavCounts>('/api/counts', { poll: true, intervalMs: 4000, live: true });
   const { data: runs } = useApi<RunSummary[]>('/api/runs', { poll: true, intervalMs: 2500 });
   const live = runs?.find((r) => !r.done);
   const mascot = live?.mascot ?? 'idle';
@@ -45,8 +44,8 @@ export function TopNav() {
       </Link>
       <nav aria-label="Main" className="nav-tabs flex flex-wrap gap-0.5">
         {TABS.map((t) => {
-          const active = pathname === t.href || pathname.startsWith(`${t.href}/`) || (t.href === '/inbox' && pathname.startsWith('/cases'));
-          const n = t.count ? (counts?.[t.count] ?? 0) : 0;
+          const active = pathname === t.href || pathname.startsWith(`${t.href}/`) || (t.href === '/inbox' && (pathname.startsWith('/cases') || pathname.startsWith('/escalations') || pathname.startsWith('/approvals')));
+          const n = !t.count || !counts ? 0 : t.count === 'attention' ? counts.escalations + (counts.approvals ?? 0) : counts[t.count];
           const label = t.label;
           return (
             <Link

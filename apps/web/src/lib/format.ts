@@ -1,7 +1,8 @@
 const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
+const gbpFine = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
-/** Integer pence → "£1,249.00". */
-export const money = (pence: number) => gbp.format(pence / 100);
+/** Integer pence → "£1,249.00". `fine` shows four decimals, for model costs below a penny. */
+export const money = (pence: number, opts: { fine?: boolean } = {}) => (opts.fine ? gbpFine : gbp).format(pence / 100);
 
 /** ms → "820ms", "12.4s" or "6m 12s". */
 export function duration(ms: number) {

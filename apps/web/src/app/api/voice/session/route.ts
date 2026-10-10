@@ -1,7 +1,15 @@
-/** Returns a signed ElevenLabs conversation URL for the browser voice agent. */
-export function POST() {
-  if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_AGENT_ID) {
-    return Response.json({ error: 'Set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID in .env to enable voice.' }, { status: 503 });
+import { signedUrl, voiceConfigured } from '@/server/live/channels/voice';
+
+export const dynamic = 'force-dynamic';
+
+/** Returns a signed ElevenLabs conversation URL for the tenant portal's call button. */
+export async function POST() {
+  if (!voiceConfigured()) {
+    return Response.json({ error: 'Set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID in .env to enable voice (pnpm voice:setup).' }, { status: 503 });
   }
-  return Response.json({ error: 'Voice session not built yet. See docs/plan/05-components.md → api/voice.' }, { status: 501 });
+  try {
+    return Response.json({ signedUrl: await signedUrl() });
+  } catch (err) {
+    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 502 });
+  }
 }

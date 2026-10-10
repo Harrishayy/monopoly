@@ -1,3 +1,4 @@
+import { LiveBridge } from '@/domain/live';
 import { TopNav } from './TopNav';
 
 /** Nav on top; each route decides its own panes (list / detail / decision). */
@@ -8,6 +9,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <TopNav />
+      <LiveBridge />
       <main id="main" className="flex-1">
         {children}
       </main>

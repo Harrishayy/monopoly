@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @casework/web dev",
+    "demo": "pnpm --filter @casework/web exec next dev -p 3100",
     "build": "pnpm --filter @casework/web build",
     "start": "pnpm --filter @casework/web start",
     "typecheck": "pnpm -r typecheck",
@@ -17,7 +18,10 @@
     "replay": "pnpm --filter @casework/cli replay",
     "eval": "pnpm --filter @casework/cli eval",
     "bench": "pnpm --filter @casework/agents bench",
-    "answer": "pnpm --filter @casework/agents answer"
+    "answer": "pnpm --filter @casework/agents answer",
+    "email:setup": "node --no-warnings scripts/email-setup.ts",
+    "tunnel": "bash scripts/tunnel.sh",
+    "voice:setup": "node scripts/voice-setup.mts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

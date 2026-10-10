@@ -18,7 +18,13 @@ NOW:
 4. Build an evaluation harness that cuts each example history at several points and compares the decision with what happened next.
 5. Make `pnpm reality` write `ANSWERS/` unattended: `apps/cli`, `packages/core/src/answers`.
 
-LATER: anything in `apps/web` (screens, `/design`, tokens, mascot, voice, API routes beyond what exists), visual directions, UI performance budgets, the demo.
+ALSO NOW (decided 2026-10-10, 12:20): the web app is the product a letting agency would run, not a viewer for the eval.
+Live channels open real cases: ElevenLabs voice (in-call `log_issue` tool + post-call webhook + poller fallback),
+an email inbox (poller), and the tenant portal (`/portal`). All of it goes through `apps/web/src/server/live/intake.ts`
+(`ingest` → SQLite store `live/store.ts` → `runCase` → outbound gate). The console shows conversations, agent actions,
+approvals, cost, rules and architecture. `pnpm reality` / ANSWERS stays separate and must not depend on any of this.
+
+LATER: `/design`, visual directions, mascot polish, UI performance budgets.
 
 ## Commands
 

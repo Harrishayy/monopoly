@@ -15,6 +15,8 @@ export function Toaster() {
           toast: 'flex w-[356px] max-w-[calc(100vw-32px)] items-start gap-3 rounded-ui-lg border-(length:--bw) border-line-strong bg-surface p-3 text-sm text-ink shadow-ui',
           title: 'font-semibold',
           description: 'text-[12.5px] text-ink-2',
+          content: 'grid min-w-0 flex-1 gap-0.5',
+          actionButton: 'ml-auto shrink-0 cursor-pointer self-center rounded-ui border-(length:--bw) border-line-strong bg-surface-2 px-2 py-1 text-[12px] font-semibold text-ink hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-accent',
           error: 's-failed border-l-4 border-l-(--c)',
           warning: 's-escalated border-l-4 border-l-(--c)',
           success: 's-resolved border-l-4 border-l-(--c)',
