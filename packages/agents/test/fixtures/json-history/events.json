@@ -1,0 +1,4 @@
+{ "events": [
+  { "ts": "2026-07-06T12:31:48Z", "medium": "portal", "sender": "Tenant", "recipient": "Agency", "text": "Gutter overflowing." },
+  { "ts": "2026-07-08T09:00:00Z", "medium": "email", "sender": "Contractor", "recipient": "Agency", "text": "Cleared, invoice £120 attached." }
+] }

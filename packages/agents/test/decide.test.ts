@@ -146,3 +146,11 @@ describe('pipeline', () => {
     expect(answerNames(['/a/Banking/001', '/a/Insurance Claims/001'])).toEqual(['banking-1', 'insurance-claims-1']);
   });
 });
+
+describe('amount check', () => {
+  it('accepts amounts that appear in the records without a currency sign', async () => {
+    const c = await loadCase(join(FIX, 'weird')); // costs.csv lists 95.00 and 40.00
+    const issues = hardChecks(decision({ message: 'Call-out £95.00 and parts £40.00, £135.00 in total.', citations: ['E001'] }), c, buildLedger(c));
+    expect(issues.filter((i) => i.rule === 'amount-supported')).toEqual([]);
+  });
+});

@@ -125,3 +125,25 @@ describe('attachment timing', () => {
     expect(late.attachments.map((a) => a.name)).toContain('attachments/attachment-02-tax-invoice.pdf');
   });
 });
+
+describe('history in other shapes', () => {
+  it('reads a JSON history with its own field names', async () => {
+    const c = await loadCase(join(FIX, 'json-history'));
+    expect(c.events.map((e) => [e.from, e.to, e.channel])).toEqual([
+      ['Tenant', 'Agency', 'portal'],
+      ['Contractor', 'Agency', 'email'],
+    ]);
+    expect(c.asOf).toBe('2026-07-08T09:00:00.000Z');
+  });
+  it('reads a CSV history with quoted cells', async () => {
+    const c = await loadCase(join(FIX, 'csv-history'));
+    expect(c.events).toHaveLength(2);
+    expect(c.events[1]!.body).toBe('Could you approve a locksmith, "urgent"?');
+  });
+  it('uses a dated log inside the record when there is no history file', async () => {
+    const c = await loadCase(join(FIX, 'log-in-record'));
+    expect(c.events).toHaveLength(2);
+    expect(c.asOf).toBe('2026-06-05T16:02:00.000Z');
+    expect(c.anomalies.join(' ')).toMatch(/taken from the "Log" section/);
+  });
+});

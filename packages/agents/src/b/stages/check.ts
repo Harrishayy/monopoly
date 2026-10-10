@@ -44,7 +44,10 @@ export function hardChecks(d: Decision, c: CaseFile, ledger: Ledger, situation?:
   if (d.action === 'other') add('other-action', 'minor', 'Action outside the standard set; needs review.');
 
   // Amounts in the message must come from the records (directly, as a sum, or with/without 20% VAT).
-  const known = ledger.amounts.map((a) => a.pence);
+  // Any number in the records counts, with or without a currency sign (quotes list "360.00" in tables).
+  const recordText = [...c.sections.map((x) => x.body), ...c.events.map((e) => e.body), ...c.attachments.map((a) => a.text ?? '')].join('\n');
+  const bareNumbers = [...recordText.matchAll(/\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?/g)].map((m) => Math.round(Number(m[0].replace(/,/g, '')) * 100)).filter((p) => p > 0);
+  const known = [...new Set([...ledger.amounts.map((a) => a.pence), ...bareNumbers])].slice(0, 400);
   const derivable = new Set<number>(known);
   for (const a of known) {
     derivable.add(Math.round(a * 1.2));

@@ -44,7 +44,11 @@ export function toAgentDecision(r: CaseResult): AgentDecision {
   };
 }
 
-export function agentB(opts: AgentBOptions = {}): Agent {
+/** Chosen on the val split: one decision, no situate or review stage (63.4% vs 52.1% for the full pipeline). */
+export const B_DEFAULTS = { samples: 1, situate: false, review: false } as const;
+
+export function agentB(options: AgentBOptions = {}): Agent {
+  const opts = { ...B_DEFAULTS, ...Object.fromEntries(Object.entries(options).filter(([, v]) => v !== undefined)) } as AgentBOptions;
   const caller = () => (opts.caller ?? defaultCaller());
   return {
     id: 'b',

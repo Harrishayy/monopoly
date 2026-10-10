@@ -111,3 +111,80 @@ export function parseHistory(text: string): ParsedHistory {
   }
   return { events, anomalies };
 }
+
+const KEY = {
+  at: /^(ts|time|timestamp|date|datetime|at|created|created_at|sent|sent_at|when)$/i,
+  from: /^(from|sender|author|by|caller|source_party)$/i,
+  to: /^(to|recipient|recipients|addressee)$/i,
+  channel: /^(channel|medium|via|type|source|kind)$/i,
+  body: /^(body|text|message|content|note|notes|description|summary|details)$/i,
+  n: /^(n|no|num|number|id|event|event_no|seq)$/i,
+};
+
+/** Histories exported as JSON (an array, or an object holding one) or CSV/TSV with a header row. */
+export function parseStructuredHistory(text: string, ext: string): ParsedHistory {
+  let rows: Record<string, unknown>[] = [];
+  if (ext === 'json') {
+    const data = JSON.parse(text) as unknown;
+    const arr = Array.isArray(data) ? data : Object.values((data ?? {}) as object).find(Array.isArray);
+    rows = ((arr as unknown[]) ?? []).filter((r): r is Record<string, unknown> => !!r && typeof r === 'object');
+  } else {
+    const sep = ext === 'tsv' ? '\t' : ',';
+    const lines = splitCsv(text, sep);
+    const head = lines[0] ?? [];
+    rows = lines.slice(1).filter((l) => l.some((c) => c.trim())).map((l) => Object.fromEntries(head.map((h, i) => [h.trim(), l[i] ?? ''])));
+  }
+  const pick = (r: Record<string, unknown>, re: RegExp) => {
+    const k = Object.keys(r).find((x) => re.test(x));
+    const v = k === undefined ? undefined : r[k];
+    return v === null || v === undefined || v === '' ? undefined : String(v);
+  };
+  const events: CaseEvent[] = rows.map((r, i) => {
+    const fields: Record<string, string> = {};
+    for (const [k, v] of Object.entries(r)) if (v !== null && v !== undefined && typeof v !== 'object') fields[k.toLowerCase()] = String(v);
+    const atRaw = pick(r, KEY.at);
+    const nRaw = Number(pick(r, KEY.n));
+    return {
+      id: `E${String(i + 1).padStart(3, '0')}`,
+      n: Number.isFinite(nRaw) && nRaw > 0 ? nRaw : i + 1,
+      at: parseDate(atRaw),
+      atRaw,
+      fields,
+      channel: pick(r, KEY.channel),
+      from: pick(r, KEY.from),
+      to: pick(r, KEY.to),
+      body: pick(r, KEY.body) ?? Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join('\n'),
+    };
+  });
+  const anomalies = [`History read from a ${ext.toUpperCase()} file (${events.length} rows).`];
+  const undated = events.filter((e) => !e.at).length;
+  if (undated) anomalies.push(`${undated} event(s) have no parsable date.`);
+  return { events, anomalies };
+}
+
+/** Minimal CSV reader: quoted fields, doubled quotes, newlines inside quotes. */
+function splitCsv(text: string, sep: string): string[][] {
+  const out: string[][] = [[]];
+  let cell = '';
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === sep) {
+      out.at(-1)!.push(cell);
+      cell = '';
+    } else if (ch === '\n') {
+      out.at(-1)!.push(cell.replace(/\r$/, ''));
+      cell = '';
+      out.push([]);
+    } else cell += ch;
+  }
+  out.at(-1)!.push(cell);
+  return out;
+}

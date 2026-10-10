@@ -3,7 +3,7 @@ import { basename, join, relative } from 'node:path';
 import type { Attachment, CaseEvent, CaseFile, Field, Section } from '../types';
 import { readAttachment } from './attachments';
 import { parseDate } from './dates';
-import { parseHistory } from './history';
+import { parseHistory, parseStructuredHistory } from './history';
 import { cleanBody, parseMarkdown, slug } from './markdown';
 
 export interface LoadOptions {
@@ -24,7 +24,7 @@ const ANSWER_SECTION = /^(overview|outcome|resolution|next action|boundaries|rem
 const ANSWER_FIELD = /^(status|updated|completed|closed|resolved|escalated|resolution|outcome)$/i;
 /** Files read as the case record or history; everything else in the folder is an attachment. */
 const RECORD_FILE = /^(index|case|ticket|summary|details|readme)\.(md|markdown|txt)$/i;
-const HISTORY_FILE = /^(history|events|timeline|log|conversation|thread|messages)\.(md|markdown|txt)$/i;
+const HISTORY_FILE = /^(history|events|timeline|log|conversation|thread|messages|activity)\.(md|markdown|txt|json|csv|tsv)$/i;
 
 export async function loadCase(dir: string, opts: LoadOptions = {}): Promise<CaseFile> {
   const withhold = opts.withhold ?? 'none';
@@ -74,9 +74,27 @@ export async function loadCase(dir: string, opts: LoadOptions = {}): Promise<Cas
   /* History ------------------------------------------------------------ */
   let events: CaseEvent[] = [];
   if (historyName) {
-    const parsed = parseHistory(await readFile(join(dir, historyName), 'utf8'));
+    const text = await readFile(join(dir, historyName), 'utf8');
+    const ext = historyName.split('.').pop()!.toLowerCase();
+    let parsed;
+    try {
+      parsed = ['json', 'csv', 'tsv'].includes(ext) ? parseStructuredHistory(text, ext) : parseHistory(text);
+    } catch (e) {
+      anomalies.push(`${historyName} could not be parsed as ${ext} (${e instanceof Error ? e.message : String(e)}); read as text.`);
+      parsed = parseHistory(text);
+    }
     events = parsed.events;
     anomalies.push(...parsed.anomalies);
+  } else {
+    // No history file: a dated log inside the record (e.g. "## Log", "## Timeline") is the history.
+    const log = sections.find((s) => /log|timeline|history|activity|events|updates|notes/i.test(s.heading) && /\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}/.test(s.body));
+    if (log) {
+      const parsed = parseHistory(log.body);
+      if (parsed.events.some((e) => e.at)) {
+        events = parsed.events;
+        anomalies.push(`History taken from the "${log.heading}" section of the case record (${events.length} entries).`);
+      }
+    }
   }
   if (!historyName && !recordName) anomalies.push('Case folder has neither record nor history; only attachments are available.');
 
@@ -209,7 +227,9 @@ export async function findCaseDirs(root: string, depth = 4): Promise<string[]> {
   if (depth === 0) return [];
   const out: string[] = [];
   for (const e of entries) {
-    if (e.isDirectory() && !/^attachments?$/i.test(e.name)) out.push(...(await findCaseDirs(join(root, e.name), depth - 1)));
+    // Follow symlinked folders too (Dirent.isDirectory is false for a link).
+    const isDir = e.isDirectory() || (e.isSymbolicLink() && (await stat(join(root, e.name)).catch(() => undefined))?.isDirectory());
+    if (isDir && !/^attachments?$/i.test(e.name)) out.push(...(await findCaseDirs(join(root, e.name), depth - 1)));
   }
   // A leaf folder of loose files (no recognised names) is still a case, unless it only holds a README.
   if (!out.length && names.filter((n) => !/^readme/i.test(n)).length && depth < 4) return [root];
