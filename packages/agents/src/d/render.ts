@@ -37,6 +37,11 @@ export function renderAnswer(r: DResult, c: Case, pack: TrackPack, n: number): s
   } else if (f.reviewNote || r.warnings.length) {
     out.push('## For a person to glance at', '', ...(f.reviewNote ? [f.reviewNote] : []), ...r.warnings.map((t) => `- ${t.label} in \`${t.sourceId}\`: not acted on. ${t.firstStep}`), '');
   }
+  const ds = f.disagreements ?? [];
+  if (ds.length) {
+    const label = { open: 'Open', settled: 'Settled', other_job: 'Another job' } as const;
+    out.push('## Disagreements', '', ...ds.map((d) => `- **${label[d.status]}:** ${d.fact}. ${d.versions.join('; ')}${d.settledBy ? ` (settled by \`${d.settledBy}\`)` : ''}`), '');
+  }
   if (f.missingFact) out.push('## Information requested', '', f.missingFact, '');
   if (r.boundaries.length) out.push('## Boundaries', '', ...r.boundaries.map((b) => `- ${b}`), '');
   if (f.remainingWork.length) out.push('## Still open', '', ...f.remainingWork.map((w) => `- ${w}`), '');

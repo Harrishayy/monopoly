@@ -1,5 +1,6 @@
 import type { Assessment, Case, TrackPack } from '@casework/core';
 import { guard } from '@casework/core/agent';
+import type { CodeConflict } from './conflicts';
 import { isExternal, type TriggerHit } from './triggers';
 import type { Proposal } from './types';
 
@@ -11,6 +12,7 @@ import type { Proposal } from './types';
  *   4 pack       the shared guard: assessment bars (liftable by citation) and pack policy rules
  *   5 contracts  D's own "not now" rules, hard or soft (soft ones lift with the right citation)
  *   6 literals   every £ figure in the message appears in the case (allowing VAT either way)
+ *   7 conflict   while the parties disagree on a fact the step depends on, the step asks the person who can settle it
  * Contracts were measured against the labelled cuts before being added: see docs/plan/12-agent-d.md.
  */
 
@@ -21,6 +23,8 @@ export interface CheckContext {
   pack: TrackPack;
   assessment: Assessment | undefined;
   forced: TriggerHit[];
+  /** Disagreements found by rules (conflicts.ts); each must be settled before the job moves forward. */
+  conflicts?: CodeConflict[];
 }
 
 const NEVER: { id: string; re: RegExp; why: string; only?: RegExp }[] = [
@@ -89,7 +93,7 @@ export function contractBars(ctx: CheckContext): string[] {
 }
 
 export function blank(action: Proposal['action']): Proposal {
-  return { explanation: '', action, channel: 'note', message: '', citations: [], remainingWork: [], triggerId: null, missingFact: null, reviewNote: null, recheckInDays: null, amountPence: null, alternatives: [] };
+  return { explanation: '', action, channel: 'note', message: '', citations: [], remainingWork: [], triggerId: null, missingFact: null, reviewNote: null, recheckInDays: null, amountPence: null, alternatives: [], disagreements: [] };
 }
 
 const POUNDS =/£\s?(\d{1,3}(?:,\d{3})*|\d+)(?:\.(\d{1,2}))?/g;
@@ -147,6 +151,53 @@ export function toolArgs(p: Proposal, c: Case, confidence: number): Record<strin
   };
 }
 
+/** Steps that move the job forward on the disputed fact: never taken while the parties disagree. */
+const PROGRESS = new Set<Proposal['action']>(['contractor.assign', 'contractor.instruct', 'landlord.send_quote', 'case.close']);
+
+/**
+ * The disagreements still open for this proposal: the model's own open ones, and every one the rules found that the
+ * model did not settle (with a later source) or place in another job.
+ */
+export function openDisagreements(p: Proposal, ctx: CheckContext): string[] {
+  const { c } = ctx;
+  const conflicts = ctx.conflicts ?? [];
+  const at = (id: string | null | undefined) => {
+    const s = id ? c.sources.find((x) => x.id === id) : undefined;
+    return s ? Date.parse(s.receivedAt) : NaN;
+  };
+  const own = (p.disagreements ?? []).filter((d) => d.status === 'open').map((d) => d.fact);
+  const found = conflicts
+    .filter((k) => {
+      const d = (p.disagreements ?? []).find((x) => x.id === k.id || x.versions.some((v) => v.includes(k.sourceId)));
+      if (!d || d.status === 'open') return true;
+      if (d.status === 'other_job') return false;
+      return !(at(d.settledBy) > at(k.sourceId));
+    })
+    .map((k) => `${k.fact} (${k.sourceId}: ${k.said} against ${k.record}; ask the ${k.ask})`);
+  return [...found, ...own];
+}
+
+function conflict(p: Proposal, ctx: CheckContext): Verdict {
+  const open = openDisagreements(p, ctx);
+  if (!open.length || p.action === 'case.escalate') return { ok: true };
+  const list = open.join('; ');
+  if (PROGRESS.has(p.action)) {
+    return { ok: false, ruleId: 'd.conflict.open', why: `The parties disagree on: ${list}. Ask the person who can settle it, naming both versions, before moving the job forward. If a later message already settles it, cite it in "settledBy"; if the message is about another job, mark it "other_job".` };
+  }
+  if (p.action === 'case.wait') {
+    // Waiting is right only once the question has been put.
+    const latest = Math.max(...(ctx.conflicts ?? []).map((k) => Date.parse(receivedAt(ctx, k.sourceId))), 0);
+    const asked = ctx.c.sources.some((s) => !isExternal(s) && s.kind !== 'ticket' && !s.id.endsWith(':case') && Date.parse(s.receivedAt) > latest);
+    return asked ? { ok: true } : { ok: false, ruleId: 'd.conflict.ask_first', why: `The parties disagree on: ${list}, and nobody has been asked yet. Ask the person who can settle it instead of waiting.` };
+  }
+  if (!p.message.includes('?')) {
+    return { ok: false, ruleId: 'd.conflict.ask', why: `The parties disagree on: ${list}. The message must ask the person who can settle it a direct question naming both versions (for example "Is it Flat 6 or Flat 9?").` };
+  }
+  return { ok: true };
+}
+
+const receivedAt = (ctx: CheckContext, id: string) => ctx.c.sources.find((s) => s.id === id)?.receivedAt ?? '';
+
 export function check(p: Proposal, ctx: CheckContext): Verdict {
   const { c, pack, assessment, forced } = ctx;
 
@@ -175,6 +226,9 @@ export function check(p: Proposal, ctx: CheckContext): Verdict {
 
   const k = contracts(p, ctx);
   if (!k.ok) return k;
+
+  const d = conflict(p, ctx);
+  if (!d.ok) return d;
 
   return literals(p, c);
 }

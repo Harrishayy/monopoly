@@ -19,6 +19,16 @@ export const ACTIONS = [
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
+/** A fact the next step depends on where the latest word from the parties, a document or the record differs. */
+export const Disagreement = z.object({
+  id: z.string().nullable().describe('The id from <disagreements> when the rules found it, otherwise null.'),
+  fact: z.string().describe('What differs: which property or flat, the amount, the scope, whether the work is done, who approved, the date.'),
+  versions: z.array(z.string()).describe('Each version with who said it and the source id, latest first.'),
+  status: z.enum(['open', 'settled', 'other_job']).describe('open: still differs. settled: a later message settles it. other_job: the message is about a different job.'),
+  settledBy: z.string().nullable().describe('For settled only: the source id of the later message that settles it.'),
+});
+export type Disagreement = z.infer<typeof Disagreement>;
+
 /** One proposed next step, from a Haiku vote, the supervisor, a retry or the fallback. */
 export const Proposal = z.object({
   explanation: z.string().describe('Why this is the right step now, in one to three sentences, citing event ids.'),
@@ -33,6 +43,7 @@ export const Proposal = z.object({
   recheckInDays: z.number().int().nullable().describe('For case.wait only: when to look again.'),
   amountPence: z.number().int().nullable().describe('When the step involves a price, in pence.'),
   alternatives: z.array(z.object({ action: z.enum(ACTIONS), whyNot: z.string() })).describe('Other defensible steps and why this one is better.'),
+  disagreements: z.array(Disagreement).describe('Every disagreement on a fact the next step depends on, including each one listed in <disagreements>. Empty when everyone agrees.'),
 });
 export type Proposal = z.infer<typeof Proposal>;
 
@@ -95,6 +106,8 @@ export interface DResult {
   forced: TriggerView[];
   /** Warning triggers (e.g. text addressed to an AI): shown to the model and supervisor, never acted on. */
   warnings: TriggerView[];
+  /** Disagreements found by rules at the decision moment (conflicts.ts). */
+  conflicts: { id: string; text: string }[];
   calls: ModelCallRecord[];
   usage: Usage;
   stage?: string;

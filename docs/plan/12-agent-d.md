@@ -121,3 +121,21 @@ Loading (`d/load.ts`): D loads through A's loader first. If that loader fails or
 
 Where D still loses:
 - **Escalation-optional conflicts:** in 107, 111, 114 and 130, D took a routine step where escalating or chasing was expected. The autonomy preference leans that way by design. Watch it on the real cases.
+
+## Disagreements hold the job (2026-10-10)
+
+Rule: when the latest word from the tenant, landlord, contractor, a document or the job record differs on a fact the next step depends on (which flat, the amount, done or not, who approved), D asks the person who can settle it, naming both versions, and only moves forward once everyone agrees.
+
+- **Found by rules** (`d/conflicts.ts`): each party's latest message that names a different flat or street from the job (a resend with the right address clears the party's earlier mistake; when tenant and landlord now agree on another address, that becomes the reference), and a landlord approval naming an amount no price in the case supports (a cap above every price is not a disagreement). Shown to the model as `<disagreements>`.
+- **Declared by the model**: every proposal lists its `disagreements`, each open, settled (citing a later source in `settledBy`) or `other_job`.
+- **Enforced by the guard** (`d.conflict.*` in `d/check.ts`): while any is open, no assign, instruct, send quote or close; any other message must ask a question; waiting is allowed only once someone has been asked. Escalation stays available.
+- Model output budget raised to 32k (voters) and 64k (supervisor), doubled once on a `max_tokens` stop (`d/model.ts`).
+
+| Measure (one run each) | Before | After |
+|---|---|---|
+| Stress suite, new evidence cases 131–152 | 18/22 | 20/22 |
+| Stress suite, cases 101–130 | 27/30 | 27/30 |
+| Val (71 cuts) | 86.6% (mean of 2) | 83.1% |
+| Perturb | about 85% | not run (credits) |
+
+The val drop is mostly the rule working as intended against labels that record the agency carrying on: D now asks which property (032@34) or which tenant contact is right (043@14, 050@27) where the agency did not. 050@19 is genuine over-caution (D queried a vague scope instead of sending the quote). Detector rate without a model: 26 of 328 labelled cuts, 1 where it blocks every accepted step (008@39); perturb suite 8/137 clean, 18/137 wrong-thread, 0/137 renamed (the renamed format hides the record's property line, so the rule is off there).

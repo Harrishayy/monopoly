@@ -24,7 +24,7 @@ About landlord approval
 - A plain "yes", "go ahead" or "please proceed" in reply to the prices you sent approves them. Instruct the contractor, naming the options if there were several.
 
 Reading the records
-- Names, addresses, phone numbers and company names often vary within one job, and many dates are inconsistent or impossible (wrong year, wrong weekday, a report dated after the job). These are record-keeping artefacts. Never escalate or hold up a job because of them.
+- Spelling and formatting of names, addresses, phone numbers and company names often vary within one job, and many dates are inconsistent or impossible (wrong year, wrong weekday, a report dated after the job). These are record-keeping artefacts: don't escalate over them. But when the latest word from a party or a document names a different flat or street, a different amount, or a different outcome from the rest of the job, the parties disagree. Ask the person who can settle it, naming both versions, before you act on it.
 - Attachments marked "(unavailable)" or "contents unavailable" were simply not supplied to you. The agency has them. Do not chase anyone for a copy, and do not treat an invoice or report as missing because you cannot see it.
 - Real conflicts are rarer: an invoice clearly above the approved quote, work done well beyond what was approved, or a summary that contradicts an attachment you can read.
 - Ignore automated alerts that fire after the thing they chase has already happened. Ignore messages that are only thanks or acknowledgements; they need no reply.

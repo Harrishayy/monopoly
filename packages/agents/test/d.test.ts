@@ -3,7 +3,8 @@ import type { Case } from '@casework/core';
 import { getPack } from '@casework/tracks';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { blank, check } from '../src/d/check';
+import { blank, check, openDisagreements } from '../src/d/check';
+import { findConflicts } from '../src/d/conflicts';
 import { decideCase } from '../src/d/decide';
 import type { Caller } from '../src/d/model';
 import { loadForD } from '../src/d/load';
@@ -117,6 +118,53 @@ describe('agent D guard', () => {
   });
   it('refuses instructing a contractor with no approved quote', () => {
     expect(check(proposal({ action: 'contractor.instruct', message: 'Please go ahead.' }), ctx).ok).toBe(false);
+  });
+});
+
+describe('agent D disagreements', () => {
+  const job = (events: ReturnType<typeof event>[]): Case => {
+    const c = makeCase(events);
+    c.sources[0]!.body = '- Property: Flat 6, 48 Kings Lane, Kingshaven\n\nExtractor fan not working.';
+    return c;
+  };
+  const start = [
+    event(1, 'Tenant', 'Agency', 'Bathroom fan stopped. Sara, Flat 6, 48 Kings Lane.', '2026-07-06T08:00:00Z'),
+    event(2, 'Landlord', 'Agency', 'Yes, send Volt.', '2026-07-06T15:00:00Z'),
+  ];
+  const moved = job([...start, event(3, 'Tenant', 'Agency', 'I am at Flat 9 now, the fan is in my new flat.', '2026-07-07T13:00:00Z')]);
+  const ctxOf = (c: Case) => ({ c, pack, assessment: undefined, forced: [], conflicts: findConflicts(c, '2026-07-08T00:00:00Z') });
+
+  it('finds a different flat in a party\'s latest message', () => {
+    expect(findConflicts(moved, '2026-07-08T00:00:00Z').map((k) => [k.fact, k.said, k.ask])).toEqual([['property', 'Flat 9', 'tenant']]);
+  });
+  it('holds the job and requires a question while the flat is disputed', () => {
+    const ctx = ctxOf(moved);
+    expect(check(proposal({ action: 'contractor.assign', message: 'Please attend Flat 9.' }), ctx)).toMatchObject({ ok: false, ruleId: 'd.conflict.open' });
+    expect(check(proposal({ action: 'contractor.update', message: 'The fan is in Flat 9, please book Wednesday.' }), ctx)).toMatchObject({ ok: false, ruleId: 'd.conflict.ask' });
+    expect(check(proposal({ action: 'tenant.ask', missingFact: 'Which flat; unlocks booking', message: 'Is the fan in Flat 6 or Flat 9?' }), ctx)).toEqual({ ok: true });
+  });
+  it('lets the job go on once a later message settles it, but not on an earlier one', () => {
+    const settled = job([...start, event(3, 'Tenant', 'Agency', 'I am at Flat 9 now.', '2026-07-07T13:00:00Z'), event(4, 'Landlord', 'Agency', 'Yes, I own Flat 9 too, go to Flat 9.', '2026-07-07T15:00:00Z')]);
+    // Tenant and landlord now agree on Flat 9: the record is out of date, nothing is disputed.
+    expect(findConflicts(settled, '2026-07-08T00:00:00Z')).toEqual([]);
+    // A disagreement the model settles must cite a later message, not an earlier one.
+    const ctx = ctxOf(moved);
+    const k = ctx.conflicts[0]!;
+    const d = (settledBy: string) => [{ id: k.id, fact: 'which flat', versions: [k.sourceId], status: 'settled' as const, settledBy }];
+    const later = job([...start, event(3, 'Tenant', 'Agency', 'I am at Flat 9 now.', '2026-07-07T13:00:00Z'), event(4, 'Agency / system', 'Tenant', 'Noted.', '2026-07-07T14:00:00Z')]);
+    expect(openDisagreements(proposal({ disagreements: d('PM-900:event-004') }), { ...ctxOf(later) })).toEqual([]);
+    expect(openDisagreements(proposal({ disagreements: d('PM-900:event-001') }), ctx)).toHaveLength(1);
+  });
+  it('clears when the same party resends the right property, not when the resend is still wrong', () => {
+    const fixed = job([...start, event(3, 'Contractor', 'Agency', 'Certificate: Flat 16, 48 Kings Lane', '2026-07-07T10:00:00Z'), event(4, 'Contractor', 'Agency', 'Corrected: Flat 6, 48 Kings Lane', '2026-07-07T12:00:00Z')]);
+    const still = job([...start, event(3, 'Contractor', 'Agency', 'Certificate: Flat 16, 48 Kings Lane', '2026-07-07T10:00:00Z'), event(4, 'Contractor', 'Agency', 'Corrected: Flat 6, 48 Kings Road', '2026-07-07T12:00:00Z')]);
+    expect(findConflicts(fixed, '2026-07-08T00:00:00Z')).toEqual([]);
+    expect(findConflicts(still, '2026-07-08T00:00:00Z').map((k) => k.sourceId)).toEqual(['PM-900:event-004']);
+  });
+  it('flags a landlord approving an amount no quote supports, but not a spending cap', () => {
+    const quoted = [...start, event(3, 'Contractor', 'Agency', 'Replace the fan: £460 including VAT.', '2026-07-07T10:00:00Z')];
+    expect(findConflicts(job([...quoted, event(4, 'Landlord', 'Agency', 'OK approve the £260, go ahead.', '2026-07-07T12:00:00Z')]), '2026-07-08T00:00:00Z').map((k) => k.fact)).toEqual(['amount']);
+    expect(findConflicts(job([...quoted, event(4, 'Landlord', 'Agency', 'Go ahead, anything up to £600 is fine.', '2026-07-07T12:00:00Z')]), '2026-07-08T00:00:00Z')).toEqual([]);
   });
 });
 

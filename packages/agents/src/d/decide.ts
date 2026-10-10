@@ -1,5 +1,6 @@
 import type { Assessment, Case, TrackPack } from '@casework/core';
 import { blank, check, contractBars, type CheckContext } from './check';
+import { describe as describeConflict, findConflicts } from './conflicts';
 import { addUsage, budget, callJson, defaultCaller, MODELS, zeroUsage, type Caller } from './model';
 import { caseText, retryTask, supervisorTask, systemPrompt, voteTask } from './prompt';
 import { openTriggers, type TriggerHit } from './triggers';
@@ -48,7 +49,8 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
   const hits = openTriggers(c, assessment, asOf);
   const forced = hits.filter((h) => h.rule.mode !== 'warn');
   const warnings = hits.filter((h) => h.rule.mode === 'warn');
-  const ctx: CheckContext = { c, pack, assessment, forced };
+  const conflicts = findConflicts(c, asOf, new Set(assessment?.noise.map((n) => n.sourceId) ?? []));
+  const ctx: CheckContext = { c, pack, assessment, forced, conflicts };
 
   const done = (route: Route, final: Proposal, extra: Partial<DResult> = {}): DResult => ({
     caseRef: c.ref,
@@ -59,6 +61,7 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
     refusals,
     forced: forced.map(hitView),
     warnings: warnings.map(hitView),
+    conflicts: conflicts.map((k) => ({ id: k.id, text: describeConflict(k) })),
     calls,
     usage: calls.reduce((u, r) => addUsage(u, r.usage), zeroUsage()),
     stage: assessment?.stage,
@@ -90,7 +93,7 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
   }
 
   const system = systemPrompt(pack);
-  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`));
+  const text = caseText(c, assessment, contractBars(ctx), warnings.map((w) => `${w.rule.label} in ${w.sourceId}: "${w.quote}". ${w.rule.firstStep}`), conflicts.map((k) => `[${k.id}] ${describeConflict(k)}`));
 
   // ---- votes
   const n = Math.max(1, opts.samples ?? Number(process.env.AGENT_D_SAMPLES ?? 3));
@@ -106,7 +109,7 @@ export async function decideCase(c: Case, pack: TrackPack, asOfIn: string | unde
   const extra = { votes };
 
   // ---- easy: unanimous, reversible, nothing flagged
-  const weighed = (assessment?.flags.length ?? 0) > 0 || warnings.length > 0;
+  const weighed = (assessment?.flags.length ?? 0) > 0 || warnings.length > 0 || conflicts.length > 0;
   const actions = new Set(votes.map((v) => v.action));
   if (votes.length === n && passing.length === n && actions.size === 1) {
     const action = votes[0]!.action;
