@@ -13,8 +13,8 @@ act at all, it escalates with a handover a person can decide from in seconds.
 The same engine also runs unattended over a folder of cases and writes `ANSWERS/` for the hackathon's
 Reality Test.
 
-Track: **Property Management** · Submission details: [SUBMISSION.md](SUBMISSION.md) · Live demo
-script: [how_to_demo.md](how_to_demo.md) · Reality Test results: [ANSWERS/](ANSWERS/)
+Track: **Property Management** · Demo video: [`demo/demo.mp4`](demo/demo.mp4) · Submission details:
+[SUBMISSION.md](SUBMISSION.md) · Reality Test results: [ANSWERS/](ANSWERS/)
 
 ## See it working
 
@@ -114,7 +114,9 @@ case layout first, so the engine reads it like a supplied case.
 | Around the engine | CRM context, persistence, outbound gate, approvals, live updates | nothing live: unattended, no network channels |
 | Output | sent / held / escalated, visible in the console | `ANSWERS/<n>/ANSWER.md`, `REASONING.md`, `trace.jsonl` |
 
-The product and `pnpm reality` run Agent C.
+The product and `pnpm reality` run Agent C. Agents A, B and D are archived: they stay in the repo
+because C is built on B's loader, checks and gate, and the bench compares against them, but nothing
+runs them by default.
 
 <!-- agent-c:start -->
 ### Agent C
@@ -172,8 +174,7 @@ pnpm tunnel                   # separate terminal: public URL + points the Eleve
 ```
 
 `pnpm tunnel` creates or updates the ElevenLabs agent, its tool and webhook through the API
-(`scripts/voice-setup.mts`); no dashboard clicks are needed. The full demo walkthrough is in
-**[how_to_demo.md](how_to_demo.md)**.
+(`scripts/voice-setup.mts`); no dashboard clicks are needed.
 
 Checks: `pnpm typecheck && pnpm test && pnpm build`.
 

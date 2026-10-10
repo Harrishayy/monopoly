@@ -1,18 +1,22 @@
 # @casework/agents
 
-Both case agents in one place: one interface, one test bench, one CLI.
+The case agents in one place: one interface, one test bench, one CLI.
+
+**Agent C is the agent.** The product and `pnpm reality` run it. Agents A, B and D are archived: kept
+for the bench and because C is built on B's modules (loader, ledger, checks, gate, prompts). Don't
+pick them for the Reality Test.
 
 ```
 packages/agents/src/
   agent.ts        the common interface: decide(case) → AgentDecision; answer(cases) → ANSWERS folders
   registry.ts     getAgents(['a','b'], { model }); one model setting for both (default claude-haiku-5-5)
-  a/              agent A adapter. The engine is in @casework/core (guarded tool loop) and
+  a/              (archived) agent A adapter. The engine is in @casework/core (guarded tool loop) and
                   @casework/tracks (property pack: assessment, tools, policy, prompt), which the web app also uses
-  b/              agent B, a fixed pipeline: ingest → ledger → situate → decide ×3 → check + review → gate → write
+  b/              (archived as an agent; C uses its modules) agent B, a fixed pipeline: ingest → ledger → situate → decide ×3 → check + review → gate → write
                   (design notes in b/PLAN.md)
   c/              agent C: agent B's pipeline with a stronger decider, a reviewer on a different model and a review
                   dialogue (docs/plan/12-agent.md, experiments E1–E3)
-  d/              agent D: A's rules + forced triggers in code + 3 Haiku votes + gated Opus supervisor + code guard
+  d/              (archived) agent D: A's rules + forced triggers in code + 3 Haiku votes + gated Opus supervisor + code guard
                   (design and measurements in docs/plan/12-agent-d.md)
   bench/          split.json (fixed dev/val/test), labels, few-shot memory, shared scorer, model judge
   cli.ts          answer · bench · judge · split
