@@ -9,7 +9,8 @@
  * --kind (smoke, practice, reality, …), --name and --note go into <out>/run.json for the UI.
  * --agent a|b picks the engine (default ENGINE or a). It is the same engine the live product runs.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { Case } from '@casework/core';
@@ -65,18 +66,35 @@ async function runOne(c: Case, n: number) {
 
 async function main() {
   const withhold = values.withhold === 'outcomes' ? 'outcomes' : 'none';
-  const cases = await pack.loadCases(inDir, { withhold });
-  if (!cases.length) {
-    console.error(`No ${pack.label} cases found in ${inDir}. Nothing written. See data/README.md for the expected layout.`);
-    process.exit(1);
-  }
+  const loaded = await pack.loadCases(inDir, { withhold }).catch((err: unknown) => {
+    console.warn(`The ${pack.label} loader failed (${err instanceof Error ? err.message : String(err)}); every case goes to the fallback reader.`);
+    return [] as Case[];
+  });
   // Every case folder, whatever it is named ("007", "PM-001", "case_1"). Engines that read folders get the
   // full list; the number → folder map only serves per-case runs and keys on the folder's trailing digits.
   dirs = await findCaseDirs(inDir);
   folders = new Map(dirs.flatMap((d) => {
-    const m = basename(d).match(/(\d+)$/);
-    return m ? [[Number(m[1]), d] as const] : [];
+    const n = trailingNumber(basename(d));
+    return n === undefined ? [] : [[n, d] as const];
   }));
+  if (!loaded.length && !dirs.length) {
+    console.error(`No ${pack.label} cases found in ${inDir}. Nothing written. See data/README.md for the expected layout.`);
+    process.exit(1);
+  }
+  // Coverage guard: a folder the pack loader skipped, or read with no history (e.g. events.json,
+  // timeline.md), would otherwise get no answer or a wrong one. Agent B's reader handles those
+  // layouts, so it answers them. Nothing is dropped silently.
+  const hasHistory = (c: Case) => c.sources.some((s) => /:event-\d+$/.test(s.id));
+  const byNumber = new Map(loaded.map((c, i) => [caseNumber(c, i), c] as const));
+  const fallback = engine.answers
+    ? []
+    : dirs.filter((d) => {
+        const n = trailingNumber(basename(d));
+        const c = n === undefined ? undefined : byNumber.get(n);
+        return !c || !hasHistory(c);
+      });
+  const fallbackNumbers = new Set(fallback.map((d) => trailingNumber(basename(d))).filter((n) => n !== undefined));
+  const cases = loaded.filter((c, i) => !fallbackNumbers.has(caseNumber(c, i)));
   const manifest = {
     kind: runKind(values.kind, withhold === 'outcomes' ? 'practice' : /challenge/i.test(values.in!) ? 'reality' : 'adhoc'),
     name: values.name,
@@ -109,12 +127,38 @@ async function main() {
       }
     }),
   );
+  if (fallback.length) {
+    for (const d of fallback) console.warn(`fallback to B: ${basename(d)} (${byNumber.has(trailingNumber(basename(d)) ?? -1) ? 'loaded with no history' : 'not readable by the ' + pack.label + ' loader'})`);
+    const b = getEngine('b');
+    const tmp = await mkdtemp(join(tmpdir(), 'casework-fallback-'));
+    const res = await b.answers!(fallback, tmp, { track: pack.id, withhold, concurrency: limit, log: (l) => console.log(l) });
+    // Same numbering as every other answer: ANSWERS/<trailing number of the folder>.
+    for (const [i, r] of res.entries()) {
+      const n = trailingNumber(r.name) ?? trailingNumber(basename(fallback[i] ?? '')) ?? undefined;
+      const dest = join(outDir, n === undefined ? r.name : String(n));
+      await rm(dest, { recursive: true, force: true });
+      await rename(join(tmp, r.name), dest).catch(async () => {
+        await cp(join(tmp, r.name), dest, { recursive: true });
+      });
+      results.push({ n: n ?? -1, ref: basename(fallback[i] ?? r.name), outcome: 'agent B', next: r.action, decidedBy: r.decidedBy, error: r.failures.join('; ') || undefined });
+      console.log(`#${n ?? r.name} ${basename(fallback[i] ?? r.name)} → ${r.action} (agent B, ${r.decidedBy})`);
+    }
+    await rm(tmp, { recursive: true, force: true });
+  }
   results.sort((a, b) => a.n - b.n);
   await writeManifest(outDir, { ...manifest, finishedAt: new Date().toISOString() });
   console.table(results.map(({ n, ref, outcome, next, decidedBy }) => ({ n, ref, outcome, next, decidedBy })));
+  const answered = new Set(results.map((r) => r.n));
+  const missing = dirs.filter((d) => !answered.has(trailingNumber(basename(d)) ?? -2));
+  if (missing.length) console.warn(`No answer written for: ${missing.map((d) => basename(d)).join(', ')}`);
   const fallbacks = results.filter((r) => r.decidedBy !== 'model').length;
   if (fallbacks) console.warn(`${fallbacks} of ${results.length} cases were decided by the rules-only playbook (model unavailable or failed). Re-run them once the model is reachable.`);
 }
+
+const trailingNumber = (name: string) => {
+  const m = name.match(/(\d+)$/);
+  return m ? Number(m[1]) : undefined;
+};
 
 /** Case refs end in the supplied folder number (PM-007 → 7); fall back to position. */
 function caseNumber(c: Case, i: number) {
