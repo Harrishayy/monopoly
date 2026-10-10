@@ -1,0 +1,37 @@
+/*
+ * Shared scales and semantic status mapping. Direction files only set colour, font and shape tokens.
+ * Components use these variables (or the Tailwind names mapped in app/globals.css). No hex values in components.
+ */
+:root {
+  /* space: 4px base */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px;
+  --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-14: 56px; --space-16: 64px;
+
+  /* type scale */
+  --text-label: 11px; --text-caption: 12.5px; --text-small: 13.5px; --text-body: 15px;
+  --text-lead: 17px; --text-h4: 20px; --text-h3: 26px; --text-h2: 30px;
+
+  /* motion */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 350ms; --dur-stamp: 420ms;
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --out: cubic-bezier(.16,1,.3,1);
+  --spring: cubic-bezier(.3,1.5,.5,1); /* only the outcome stamp and Relay pops */
+
+  /* layers */
+  --z-sticky: 10; --z-nav: 40; --z-toast: 50; --z-dialog: 60; --z-palette: 70;
+}
+
+.s-resolved { --c: var(--ok); }
+.s-escalated { --c: var(--hold); }
+.s-needs_info, .s-info { --c: var(--info); }
+.s-failed { --c: var(--bad); }
+.s-running, .s-new { --c: var(--accent); }
+.s-blocked { --c: var(--neutral); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

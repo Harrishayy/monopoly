@@ -1,0 +1,35 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# env and secrets
+.env
+.env.*
+!.env.example
+
+# local state
+.casework/
+*.db
+*.db-journal
+
+# tooling
+.DS_Store
+.impeccable/
+.vscode/
+.idea/
+coverage/
+playwright-report/
+test-results/
+
+# event material we do not have the right to republish
+Real-World Agents Hackathon Rules For Participants.pdf
+
+# Supplied synthetic data: kept out of the public repo until publishing is confirmed
+Property Management/

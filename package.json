@@ -1,0 +1,23 @@
+{
+  "name": "casework",
+  "private": true,
+  "description": "Track-agnostic operations agent for the Real-World Agents Hackathon",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.26.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @casework/web dev",
+    "build": "pnpm --filter @casework/web build",
+    "start": "pnpm --filter @casework/web start",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r --if-present test",
+    "reality": "pnpm --filter @casework/cli reality",
+    "replay": "pnpm --filter @casework/cli replay"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

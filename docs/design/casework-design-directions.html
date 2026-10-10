@@ -1,0 +1,1962 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Casework Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112.5,400..700&family=Onest:wght@400..700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one page, three committed visual worlds over one shared component inventory.
+   Each direction is a deliberate single look; tokens below are swapped per direction on <body>. */
+:root{
+  --bg:#E8EBE4;--surface:#F6F7F2;--surface-2:#DCE1D6;--ink:#17202E;--ink-2:#566170;--line:#C2C9BC;--line-strong:#17202E;
+  --accent:#4A2DB5;--accent-ink:#FFFFFF;--accent-soft:#E2DCF6;--sun:#FFCF33;
+  --ok:#2B6E45;--hold:#A14E00;--info:#1E5A9E;--bad:#A8261E;--neutral:#566170;
+  --font-d:'Archivo',system-ui,sans-serif;--font-b:'Archivo',system-ui,sans-serif;--font-m:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --r:3px;--r-lg:4px;--bw:1px;--shadow:none;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.5,.5,1);--out:cubic-bezier(.16,1,.3,1);
+  --m-body:#F6F7F2;--m-line:#17202E;--m-eye:#17202E;--m-mouth:#17202E;--m-bulb:#FFCF33;
+  color-scheme:light;
+}
+body[data-dir="docket"]{
+  --bg:#E8EBE4;--surface:#F6F7F2;--surface-2:#DCE1D6;--ink:#17202E;--ink-2:#566170;--line:#C2C9BC;--line-strong:#17202E;
+  --accent:#4A2DB5;--accent-ink:#FFFFFF;--accent-soft:#E2DCF6;
+  --ok:#2B6E45;--hold:#A14E00;--info:#1E5A9E;--bad:#A8261E;--neutral:#566170;
+  --font-d:'Archivo',system-ui,sans-serif;--font-b:'Archivo',system-ui,sans-serif;--font-m:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --r:3px;--r-lg:4px;--bw:1px;--shadow:none;
+  --m-body:#F6F7F2;--m-line:#17202E;--m-eye:#17202E;--m-mouth:#17202E;
+  color-scheme:light;
+}
+body[data-dir="switchboard"]{
+  --bg:#0E1217;--surface:#151A21;--surface-2:#1C232C;--ink:#E8E3D8;--ink-2:#8E98A6;--line:#28313C;--line-strong:#3E4A58;
+  --accent:#FFBE3D;--accent-ink:#1B1300;--accent-soft:rgba(255,190,61,.12);
+  --ok:#4ED19E;--hold:#FF8B4D;--info:#6FA8FF;--bad:#FF5D6C;--neutral:#8E98A6;
+  --font-d:'Martian Mono',ui-monospace,Menlo,monospace;--font-b:'Onest',system-ui,sans-serif;--font-m:'Martian Mono',ui-monospace,Menlo,monospace;
+  --r:6px;--r-lg:10px;--bw:1px;--shadow:0 14px 34px rgba(0,0,0,.35);
+  --m-body:#2A3440;--m-line:#46525F;--m-eye:#FFBE3D;--m-mouth:#FFBE3D;
+  color-scheme:dark;
+}
+body[data-dir="relay"]{
+  --bg:#EDF1FA;--surface:#FFFFFF;--surface-2:#E1E7F6;--ink:#0F1830;--ink-2:#4F5A75;--line:#C9D2E8;--line-strong:#0F1830;
+  --accent:#2946F0;--accent-ink:#FFFFFF;--accent-soft:#DCE2FF;--sun:#FFCF33;
+  --ok:#0E9E6B;--hold:#E2621A;--info:#2946F0;--bad:#DE3B40;--neutral:#4F5A75;
+  --font-d:'Bricolage Grotesque',system-ui,sans-serif;--font-b:'Figtree',system-ui,sans-serif;--font-m:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --r:12px;--r-lg:20px;--bw:2px;--shadow:3px 3px 0 #0F1830;
+  --m-body:#2946F0;--m-line:#0F1830;--m-eye:#0F1830;--m-mouth:#0F1830;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:15px;line-height:1.5;padding-inline:clamp(16px,3vw,40px);padding-block:20px 72px;transition:background-color .35s var(--ease),color .35s var(--ease)}
+body[data-dir="switchboard"]{background-image:radial-gradient(circle at 1px 1px,rgba(232,227,216,.06) 1px,transparent 0);background-size:22px 22px}
+body[data-dir="docket"]{background-image:repeating-linear-gradient(0deg,transparent 0 31px,rgba(23,32,46,.045) 31px 32px)}
+.wrap{max-width:1320px;margin:0 auto;display:grid;gap:64px}
+h1,h2,h3,h4{font-family:var(--font-d);margin:0;text-wrap:balance;line-height:1.1}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--font-m)}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor;stroke:none}
+.label{font:500 11px/1.2 var(--font-m);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+body[data-dir="switchboard"] .label{font-size:10px}
+
+/* ---------- Page header ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:var(--bw) solid var(--line)}
+.top-brand{display:flex;align-items:center;gap:10px}
+.top-brand .m{width:34px;height:34px}
+.top-brand b{font-family:var(--font-d);font-size:17px;letter-spacing:-.01em}
+body[data-dir="docket"] .top-brand b{font-variation-settings:'wdth' 125;text-transform:uppercase;letter-spacing:.04em;font-size:15px}
+.top-brand small{display:block;color:var(--ink-2);font-size:12px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--surface-2);border-radius:calc(var(--r) + 4px);border:var(--bw) solid var(--line)}
+.seg button{border:0;background:transparent;padding:7px 12px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-2);display:inline-flex;gap:8px;align-items:center;transition:background .2s var(--ease),color .2s}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.seg button .k{font-family:var(--font-m);font-size:11px;opacity:.7}
+body[data-dir="relay"] .seg{border-radius:999px;border-color:var(--line-strong)}
+body[data-dir="relay"] .seg button{border-radius:999px}
+body[data-dir="relay"] .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+body[data-dir="switchboard"] .seg button{font-family:var(--font-m);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+body[data-dir="switchboard"] .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,190,61,.35)}
+body[data-dir="docket"] .seg{background:transparent;border:0;padding:0;gap:0;border-bottom:1px solid var(--line-strong);border-radius:0}
+body[data-dir="docket"] .seg button{border-radius:3px 3px 0 0;border:1px solid transparent;border-bottom:0;margin-bottom:-1px;font-variation-settings:'wdth' 110}
+body[data-dir="docket"] .seg button[aria-pressed="true"]{background:var(--surface);border-color:var(--line-strong);box-shadow:none}
+
+.intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:end}
+.intro h1{font-size:clamp(40px,6.4vw,84px);letter-spacing:-.03em}
+body[data-dir="docket"] .intro h1{font-variation-settings:'wdth' 125;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;line-height:.95}
+body[data-dir="switchboard"] .intro h1{font-size:clamp(32px,5vw,64px);font-weight:500;letter-spacing:-.04em;font-variation-settings:'wdth' 85}
+body[data-dir="relay"] .intro h1{font-weight:800;letter-spacing:-.045em;font-variation-settings:'opsz' 96}
+.intro .concept{font-size:17px;max-width:58ch;margin-top:16px;color:var(--ink)}
+.principles{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.principles li{display:grid;grid-template-columns:22px 1fr;gap:10px;font-size:14px;color:var(--ink-2)}
+.principles li .ic{margin-top:3px;color:var(--accent)}
+.trackbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:28px}
+
+/* ---------- Section headers ---------- */
+.sec{display:grid;gap:20px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+.sec-h h2{font-size:clamp(22px,2.6vw,30px);letter-spacing:-.02em}
+body[data-dir="docket"] .sec-h{border-top:2px solid var(--line-strong);padding-top:10px}
+body[data-dir="docket"] .sec-h h2{font-variation-settings:'wdth' 118;text-transform:uppercase;font-size:clamp(18px,2vw,22px);letter-spacing:.02em}
+body[data-dir="switchboard"] .sec-h h2{font-size:clamp(16px,1.8vw,20px);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+body[data-dir="switchboard"] .sec-h h2::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);margin-right:12px;vertical-align:middle}
+.sec-h p{color:var(--ink-2);font-size:14px;max-width:60ch}
+
+/* ---------- Generic surfaces ---------- */
+.card{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);min-width:0}
+body[data-dir="relay"] .card{border-color:var(--line-strong)}
+body[data-dir="switchboard"] .card{box-shadow:none}
+.pad{padding:20px}
+
+/* ---------- Status chips ---------- */
+.s-resolved{--c:var(--ok)} .s-escalated{--c:var(--hold)} .s-info{--c:var(--info)} .s-failed{--c:var(--bad)} .s-running{--c:var(--accent)} .s-blocked{--c:var(--neutral)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--font-m);letter-spacing:.06em;text-transform:uppercase;color:var(--c,var(--ink-2));padding:5px 8px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--c,var(--ink-2)) 40%,transparent);background:color-mix(in srgb,var(--c,var(--ink-2)) 9%,transparent);white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.chip.plain::before{display:none}
+.chip.s-running::before{animation:pulse 1.2s ease-in-out infinite}
+body[data-dir="docket"] .chip{border:1.5px solid var(--c,var(--ink-2));background:transparent;border-radius:2px}
+body[data-dir="docket"] .chip::before{border-radius:0;width:5px;height:5px}
+body[data-dir="switchboard"] .chip{font-size:10px;border-color:transparent;background:color-mix(in srgb,var(--c,var(--ink-2)) 12%,transparent)}
+body[data-dir="switchboard"] .chip::before{box-shadow:0 0 8px currentColor}
+body[data-dir="relay"] .chip{border-radius:999px;border-width:2px;font-family:var(--font-b);font-weight:700;letter-spacing:.02em;text-transform:none;font-size:12px;padding:4px 10px}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1 var(--font-b);padding:11px 16px;border-radius:var(--r);border:var(--bw) solid transparent;cursor:pointer;transition:transform .15s var(--ease),background .15s,box-shadow .15s,color .15s,border-color .15s;white-space:nowrap;text-decoration:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn-secondary{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}
+.btn-secondary:hover:not(:disabled){background:var(--surface-2)}
+.btn-ghost{background:transparent;color:var(--ink-2)}
+.btn-ghost:hover:not(:disabled){color:var(--ink);background:var(--surface-2)}
+.btn-danger{background:transparent;color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.btn-danger:hover:not(:disabled){background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.btn-sm{padding:8px 12px;font-size:13px}
+.btn-icon{padding:10px;aspect-ratio:1}
+.btn .spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+body[data-dir="docket"] .btn{font-variation-settings:'wdth' 112;letter-spacing:.01em}
+body[data-dir="docket"] .btn-primary{background:var(--ink);color:var(--surface)}
+body[data-dir="docket"] .btn-primary:hover:not(:disabled){background:var(--accent);filter:none}
+body[data-dir="switchboard"] .btn{font:500 11.5px/1 var(--font-m);text-transform:uppercase;letter-spacing:.06em;padding:12px 16px}
+body[data-dir="switchboard"] .btn-primary:hover:not(:disabled){box-shadow:0 0 0 3px rgba(255,190,61,.18),0 0 24px rgba(255,190,61,.35);filter:none}
+body[data-dir="switchboard"] .btn-secondary{background:transparent;border-color:var(--line-strong)}
+body[data-dir="relay"] .btn{border:2px solid var(--line-strong);box-shadow:3px 3px 0 var(--line-strong);font-weight:700;border-radius:999px}
+body[data-dir="relay"] .btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--line-strong);filter:none}
+body[data-dir="relay"] .btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:0 0 0 var(--line-strong)}
+body[data-dir="relay"] .btn-ghost{border-color:transparent;box-shadow:none}
+body[data-dir="relay"] .btn-ghost:hover:not(:disabled){box-shadow:none;transform:none}
+body[data-dir="relay"] .btn-danger{color:var(--bad);border-color:var(--line-strong);background:var(--surface)}
+.btn:active:not(:disabled){transform:scale(.97)}
+
+/* ---------- Product shell ---------- */
+.shell{overflow:hidden;display:grid}
+.shell-nav{display:flex;align-items:center;gap:20px;padding:10px 16px;border-bottom:var(--bw) solid var(--line);flex-wrap:wrap}
+.shell-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-d);font-weight:700;font-size:15px}
+.shell-brand .m{width:30px;height:30px}
+body[data-dir="docket"] .shell-brand{font-variation-settings:'wdth' 125;text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+body[data-dir="switchboard"] .shell-brand{font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.tabs{display:flex;gap:2px;flex-wrap:wrap}
+.tabs a{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:var(--r);color:var(--ink-2);text-decoration:none;font-size:13.5px;font-weight:500;position:relative}
+.tabs a:hover{color:var(--ink);background:var(--surface-2)}
+.tabs a[aria-current]{color:var(--ink);font-weight:650}
+.tabs .n{font:600 10.5px/1 var(--font-m);padding:3px 5px;border-radius:var(--r);background:var(--surface-2);color:var(--ink-2)}
+.tabs a[aria-current] .n{background:var(--accent);color:var(--accent-ink)}
+body[data-dir="docket"] .shell-nav{background:var(--surface-2);padding-bottom:0;align-items:flex-end}
+body[data-dir="docket"] .tabs a{border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;font-variation-settings:'wdth' 108;padding:9px 13px 10px}
+body[data-dir="docket"] .tabs a[aria-current]{background:var(--surface);border-color:var(--line);margin-bottom:-1px}
+body[data-dir="docket"] .shell-brand,body[data-dir="docket"] .nav-right{padding-bottom:8px}
+body[data-dir="switchboard"] .tabs a{font:500 10.5px/1 var(--font-m);text-transform:uppercase;letter-spacing:.07em;padding:9px 11px}
+body[data-dir="switchboard"] .tabs a[aria-current]{color:var(--accent);background:var(--accent-soft)}
+body[data-dir="switchboard"] .tabs a[aria-current]::after{content:"";position:absolute;left:11px;right:11px;bottom:-11px;height:2px;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+body[data-dir="relay"] .shell-nav{border-bottom:0;padding:14px}
+body[data-dir="relay"] .tabs{background:var(--surface-2);border:2px solid var(--line-strong);border-radius:999px;padding:3px}
+body[data-dir="relay"] .tabs a{border-radius:999px;font-weight:650}
+body[data-dir="relay"] .tabs a[aria-current]{background:var(--accent);color:var(--accent-ink)}
+body[data-dir="relay"] .tabs a[aria-current] .n{background:var(--sun);color:var(--ink)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.search{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink-2);min-width:0}
+.search input{border:0;background:transparent;outline:none;width:180px;min-width:0;font-size:13px;color:var(--ink)}
+.search kbd{font:500 10px var(--font-m);padding:2px 5px;border:1px solid var(--line);border-radius:3px}
+body[data-dir="relay"] .search{border-radius:999px;border-color:var(--line-strong)}
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font:600 11px var(--font-m);border:var(--bw) solid var(--line);flex:none}
+body[data-dir="docket"] .avatar{border-radius:3px}
+
+.shell-body{display:grid;grid-template-columns:270px minmax(0,1fr) 310px;min-height:560px}
+.inbox{border-right:var(--bw) solid var(--line);display:flex;flex-direction:column;min-width:0}
+.inbox-h{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;gap:8px}
+.inbox-list{list-style:none;margin:0;padding:0 8px 8px;display:grid;gap:4px;align-content:start}
+.inbox-item{display:grid;gap:5px;padding:10px;border-radius:var(--r);border:var(--bw) solid transparent;cursor:default;transition:background .15s}
+.inbox-item:hover{background:var(--surface-2)}
+.inbox-item.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+.inbox-item .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.inbox-item .ref{font:500 11px var(--font-m);color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.inbox-item .t{font-weight:600;font-size:13.5px;line-height:1.3}
+.inbox-item .who{font-size:12px;color:var(--ink-2)}
+.inbox-item .chip{font-size:9.5px;padding:3px 6px}
+body[data-dir="relay"] .inbox-item .chip{font-size:11px}
+body[data-dir="docket"] .inbox-item{border-radius:0;border-bottom:1px dashed var(--line)}
+body[data-dir="docket"] .inbox-item.on{background:var(--surface);border:1px solid var(--line-strong);box-shadow:3px 3px 0 var(--line)}
+body[data-dir="relay"] .inbox-item.on{border:2px solid var(--line-strong);background:var(--accent-soft);box-shadow:2px 2px 0 var(--line-strong)}
+body[data-dir="switchboard"] .inbox-item.on{box-shadow:inset 2px 0 0 var(--accent)}
+
+.case{padding:20px 22px;display:grid;gap:20px;align-content:start;min-width:0}
+.case-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.case h3{font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;margin-top:8px}
+body[data-dir="docket"] .case h3{font-variation-settings:'wdth' 105}
+body[data-dir="switchboard"] .case h3{font-family:var(--font-b);font-weight:600}
+.case .meta{color:var(--ink-2);font-size:13.5px;margin-top:4px}
+.sources{display:flex;flex-wrap:wrap;gap:8px}
+.src{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface);font-size:12.5px;min-width:0}
+.src .ic{color:var(--accent)}
+.src b{font-weight:600}
+body[data-dir="docket"] .src{background:var(--bg);box-shadow:2px 2px 0 var(--line)}
+body[data-dir="relay"] .src{border-color:var(--line-strong);border-radius:12px}
+body[data-dir="switchboard"] .src{background:var(--surface-2);border-color:transparent}
+
+.trace-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.trace{list-style:none;margin:0;padding:0;display:grid;position:relative}
+.step{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:12px;padding:9px 0;position:relative;transition:opacity .3s var(--ease)}
+.step::before{content:"";position:absolute;left:15px;top:38px;bottom:-6px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.node{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--ink-2);border:var(--bw) solid var(--line);position:relative;z-index:1;transition:background .25s,color .25s,box-shadow .25s,transform .25s var(--out)}
+.step.k-fail .node{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.step.k-escalate .node{color:var(--hold);border-color:var(--hold)}
+.step.k-resolve .node{color:var(--ok);border-color:var(--ok)}
+.step-t{font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.step.k-tool .step-t{font:500 12.5px/1.5 var(--font-m);color:var(--ink)}
+.step-d{font-size:13px;color:var(--ink-2);margin-top:1px}
+.step.k-fail .step-d{color:var(--bad)}
+.step-time{font:500 11px var(--font-m);color:var(--ink-2);padding-top:7px}
+.step.pending{opacity:.32}
+.step.active .node{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);transform:scale(1.12)}
+.step.active.k-fail .node{background:var(--bad);border-color:var(--bad);color:#fff}
+.step.active.k-escalate .node{background:var(--hold);border-color:var(--hold);color:#fff}
+body[data-dir="switchboard"] .step.active .node{box-shadow:0 0 0 4px rgba(255,190,61,.15),0 0 18px var(--accent)}
+body[data-dir="docket"] .node{border-radius:3px;background:var(--surface)}
+body[data-dir="docket"] .step::before{background:repeating-linear-gradient(var(--line-strong) 0 3px,transparent 3px 6px);width:1px;left:16px;opacity:.5}
+body[data-dir="relay"] .node{border:2px solid var(--line-strong);background:var(--surface)}
+body[data-dir="relay"] .step::before{width:3px;left:14.5px;background:var(--line)}
+
+.decision{border-left:var(--bw) solid var(--line);padding:20px;display:grid;gap:16px;align-content:start;background:color-mix(in srgb,var(--surface-2) 45%,var(--surface))}
+.stamp-wrap{min-height:70px;display:flex;align-items:center}
+.stamp{--c:var(--hold);display:inline-flex;align-items:center;gap:10px;color:var(--c);font:800 22px/1 var(--font-d);text-transform:uppercase;letter-spacing:.06em}
+body[data-dir="docket"] .stamp{border:3px double var(--c);padding:10px 16px 9px;transform:rotate(-4deg);font-variation-settings:'wdth' 125;letter-spacing:.08em;mix-blend-mode:multiply;border-radius:4px}
+body[data-dir="docket"] .stamp.reveal{animation:thump .42s var(--spring) both}
+@keyframes thump{0%{transform:scale(1.9) rotate(-12deg);opacity:0}60%{transform:scale(.96) rotate(-3deg);opacity:1}100%{transform:scale(1) rotate(-4deg)}}
+body[data-dir="switchboard"] .stamp{font:500 15px/1 var(--font-m);letter-spacing:.1em;padding:12px 14px;border-radius:6px;background:color-mix(in srgb,var(--c) 10%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+body[data-dir="switchboard"] .stamp::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c)}
+body[data-dir="switchboard"] .stamp.reveal{animation:blink .6s steps(2) 3}
+@keyframes blink{50%{opacity:.25}}
+body[data-dir="relay"] .stamp{background:var(--c);color:#fff;padding:12px 20px;border-radius:999px;border:2px solid var(--line-strong);box-shadow:3px 3px 0 var(--line-strong);font-size:20px;letter-spacing:.01em;text-transform:none}
+body[data-dir="relay"] .stamp.reveal{animation:pop .5s var(--spring) both}
+@keyframes pop{0%{transform:scale(.4) rotate(-6deg)}100%{transform:scale(1)}}
+.reason{font-size:14px}
+.blocked{display:grid;grid-template-columns:18px 1fr;gap:8px;padding:10px 12px;border-radius:var(--r);border:1px dashed var(--line-strong);font-size:12.5px;color:var(--ink-2)}
+.blocked s{color:var(--ink);text-decoration-color:var(--bad);text-decoration-thickness:2px}
+.blocked .ic{color:var(--bad);margin-top:1px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.kv{display:grid;gap:8px;font-size:12.5px}
+.kv div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.kv span:first-child{color:var(--ink-2)}
+.kv span:last-child{font-family:var(--font-m);font-size:12px;text-align:right}
+
+/* ---------- Mascot ---------- */
+.mascot-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px}
+.mascot-hero{display:grid;gap:16px;align-content:start}
+.mascot-stage{display:grid;place-items:center;padding:24px;min-height:260px;background:var(--surface-2);border-radius:var(--r-lg);position:relative;overflow:hidden}
+body[data-dir="switchboard"] .mascot-stage{background:radial-gradient(circle at 50% 60%,rgba(255,190,61,.10),transparent 60%),var(--surface-2)}
+body[data-dir="relay"] .mascot-stage{background:var(--sun);border:2px solid var(--line-strong)}
+.mascot-stage .m{width:min(220px,70%);height:auto}
+.mascot-name{font-size:36px;letter-spacing:-.03em}
+body[data-dir="docket"] .mascot-name{font-variation-settings:'wdth' 125;text-transform:uppercase}
+body[data-dir="switchboard"] .mascot-name{font-size:26px;font-weight:500}
+.mascot-states{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mstate{display:grid;gap:6px;justify-items:center;text-align:center;padding:14px 10px;cursor:pointer;transition:transform .2s var(--ease)}
+.mstate:hover{transform:translateY(-2px)}
+.mstate[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:-2px}
+.mstate .m{width:84px;height:84px}
+.mstate b{font-size:13.5px}
+.mstate span{font-size:12px;color:var(--ink-2)}
+
+.m{overflow:visible;display:block}
+.m *{stroke-linecap:round;stroke-linejoin:round}
+.m-block{fill:var(--m-body);stroke:var(--m-line);stroke-width:2.5}
+.m-eye{fill:var(--m-eye);transition:fill .3s}
+.m-mouth{fill:none;stroke:var(--m-mouth);stroke-width:2.5;transition:opacity .25s}
+.m-arm{fill:none;stroke:var(--m-line);stroke-width:3}
+.m-flag,.m-palm{fill:var(--hold);stroke:var(--m-line);stroke-width:2}
+.m-flag-t{fill:#fff;font:700 11px 'IBM Plex Mono',monospace}
+.m-spark path{fill:var(--accent)}
+.m-sweat{fill:var(--info)}
+.m-shadow{fill:var(--ink);opacity:.12}
+.m-wood{fill:#A86F43;stroke:var(--m-line);stroke-width:2.5}
+.m-pad{fill:var(--accent);stroke:var(--m-line);stroke-width:2.5;transition:fill .3s}
+.m-cheek{fill:#E39A8F;opacity:.55}
+.m-pin{fill:#AEB6C2}
+.m-screen{fill:#07090C}
+.m-bars rect{fill:var(--m-eye)}
+.m-cable{fill:none;stroke:#3D4957;stroke-width:5}
+.m-sclera{fill:#fff;stroke:var(--m-line);stroke-width:2}
+.m-bulb{fill:var(--m-bulb);stroke:var(--m-line);stroke-width:2.5;transition:fill .3s}
+.m-foot{fill:var(--m-line)}
+.m-patch .m-eyes{filter:drop-shadow(0 0 3px var(--m-eye))}
+.m-patch{--m-line:#46525F}
+.m-patch.st-esc{--m-eye:var(--hold)} .m-patch.st-fail{--m-eye:var(--bad)} .m-patch.st-done{--m-eye:var(--ok)}
+.m-pip{--m-bulb:var(--sun)} .m-pip.st-esc{--m-bulb:var(--hold)} .m-pip.st-fail{--m-bulb:var(--bad)} .m-pip.st-done{--m-bulb:var(--ok)}
+.m-thump.st-esc .m-pad{fill:var(--hold)} .m-thump.st-done .m-pad{fill:var(--ok)} .m-thump.st-fail .m-pad{fill:var(--bad)}
+.m-body,.m-eyes,.m-hand,.m-bars rect,.m-spark path{transform-box:fill-box}
+.m-body{transform-origin:50% 100%}
+.m-hand{transform-origin:0% 100%}
+.m-bars rect,.m-spark path{transform-origin:50% 50%}
+.m .m-mouth-h,.m .m-bars,.m .m-sweat,.m .m-hand,.m .m-spark{opacity:0;transition:opacity .25s}
+.st-idle .m-body{animation:m-bob 3.2s ease-in-out infinite}
+.st-think .m-body{animation:m-bob 2s ease-in-out infinite}
+.st-think .m-eyes{animation:m-look 1.8s ease-in-out infinite}
+.st-act .m-body{animation:m-thump .9s cubic-bezier(.3,0,.2,1) infinite}
+.m-patch.st-act .m-body,.m-pip.st-act .m-body{animation:m-hop .7s ease-in-out infinite}
+.m-patch.st-act .m-bars{opacity:1} .m-patch.st-act .m-mouth-n{opacity:0}
+.st-act .m-bars rect{animation:m-bar .45s ease-in-out infinite alternate}
+.m-bars rect:nth-child(2){animation-delay:-.15s}.m-bars rect:nth-child(3){animation-delay:-.3s}.m-bars rect:nth-child(4){animation-delay:-.1s}.m-bars rect:nth-child(5){animation-delay:-.25s}
+.st-fail .m-body{animation:m-shake .45s ease-in-out infinite}
+.st-fail .m-sweat{opacity:1}
+.st-esc .m-hand{opacity:1;animation:m-wave 1.4s ease-in-out infinite}
+.st-esc .m-body{animation:m-bob 2.6s ease-in-out infinite}
+.st-done .m-mouth-h,.st-done .m-spark{opacity:1}
+.st-done .m-mouth-n{opacity:0}
+.st-done .m-spark path{animation:m-tw 1.6s ease-in-out infinite}
+.st-done .m-body{animation:m-hop 1.6s ease-in-out infinite}
+.m-pip.st-think .m-bulb{animation:pulse 1s ease-in-out infinite}
+@keyframes m-bob{50%{transform:translateY(-3px)}}
+@keyframes m-look{0%,100%{transform:translateX(0)}30%{transform:translateX(-4px)}70%{transform:translateX(4px)}}
+@keyframes m-thump{0%,100%{transform:translateY(-7px)}40%{transform:translateY(2px) scaleY(.93)}60%{transform:translateY(0)}}
+@keyframes m-hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-6px)}}
+@keyframes m-shake{25%{transform:translateX(-2px) rotate(-2deg)}75%{transform:translateX(2px) rotate(2deg)}}
+@keyframes m-wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+@keyframes m-bar{from{transform:scaleY(.4)}to{transform:scaleY(1.6)}}
+@keyframes m-tw{50%{transform:scale(.55) rotate(45deg)}}
+
+/* ---------- Foundations ---------- */
+.found{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.sw{display:grid;gap:6px;font-size:12px}
+.sw i{display:block;height:54px;border-radius:var(--r);border:var(--bw) solid var(--line)}
+body[data-dir="relay"] .sw i{border-color:var(--line-strong)}
+.sw b{font-weight:600}
+.sw code{font:500 11px var(--font-m);color:var(--ink-2)}
+.type-spec{display:grid;gap:18px}
+.type-spec .row{display:grid;gap:4px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.type-spec .row:last-child{border-bottom:0}
+.ts-d{font-family:var(--font-d);font-size:clamp(26px,3vw,36px);letter-spacing:-.02em;line-height:1.1;text-wrap:balance}
+body[data-dir="docket"] .ts-d{font-variation-settings:'wdth' 125;text-transform:uppercase;font-weight:800;letter-spacing:0}
+body[data-dir="switchboard"] .ts-d{font-weight:500;font-size:clamp(20px,2.4vw,28px)}
+body[data-dir="relay"] .ts-d{font-weight:800}
+.ts-b{font-size:16px;max-width:60ch}
+.ts-m{font:500 13px/1.6 var(--font-m)}
+.motion{display:grid;gap:8px;margin-top:4px}
+.motion div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.motion code{font:500 11px var(--font-m);color:var(--ink-2);grid-column:1/-1;overflow-wrap:anywhere}
+
+/* ---------- Components ---------- */
+.comp-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.c-4{grid-column:span 4}.c-5{grid-column:span 5}.c-6{grid-column:span 6}.c-7{grid-column:span 7}.c-8{grid-column:span 8}.c-12{grid-column:span 12}
+.comp{display:grid;gap:16px;align-content:start}
+.comp-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.comp-h h4{font-size:15px;letter-spacing:-.01em}
+body[data-dir="docket"] .comp-h h4{font-variation-settings:'wdth' 115;text-transform:uppercase;font-size:13px;letter-spacing:.04em}
+body[data-dir="switchboard"] .comp-h h4{font:500 11px var(--font-m);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+.wrap-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+.field{display:grid;gap:6px}
+.field label{font-size:12.5px;font-weight:600}
+.input{padding:10px 12px;border-radius:var(--r);border:var(--bw) solid var(--line-strong);background:var(--surface);font-size:14px;width:100%;min-width:0}
+body[data-dir="switchboard"] .input{background:var(--bg);border-color:var(--line)}
+body[data-dir="relay"] .input{border-radius:12px}
+.hint{font-size:12px;color:var(--ink-2)}
+.autonomy{display:grid;grid-template-columns:repeat(3,1fr);position:relative;background:var(--surface-2);border-radius:calc(var(--r) + 3px);padding:3px;border:var(--bw) solid var(--line)}
+.autonomy button{position:relative;z-index:1;border:0;background:transparent;padding:9px 6px;cursor:pointer;font-weight:600;font-size:12.5px;color:var(--ink-2);transition:color .2s}
+.autonomy button[aria-pressed="true"]{color:var(--accent-ink)}
+.autonomy .thumb{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:var(--r);background:var(--accent);transition:transform .35s var(--out)}
+body[data-dir="docket"] .autonomy .thumb{background:var(--ink)}
+body[data-dir="docket"] .autonomy button[aria-pressed="true"]{color:var(--surface)}
+body[data-dir="relay"] .autonomy{border-radius:999px;border-color:var(--line-strong)}
+body[data-dir="relay"] .autonomy .thumb{border-radius:999px}
+body[data-dir="switchboard"] .autonomy button{font:500 10px var(--font-m);text-transform:uppercase;letter-spacing:.05em}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;cursor:pointer}
+.toggle input{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--surface-2);border:var(--bw) solid var(--line-strong);position:relative;cursor:pointer;transition:background .2s;flex:none;margin:0}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink-2);transition:transform .3s var(--out),background .2s}
+body[data-dir="relay"] .toggle input::after{top:1px;left:1px}
+.toggle input:checked{background:var(--accent);border-color:var(--accent)}
+body[data-dir="relay"] .toggle input:checked{border-color:var(--line-strong)}
+.toggle input:checked::after{transform:translateX(18px);background:var(--accent-ink)}
+body[data-dir="docket"] .toggle input,body[data-dir="docket"] .toggle input::after{border-radius:2px}
+
+/* Voice */
+.voice{display:grid;gap:14px}
+.voice-top{display:flex;align-items:center;gap:12px}
+.voice-top .who{flex:1;min-width:0}
+.voice-top .who b{display:block;font-size:14px}
+.voice-top .who span{font-size:12px;color:var(--ink-2)}
+.wave{display:flex;align-items:center;gap:2px;height:44px}
+.wave i{flex:1;background:var(--line-strong);opacity:.35;border-radius:2px;min-height:3px;transition:background .2s,opacity .2s}
+.wave i.on{background:var(--accent);opacity:1}
+.voice.playing .wave i.on{animation:wv .5s ease-in-out infinite alternate}
+.wave i:nth-child(3n){animation-delay:-.2s}.wave i:nth-child(4n+1){animation-delay:-.35s}
+@keyframes wv{to{transform:scaleY(.6)}}
+body[data-dir="switchboard"] .wave i.on{box-shadow:0 0 6px var(--accent)}
+.transcript{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.transcript li{display:grid;grid-template-columns:56px 1fr;gap:10px;font-size:13.5px;opacity:.45;transition:opacity .3s}
+.transcript li.on{opacity:1}
+.transcript li b{font:600 10.5px var(--font-m);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);padding-top:3px}
+.transcript li.agent b{color:var(--accent)}
+
+/* Handover */
+.handover{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0;overflow:hidden}
+.handover > div{padding:20px;display:grid;gap:14px;align-content:start}
+.handover > div + div{border-left:var(--bw) solid var(--line);background:color-mix(in srgb,var(--surface-2) 45%,var(--surface))}
+.ho-title{display:flex;gap:12px;align-items:flex-start}
+.ho-title .m{width:46px;height:46px;flex:none}
+.ho-title h4{font-size:19px;letter-spacing:-.01em}
+body[data-dir="docket"] .ho-title h4{font-variation-settings:'wdth' 110}
+body[data-dir="switchboard"] .ho-title h4{font-family:var(--font-b);font-weight:600}
+.facts{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.facts li{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;align-items:flex-start}
+.cite{display:inline-flex;align-items:center;gap:4px;font:500 10.5px var(--font-m);color:var(--accent);background:var(--accent-soft);padding:3px 6px;border-radius:var(--r);white-space:nowrap;flex:none}
+.cite .ic{width:12px;height:12px}
+.tried{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px;color:var(--ink-2)}
+.tried li{display:flex;gap:8px}
+.tried .ic{margin-top:2px}
+.options{display:grid;gap:8px}
+.option{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 14px;border:var(--bw) solid var(--line-strong);border-radius:var(--r);background:var(--surface);cursor:pointer;font-weight:600;font-size:14px;transition:background .15s,transform .15s var(--ease)}
+.option:hover{background:var(--accent-soft)}
+.option .ic{color:var(--ink-2)}
+.option.rec{border-color:var(--accent)}
+.option.rec small{color:var(--accent)}
+.option small{display:block;font:500 10.5px var(--font-m);color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+body[data-dir="relay"] .option{border-radius:14px;box-shadow:2px 2px 0 var(--line-strong)}
+body[data-dir="relay"] .option:hover{transform:translate(-1px,-1px)}
+body[data-dir="switchboard"] .option{background:var(--bg);border-color:var(--line)}
+body[data-dir="switchboard"] .option.rec{border-color:var(--accent)}
+
+/* Reality test meter */
+.rt-cells{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+.rt-cells i{aspect-ratio:1;border-radius:var(--r);background:var(--c);animation:cellin .4s var(--out) both;animation-delay:calc(var(--i) * 25ms)}
+body[data-dir="relay"] .rt-cells i{border:2px solid var(--line-strong);border-radius:6px}
+body[data-dir="switchboard"] .rt-cells i{border-radius:50%;box-shadow:0 0 8px color-mix(in srgb,var(--c) 70%,transparent)}
+@keyframes cellin{from{transform:scale(.5)}}
+.rt-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;font-size:13px}
+.rt-legend div{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rt-legend span{display:inline-flex;align-items:center;gap:8px}
+.rt-legend span::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--c)}
+.rt-legend b{font-family:var(--font-m);font-variant-numeric:tabular-nums}
+.big-num{font:700 44px/1 var(--font-d);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+body[data-dir="docket"] .big-num{font-variation-settings:'wdth' 125}
+body[data-dir="switchboard"] .big-num{font-weight:500;font-size:36px;color:var(--accent)}
+.big-num small{font-size:16px;color:var(--ink-2);font-weight:500;letter-spacing:0}
+
+/* Toasts */
+.toast{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 14px;background:var(--surface);border:var(--bw) solid var(--line-strong);border-radius:var(--r);font-size:13.5px;box-shadow:var(--shadow)}
+.toast .ic{color:var(--c);margin-top:2px}
+.toast b{display:block;font-size:13.5px}
+.toast span{color:var(--ink-2);font-size:12.5px}
+.toast button{border:0;background:transparent;color:var(--ink-2);cursor:pointer;padding:2px}
+body[data-dir="switchboard"] .toast{border-color:var(--line);box-shadow:inset 3px 0 0 var(--c),var(--shadow)}
+body[data-dir="relay"] .toast{border-radius:16px}
+body[data-dir="docket"] .toast{border-radius:2px;box-shadow:3px 3px 0 var(--line)}
+.toaster{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:50;width:min(360px,calc(100vw - 32px))}
+.toaster .toast{animation:tin .4s var(--out) both}
+.toaster .toast.out{animation:tout .25s var(--ease) both}
+@keyframes tin{from{transform:translateY(16px) scale(.96);opacity:0}}
+@keyframes tout{to{transform:translateX(24px);opacity:0}}
+
+/* Shared inventory */
+.inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.inv li{display:grid;gap:2px;padding:12px 14px;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface)}
+body[data-dir="relay"] .inv li{border-color:var(--line-strong)}
+.inv b{font-size:13.5px}
+.inv span{font-size:12.5px;color:var(--ink-2)}
+
+.foot{color:var(--ink-2);font-size:13px;border-top:var(--bw) solid var(--line);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+
+/* ---------- Page nav ---------- */
+.pagenav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);margin-inline:calc(-1 * clamp(16px,3vw,40px));padding:10px clamp(16px,3vw,40px);border-bottom:var(--bw) solid var(--line);display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.pagenav::-webkit-scrollbar{display:none}
+.pagenav a{flex:none;color:var(--ink-2);text-decoration:none;font-size:13px;font-weight:600;padding:6px 10px;border-radius:var(--r)}
+.pagenav a:hover{color:var(--ink);background:var(--surface-2)}
+.pagenav .sep{flex:none;width:1px;height:18px;background:var(--line);margin-inline:6px}
+.pagenav .label{flex:none;margin-right:4px}
+body[data-dir="relay"] .pagenav a{border-radius:999px}
+body[data-dir="switchboard"] .pagenav a{font:500 10.5px var(--font-m);text-transform:uppercase;letter-spacing:.06em}
+
+/* ---------- Part divider ---------- */
+.part{display:grid;gap:14px;padding-block:28px 8px;border-top:calc(var(--bw) * 2) solid var(--line-strong)}
+.part h2{font-size:clamp(34px,5vw,64px);letter-spacing:-.03em}
+body[data-dir="docket"] .part h2{font-variation-settings:'wdth' 125;text-transform:uppercase;font-weight:800;letter-spacing:0}
+body[data-dir="switchboard"] .part h2{font-weight:500;font-size:clamp(26px,4vw,48px)}
+body[data-dir="relay"] .part h2{font-weight:800}
+.part p{max-width:70ch;color:var(--ink-2);font-size:16px}
+.facts-row{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---------- Spec building blocks ---------- */
+.spec-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.prose{display:grid;gap:10px;font-size:14.5px;max-width:72ch}
+.prose ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.prose code,.tbl code,.cat code{font:500 .88em var(--font-m);background:var(--surface-2);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+.code{margin:0;font:500 12.5px/1.65 var(--font-m);background:var(--surface-2);color:var(--ink);padding:16px 18px;border-radius:var(--r);overflow-x:auto;white-space:pre;tab-size:2;min-width:0;max-width:100%}
+body[data-dir="switchboard"] .code{background:#0A0D11;border:1px solid var(--line)}
+body[data-dir="relay"] .code{border:2px solid var(--line-strong)}
+.code .c{color:var(--ink-2)}
+.code .k{color:var(--accent)}
+body[data-dir="docket"] .code .k,body[data-dir="relay"] .code .k{color:var(--accent);font-weight:600}
+.tbl{overflow-x:auto;min-width:0}
+.tbl table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:680px}
+.tbl th{text-align:left;font:600 10.5px/1.2 var(--font-m);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2);padding:10px 12px;border-bottom:var(--bw) solid var(--line-strong);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td:first-child{font-weight:600}
+.tbl td.m,.tbl td:first-child code{font-family:var(--font-m);font-size:12px}
+.tbl tr:last-child td{border-bottom:0}
+
+/* Architecture layers */
+.layers{display:grid;gap:10px}
+.layer{display:grid;grid-template-columns:190px minmax(0,1fr);gap:14px;align-items:stretch}
+.layer-h{display:grid;gap:2px;align-content:center;padding:12px 14px;border-radius:var(--r);background:var(--ink);color:var(--bg)}
+body[data-dir="switchboard"] .layer-h{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,190,61,.3)}
+body[data-dir="relay"] .layer-h{background:var(--accent);color:var(--accent-ink);border:2px solid var(--line-strong)}
+.layer-h b{font-family:var(--font-d);font-size:15px}
+body[data-dir="switchboard"] .layer-h b{font-size:12px;font-weight:500}
+.layer-h span{font:500 11px var(--font-m);opacity:.8}
+.boxes{display:flex;flex-wrap:wrap;gap:8px}
+.box{flex:1 1 150px;display:grid;gap:3px;padding:10px 12px;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+body[data-dir="relay"] .box{border-color:var(--line-strong)}
+.box b{font-size:13px}
+.box span{font-size:12px;color:var(--ink-2)}
+.box code{font:500 10.5px var(--font-m);color:var(--accent);overflow-wrap:anywhere}
+.layer-link{display:flex;align-items:center;gap:8px;padding-left:204px;font:500 11px var(--font-m);color:var(--ink-2)}
+.layer-link::before{content:"";width:2px;height:14px;background:var(--line-strong);margin-left:8px}
+
+/* Event flow */
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flow .chip{font-size:10.5px}
+.flow .ar{color:var(--ink-2);font-family:var(--font-m);font-size:12px}
+
+/* Catalogue */
+.cat-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.cat-bar .input{max-width:320px}
+.cat-tiers{display:flex;flex-wrap:wrap;gap:6px}
+.tier-btn{border:var(--bw) solid var(--line);background:var(--surface);border-radius:var(--r);padding:6px 10px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
+.tier-btn span{font:500 10.5px var(--font-m)}
+.tier-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+body[data-dir="relay"] .tier-btn{border-radius:999px;border-color:var(--line-strong)}
+body[data-dir="relay"] .tier-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--line-strong);color:var(--accent-ink)}
+body[data-dir="switchboard"] .tier-btn[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:rgba(255,190,61,.4)}
+.cat-list{display:grid;gap:6px}
+.cat-group{display:grid;gap:6px}
+.cat-group > .label{padding:14px 2px 4px}
+.cat details{border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+body[data-dir="relay"] .cat details{border-color:var(--line-strong)}
+.cat summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) auto;gap:14px;align-items:center;padding:11px 14px}
+.cat summary::-webkit-details-marker{display:none}
+.cat summary:hover{background:var(--surface-2)}
+.cat summary b{font-size:14px}
+.cat summary .p{font-size:13px;color:var(--ink-2);min-width:0}
+.cat summary .libs{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.cat summary .libs code{font-size:10.5px;white-space:nowrap}
+.cat .chev{transition:transform .2s var(--out)}
+.cat details[open] .chev{transform:rotate(90deg)}
+.cat details[open] summary{border-bottom:1px solid var(--line)}
+.cat-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;padding:14px}
+.cat-body .full{grid-column:1/-1}
+.cat-body dl{margin:0;display:grid;gap:10px}
+.cat-body dt{font:600 10.5px var(--font-m);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
+.cat-body dd{margin:2px 0 0;font-size:13.5px}
+.cat-body .states{display:flex;flex-wrap:wrap;gap:4px}
+.cat-body .states span{font:500 11px var(--font-m);padding:3px 7px;border-radius:var(--r);background:var(--surface-2)}
+.brief-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cat-empty{padding:28px;text-align:center;color:var(--ink-2)}
+
+/* Skills */
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.skill{display:grid;gap:8px;align-content:start;padding:16px}
+.skill .name{font:600 13px var(--font-m);color:var(--accent);overflow-wrap:anywhere}
+.skill p{font-size:13.5px}
+.skill .ask{font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:8px}
+.skill .tag{justify-self:start}
+
+/* Checklist */
+.check{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.check li{display:grid;grid-template-columns:20px 1fr;gap:8px}
+.check .ic{color:var(--ok);margin-top:3px}
+.budget{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.budget div{padding:14px;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface);display:grid;gap:4px}
+body[data-dir="relay"] .budget div{border-color:var(--line-strong)}
+.budget b{font:700 24px/1 var(--font-d);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+body[data-dir="switchboard"] .budget b{font-weight:500;font-size:20px;color:var(--accent)}
+.budget span{font-size:12.5px;color:var(--ink-2)}
+
+@media (max-width:860px){
+  .layer{grid-template-columns:minmax(0,1fr)}
+  .layer-link{padding-left:0}
+  .cat summary{grid-template-columns:minmax(0,1fr) auto}
+  .cat summary .p{grid-column:1/-1;grid-row:2}
+  .cat summary .libs{display:none}
+  .cat-body{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1120px){
+  .shell-body{grid-template-columns:240px minmax(0,1fr)}
+  .decision{grid-column:1/-1;border-left:0;border-top:var(--bw) solid var(--line)}
+  .c-4,.c-5{grid-column:span 6}.c-7,.c-8{grid-column:span 12}
+}
+@media (max-width:860px){
+  .intro,.mascot-grid,.found,.handover{grid-template-columns:minmax(0,1fr)}
+  .handover > div + div{border-left:0;border-top:var(--bw) solid var(--line)}
+  .shell-body{grid-template-columns:minmax(0,1fr)}
+  .inbox{border-right:0;border-bottom:var(--bw) solid var(--line)}
+  .inbox-list{grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);overflow-x:auto}
+  .c-4,.c-5,.c-6{grid-column:span 12}
+  .search input{width:120px}
+}
+@media (max-width:560px){
+  .mascot-states{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav-right .search{display:none}
+  .step{grid-template-columns:32px minmax(0,1fr)}
+  .step-time{display:none}
+  .rt-legend{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:36px">
+    <div class="top">
+      <div class="top-brand"><span id="brandMascot"></span><div><b>Casework</b><small>Working name · Design directions and build spec</small></div></div>
+      <div class="seg" role="group" aria-label="Design direction" id="dirSeg"></div>
+    </div>
+    <div class="intro">
+      <div>
+        <div class="label" id="dirEyebrow"></div>
+        <h1 id="dirName" style="margin-top:10px"></h1>
+        <p class="concept" id="dirConcept"></p>
+      </div>
+      <ul class="principles" id="dirPrinciples"></ul>
+    </div>
+    <div class="trackbar">
+      <span class="label">Same components, any track</span>
+      <div class="seg" role="group" aria-label="Track" id="trackSeg"></div>
+    </div>
+  </header>
+  <nav class="pagenav" aria-label="On this page">
+    <span class="label">Directions</span>
+    <a href="#h-shell">Shell</a><a href="#h-mascot">Mascot</a><a href="#h-found">Foundations</a><a href="#h-comp">Components</a>
+    <span class="sep"></span><span class="label">Build spec</span>
+    <a href="#stack">Stack</a><a href="#arch">Architecture</a><a href="#contracts">Contracts</a><a href="#tokens">Tokens</a><a href="#catalogue">Catalogue</a><a href="#modules">Modules</a><a href="#perf">Performance</a><a href="#skills">Skills</a><a href="#playbook">Playbook</a>
+  </nav>
+
+  <section class="sec" aria-labelledby="h-shell">
+    <div class="sec-h"><h2 id="h-shell">Product shell</h2><p>Inbox, a live agent run, and the decision panel. Press Replay to watch a run: steps, tool failures and the final call all animate from the same data.</p></div>
+    <div class="card shell" id="shell"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-mascot">
+    <div class="sec-h"><h2 id="h-mascot">Mascot</h2><p>The mascot shows what the agent is doing right now. Each state maps to a real run event, so it carries information as well as charm.</p></div>
+    <div class="mascot-grid">
+      <div class="card pad mascot-hero">
+        <div class="mascot-stage" id="mascotStage"></div>
+        <div><h3 class="mascot-name" id="mascotName"></h3><p style="color:var(--ink-2);margin-top:6px" id="mascotLine"></p></div>
+      </div>
+      <div class="mascot-states" id="mascotStates"></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-found">
+    <div class="sec-h"><h2 id="h-found">Foundations</h2><p>Colour, type and motion tokens. Status colours mean the same thing in every direction: resolved, escalated, needs info, failed.</p></div>
+    <div class="found">
+      <div class="card pad" style="display:grid;gap:18px">
+        <div class="comp-h"><h4>Colour</h4><span class="label">Tokens</span></div>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <div class="card pad type-spec" id="typeSpec"></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-comp">
+    <div class="sec-h"><h2 id="h-comp">Components</h2><p>All of these are interactive. They read from the selected track, so you can check that nothing is tied to one domain.</p></div>
+    <div class="comp-grid">
+      <div class="card pad comp c-12" style="padding:0">
+        <div class="handover" id="handover"></div>
+      </div>
+
+      <div class="card pad comp c-4">
+        <div class="comp-h"><h4>Buttons</h4><span class="label">4 roles</span></div>
+        <div class="wrap-row">
+          <button class="btn btn-primary" id="btnRun"><svg class="ic fill" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>Run agent</button>
+          <button class="btn btn-secondary">Ask for info</button>
+        </div>
+        <div class="wrap-row">
+          <button class="btn btn-ghost">Override</button>
+          <button class="btn btn-danger">Stop run</button>
+        </div>
+        <div class="wrap-row">
+          <button class="btn btn-primary btn-sm" disabled><span class="spin"></span>Calling tool…</button>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Retry" id="iconRetry"></button>
+          <button class="btn btn-secondary btn-sm" disabled>Disabled</button>
+        </div>
+      </div>
+
+      <div class="card pad comp c-4">
+        <div class="comp-h"><h4>Status</h4><span class="label">Case + run</span></div>
+        <div class="wrap-row">
+          <span class="chip s-resolved">Resolved</span><span class="chip s-escalated">Escalated</span><span class="chip s-info">Needs info</span>
+          <span class="chip s-failed">Failed</span><span class="chip s-running">Running</span><span class="chip s-blocked">Blocked</span>
+        </div>
+        <div class="comp-h" style="margin-top:6px"><h4>Sources</h4><span class="label">Evidence</span></div>
+        <div class="sources" id="srcDemo"></div>
+      </div>
+
+      <div class="card pad comp c-4">
+        <div class="comp-h"><h4>Controls</h4><span class="label">Agent settings</span></div>
+        <div class="field">
+          <label for="autonomyCtl">Autonomy</label>
+          <div class="autonomy" id="autonomyCtl" role="group" aria-label="Autonomy">
+            <span class="thumb"></span>
+            <button aria-pressed="false">Suggest</button><button aria-pressed="true">Ask first</button><button aria-pressed="false">Autonomous</button>
+          </div>
+          <span class="hint" id="autonomyHint"></span>
+        </div>
+        <div class="field">
+          <label for="limit">Auto-approve limit</label>
+          <input class="input mono" id="limit" value="£300.00">
+        </div>
+        <label class="toggle" for="voiceOn">Answer calls with the voice agent<input type="checkbox" id="voiceOn" checked></label>
+      </div>
+
+      <div class="card pad comp c-7">
+        <div class="comp-h"><h4>Voice call</h4><span class="label" id="voiceLen"></span></div>
+        <div class="voice" id="voice"></div>
+      </div>
+
+      <div class="card pad comp c-5">
+        <div class="comp-h"><h4>Reality Test</h4><span class="label">Unseen cases</span></div>
+        <div id="rt" style="display:grid;gap:16px"></div>
+      </div>
+
+      <div class="card pad comp c-6">
+        <div class="comp-h"><h4>Toasts</h4><button class="btn btn-secondary btn-sm" id="toastBtn">Show a toast</button></div>
+        <div style="display:grid;gap:8px" id="toastDemo"></div>
+      </div>
+
+      <div class="card pad comp c-6">
+        <div class="comp-h"><h4>Case metadata</h4><span class="label">Key–value</span></div>
+        <div class="kv" id="kvDemo"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="part" aria-labelledby="h-part2">
+    <span class="label">Part 2 · For whoever builds it, human or Claude</span>
+    <h2 id="h-part2">Build spec</h2>
+    <p>Everything needed to build Casework without a meeting: the stack, how the pieces fit, the data contracts, every component with a copyable build brief, the module rules, performance budgets, and which Claude Code skills to use for each job. The rule of thumb: <b>contracts first, one folder per owner, tokens only, fixtures before backends.</b></p>
+    <div class="facts-row">
+      <span class="chip plain">TypeScript end to end</span><span class="chip plain">pnpm monorepo</span><span class="chip plain">Next.js App Router</span><span class="chip plain">Route handlers + SSE</span><span class="chip plain">Claude tool-use loop</span><span class="chip plain">SQLite event store</span><span class="chip plain">ElevenLabs voice</span>
+    </div>
+  </section>
+
+  <!-- ===================== STACK ===================== -->
+  <section class="sec" id="stack" aria-labelledby="h-stack">
+    <div class="sec-h"><h2 id="h-stack">Stack and libraries</h2><p>One language across web, API and agent, so the case and event schemas are written once and imported everywhere. Pin exact versions in the lockfile on day one.</p></div>
+    <div class="card pad tbl">
+      <table>
+        <thead><tr><th>Package</th><th>Layer</th><th>Used for</th><th>Why this one</th></tr></thead>
+        <tbody id="libRows"></tbody>
+      </table>
+    </div>
+    <div class="spec-grid">
+      <div class="card pad c-6" style="display:grid;gap:12px">
+        <div class="comp-h"><h4>Models</h4><span class="label">Set by env, never hard-coded</span></div>
+        <div class="tbl"><table style="min-width:0">
+          <thead><tr><th>Job</th><th>Env var</th><th>Default</th></tr></thead>
+          <tbody>
+            <tr><td>Decisions, handover, judgement</td><td class="m">MODEL_DECIDE</td><td class="m">claude-opus-5-5</td></tr>
+            <tr><td>Triage, source summaries, extraction</td><td class="m">MODEL_FAST</td><td class="m">claude-haiku-4-5-20251001</td></tr>
+            <tr><td>Voice agent turns</td><td class="m">ELEVENLABS_AGENT_ID</td><td class="m">ElevenLabs agent, Claude as LLM</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card pad c-6" style="display:grid;gap:12px">
+        <div class="comp-h"><h4>Environment</h4><span class="label">.env.example is committed, .env is not</span></div>
+<pre class="code">ANTHROPIC_API_KEY=            <span class="c"># required</span>
+MODEL_DECIDE=claude-opus-5-5
+MODEL_FAST=claude-haiku-4-5-20251001
+ELEVENLABS_API_KEY=           <span class="c"># voice only</span>
+ELEVENLABS_AGENT_ID=
+DATA_DIR=./data               <span class="c"># synthetic data, read-only</span>
+DB_PATH=./.casework/casework.db
+TRACK=property                <span class="c"># claims | property | banking | logistics</span>
+REALITY_CONCURRENCY=6
+TOOL_TIMEOUT_MS=8000</pre>
+      </div>
+      <div class="card pad c-12" style="display:grid;gap:12px">
+        <div class="comp-h"><h4>Not using, on purpose</h4><span class="label">Saves debate later</span></div>
+        <div class="prose"><ul>
+          <li><b>A separate API server.</b> Next.js route handlers serve REST and SSE. The agent lives in <code>packages/core</code>, so the Reality Test CLI runs it without Next.</li>
+          <li><b>Redux or a big state library.</b> Server state lives in TanStack Query. The rest is three values (direction, track, autonomy) in Zustand.</li>
+          <li><b>A charting library.</b> The only charts are the Reality Test grid and tool-health sparklines, which are small enough to draw with CSS or SVG.</li>
+          <li><b>An agent framework.</b> The loop is about 150 lines on the Anthropic SDK. Owning it makes retries, the policy guard and event emission explicit, which is what engineering-quality judging looks at.</li>
+          <li><b>A vector database.</b> Each case brings its own sources. Retrieval over a handful of documents fits in context with prompt caching.</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ARCHITECTURE ===================== -->
+  <section class="sec" id="arch" aria-labelledby="h-arch">
+    <div class="sec-h"><h2 id="h-arch">Architecture</h2><p>Five layers. Imports only point downwards. Track-specific knowledge lives in one place, the track pack, so the other four layers never mention a track by name.</p></div>
+    <div class="card pad layers">
+      <div class="layer"><div class="layer-h"><b>Web app</b><span>apps/web</span></div>
+        <div class="boxes">
+          <div class="box"><b>Routes</b><span>Inbox, case, live runs, escalations, Reality Test, tools, design (App Router)</span><code>src/app/(app)/* + src/features/*</code></div>
+          <div class="box"><b>Domain components</b><span>Trace, handover, voice, mascot, case list</span><code>src/domain/*</code></div>
+          <div class="box"><b>Primitives</b><span>Buttons, inputs, dialogs, chips</span><code>src/ui/*</code></div>
+          <div class="box"><b>Tokens</b><span>One CSS file per direction</span><code>src/tokens/*.css</code></div>
+        </div></div>
+      <div class="layer-link">HTTP + Server-Sent Events from route handlers · client code imports core types and schemas only</div>
+      <div class="layer"><div class="layer-h"><b>API</b><span>apps/web/src/app/api · apps/cli</span></div>
+        <div class="boxes">
+          <div class="box"><b>REST</b><span>Cases, runs, decisions, tools</span><code>app/api/*/route.ts</code></div>
+          <div class="box"><b>Run stream</b><span>SSE per run, resumable with Last-Event-ID</span><code>app/api/runs/[id]/events</code></div>
+          <div class="box"><b>Voice bridge</b><span>Signed URLs, server tools for ElevenLabs</span><code>app/api/voice/*</code></div>
+          <div class="box"><b>Reality Test CLI</b><span>Batch runner, writes ANSWERS/</span><code>apps/cli/src/reality.ts</code></div>
+        </div></div>
+      <div class="layer-link">plain function calls</div>
+      <div class="layer"><div class="layer-h"><b>Core</b><span>packages/core</span></div>
+        <div class="boxes">
+          <div class="box"><b>Schema</b><span>Case, Source, RunEvent, Handover (zod)</span><code>src/schema/</code></div>
+          <div class="box"><b>Agent loop</b><span>Tool use, max turns, emits events</span><code>src/agent/loop.ts</code></div>
+          <div class="box"><b>Policy guard</b><span>Blocks prohibited actions before they run</span><code>src/agent/guard.ts</code></div>
+          <div class="box"><b>Retry wrapper</b><span>Timeout, backoff, idempotency keys</span><code>src/agent/retry.ts</code></div>
+          <div class="box"><b>Handover builder</b><span>Structured output, citation check</span><code>src/agent/handover.ts</code></div>
+          <div class="box"><b>Run view</b><span>Pure reducer: events → what the UI and ANSWERS show</span><code>src/run/view.ts</code></div>
+        </div></div>
+      <div class="layer-link">implements the TrackPack interface</div>
+      <div class="layer"><div class="layer-h"><b>Track packs</b><span>packages/tracks</span></div>
+        <div class="boxes">
+          <div class="box"><b>claims</b><span>Policy lookups, payouts, fraud signals</span><code>src/claims/</code></div>
+          <div class="box"><b>property</b><span>Contractors, landlords, tenancies</span><code>src/property/</code></div>
+          <div class="box"><b>banking</b><span>Cards, disputes, auth events</span><code>src/banking/</code></div>
+          <div class="box"><b>logistics</b><span>Orders, proof of delivery, GPS, refunds</span><code>src/logistics/</code></div>
+        </div></div>
+      <div class="layer-link">network</div>
+      <div class="layer"><div class="layer-h"><b>Outside</b><span>services + data</span></div>
+        <div class="boxes">
+          <div class="box"><b>Claude API</b><span>Anthropic SDK, prompt caching</span></div>
+          <div class="box"><b>ElevenLabs</b><span>Conversational voice agent</span></div>
+          <div class="box"><b>Supplied tools</b><span>The event's synthetic APIs</span></div>
+          <div class="box"><b>Synthetic data</b><span>Calls, emails, docs, CRM, tickets</span><code>data/</code></div>
+          <div class="box"><b>SQLite</b><span>Event store, one file</span></div>
+        </div></div>
+    </div>
+
+    <div class="card pad" style="display:grid;gap:14px">
+      <div class="comp-h"><h4>One run, end to end</h4><span class="label">Every screen is a view of this event stream</span></div>
+      <div class="flow">
+        <span class="chip s-running">run.started</span><span class="ar">→</span><span class="chip s-info">step.read</span><span class="ar">→</span><span class="chip s-running">tool.called</span><span class="ar">→</span><span class="chip s-failed">tool.failed</span><span class="ar">→</span><span class="chip s-running">tool.succeeded</span><span class="ar">→</span><span class="chip s-blocked">action.blocked</span><span class="ar">→</span><span class="chip s-info">decision.made</span><span class="ar">→</span><span class="chip s-escalated">escalation.created</span><span class="ar">→</span><span class="chip s-resolved">run.completed</span>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Event</th><th>Emitted by</th><th>UI that reacts</th><th>Mascot</th><th>ANSWER.md section</th></tr></thead>
+        <tbody>
+          <tr><td><code>run.started</code></td><td>agent/loop</td><td>Live runs card, trace header shows Running</td><td>think</td><td>Header</td></tr>
+          <tr><td><code>step.read</code></td><td>agent/loop (after source triage)</td><td>TraceStep(read), cited sources highlighted</td><td>think</td><td>What the system received</td></tr>
+          <tr><td><code>tool.called</code></td><td>agent/guard (when allowed)</td><td>TraceStep(tool) with spinner</td><td>act</td><td>Actions taken</td></tr>
+          <tr><td><code>tool.succeeded</code></td><td>agent/retry</td><td>ToolCallBlock result and latency</td><td>act</td><td>Actions taken</td></tr>
+          <tr><td><code>tool.failed</code></td><td>agent/retry</td><td>TraceStep(fail), RetryBadge, toast</td><td>fail</td><td>What failed</td></tr>
+          <tr><td><code>action.blocked</code></td><td>agent/guard</td><td>BlockedAction in decision panel and trace</td><td>think</td><td>Actions the agent refused</td></tr>
+          <tr><td><code>decision.made</code></td><td>agent/decide</td><td>TraceStep(decide), ConfidenceMeter</td><td>think</td><td>REASONING.md steps</td></tr>
+          <tr><td><code>escalation.created</code></td><td>agent/handover</td><td>HandoverCard, Escalations count, toast</td><td>esc</td><td>What it escalated</td></tr>
+          <tr><td><code>run.completed</code></td><td>agent/loop</td><td>OutcomeStamp animates, Reality Test cell fills</td><td>done / esc</td><td>Final result</td></tr>
+          <tr><td><code>human.decided</code></td><td>routes/decisions</td><td>HumanDecisionRecord, case status</td><td>done</td><td>Not part of ANSWERS (happens after the run)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card pad" style="display:grid;gap:14px">
+      <div class="comp-h"><h4>Track packs</h4><span class="label">The only place a track is named</span></div>
+      <p style="font-size:14px;color:var(--ink-2);max-width:72ch">A pack supplies vocabulary, a data loader, tools, policy and a prompt. The UI reads its labels from <code>pack.vocabulary</code>, so a property manager sees "Job" and an insurer sees "Claim" from the same component. To add a track, copy a pack folder and register it. Nothing else changes.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Track</th><th>A case is a…</th><th>Customer is a…</th><th>Typical tools</th><th>Autonomy limit</th><th>Always escalate when</th></tr></thead>
+        <tbody>
+          <tr><td>Claims</td><td>Claim</td><td>Policyholder</td><td class="m">policy.lookup · claims.update · payments.schedule · weather.history · fraud.score</td><td>Settle up to £1,000</td><td>Loss date before inception, injury, fraud signals</td></tr>
+          <tr><td>Property</td><td>Job</td><td>Tenant / Landlord</td><td class="m">property.get · tenancy.get · contractors.book · landlord.notify · sms.send</td><td>Spend up to the landlord's limit</td><td>Gas or safety risk, vulnerable occupant, deposit or legal dispute</td></tr>
+          <tr><td>Banking</td><td>Case</td><td>Customer</td><td class="m">cards.transactions · auth.events · cards.freeze · disputes.open · messages.send</td><td>Freeze yes, refund no</td><td>Account takeover signs, vulnerability, regulated complaints</td></tr>
+          <tr><td>Logistics</td><td>Delivery issue</td><td>Recipient</td><td class="m">orders.get · pod.photo · gps.scan · reship.create · refund.issue</td><td>Reship or refund up to £150</td><td>High value, repeat claims from one address, customs</td></tr>
+        </tbody>
+      </table></div>
+<pre class="code"><span class="c">// packages/core/src/track.ts — the whole contract a track must meet</span>
+<span class="k">export interface</span> TrackPack {
+  id: TrackId;                                  <span class="c">// 'claims' | 'property' | 'banking' | 'logistics'</span>
+  label: string;                                <span class="c">// "Property management"</span>
+  vocabulary: { case: string; cases: string; customer: string; handler: string };
+  loadCases(dir: string): Promise&lt;Case[]&gt;;      <span class="c">// synthetic data → normalised Case</span>
+  tools: AgentTool[];                           <span class="c">// zod input schema + execute()</span>
+  policy: Policy;                               <span class="c">// limits, prohibited actions, must-escalate rules</span>
+  systemPrompt: string;                         <span class="c">// loaded from prompt.md, cached</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- ===================== CONTRACTS ===================== -->
+  <section class="sec" id="contracts" aria-labelledby="h-contracts">
+    <div class="sec-h"><h2 id="h-contracts">Data contracts</h2><p>Written in zod inside <code>packages/core/src/schema</code>. The API validates with them, the web app parses the SSE stream with them, and Claude's tool input schemas are generated from them. Change a contract in one pull request that updates every user of it.</p></div>
+    <div class="spec-grid">
+<pre class="code c-6"><span class="c">// schema/case.ts</span>
+<span class="k">export const</span> SourceKind = z.enum(['call','email','doc','crm','ticket','sms','note']);
+<span class="k">export const</span> CaseStatus = z.enum(['new','running','resolved','escalated','needs_info','failed','blocked']);
+
+<span class="k">export const</span> Source = z.object({
+  id: z.string(),                 <span class="c">// stable, cited by facts</span>
+  kind: SourceKind,
+  title: z.string(),
+  receivedAt: z.iso.datetime(),
+  body: z.string(),               <span class="c">// transcript, email text, OCR text</span>
+  meta: z.record(z.string(), z.unknown()).default({}),
+});
+
+<span class="k">export const</span> Case = z.object({
+  ref: z.string(),                <span class="c">// "PM-7731"</span>
+  track: TrackId,
+  title: z.string(),
+  customer: z.object({ id: z.string().optional(), name: z.string() }),
+  status: CaseStatus,
+  slaDueAt: z.iso.datetime().optional(),
+  sources: z.array(Source),
+});
+
+<span class="k">export const</span> Money = z.object({   <span class="c">// always minor units</span>
+  amount: z.number().int(), currency: z.literal('GBP'),
+});</pre>
+<pre class="code c-6"><span class="c">// schema/events.ts — append-only, one row per event</span>
+<span class="k">const</span> base = { runId: z.string(), seq: z.number().int(), at: z.iso.datetime() };
+
+<span class="k">export const</span> RunEvent = z.discriminatedUnion('type', [
+  z.object({ ...base, type: z.literal('run.started'), caseRef: z.string(), autonomy: Autonomy }),
+  z.object({ ...base, type: z.literal('step.read'), sourceIds: z.array(z.string()), summary: z.string() }),
+  z.object({ ...base, type: z.literal('tool.called'), callId: z.string(), tool: z.string(), args: z.unknown() }),
+  z.object({ ...base, type: z.literal('tool.succeeded'), callId: z.string(), result: z.unknown(), ms: z.number() }),
+  z.object({ ...base, type: z.literal('tool.failed'), callId: z.string(), error: z.string(),
+             attempt: z.number(), willRetry: z.boolean() }),
+  z.object({ ...base, type: z.literal('action.blocked'), action: z.string(), ruleId: z.string(), why: z.string() }),
+  z.object({ ...base, type: z.literal('decision.made'), label: z.string(), rationale: z.string(),
+             confidence: z.number().min(0).max(1), citations: z.array(z.string()) }),
+  z.object({ ...base, type: z.literal('escalation.created'), handover: Handover }),
+  z.object({ ...base, type: z.literal('run.completed'), outcome: Outcome, summary: z.string(), usage: Usage }),
+]);</pre>
+<pre class="code c-6"><span class="c">// schema/handover.ts — what a human needs to decide</span>
+<span class="k">export const</span> Outcome = z.enum(['resolved','escalated','needs_info','failed','declined']);
+
+<span class="k">export const</span> Handover = z.object({
+  reason: z.string(),                             <span class="c">// one sentence, plain English</span>
+  facts: z.array(z.object({ text: z.string(), sourceId: z.string() })).min(1),
+  tried: z.array(z.object({ text: z.string(), ok: z.boolean() })),
+  options: z.array(z.object({
+    id: z.string(), label: z.string(),
+    effect: z.enum(['reversible','irreversible','pauses']),
+    recommended: z.boolean().default(false),
+  })).min(1),
+  refused: z.array(z.object({ action: z.string(), ruleId: z.string() })),
+  confidence: z.number().min(0).max(1),
+  queue: z.string(),                              <span class="c">// "Fraud · Priority"</span>
+});
+<span class="c">// handover.ts rejects any fact whose sourceId is not in case.sources</span></pre>
+<pre class="code c-6"><span class="c">// API surface — apps/web/src/app/api/**/route.ts</span>
+GET    /api/tracks                      → TrackSummary[]
+GET    /api/cases?track=&amp;status=        → Case[]
+GET    /api/cases/:ref                  → Case &amp; { latestRun?: RunView }
+POST   /api/runs        { caseRef, autonomy }  → { runId }
+GET    /api/runs/:id/events             → SSE stream of RunEvent
+GET    /api/runs/:id                    → RunView        <span class="c">// reduced, for replay</span>
+POST   /api/cases/:ref/decisions { optionId, note }   → HumanDecision
+GET    /api/tools                       → ToolHealth[]
+POST   /api/reality  { dir }            → { batchId }   <span class="c">// same code as the CLI</span>
+GET    /api/reality/:batchId            → BatchView
+POST   /api/voice/session               → { signedUrl }
+POST   /api/voice/tools/:name           <span class="c">// ElevenLabs server tools → pack tools</span>
+
+<span class="c">// CLI</span>
+pnpm reality --track property --in data/reality --out ANSWERS</pre>
+    </div>
+    <div class="card pad" style="display:grid;gap:12px">
+      <div class="comp-h"><h4>ANSWERS output</h4><span class="label">Generated by the system, never edited by hand</span></div>
+      <div class="spec-grid">
+<pre class="code c-6"><span class="c">&lt;!-- ANSWERS/7/ANSWER.md --&gt;</span>
+# Case 7 · PM-7731 · Escalated
+
+**What the system received**
+Voicemail (1m 48s), tenant email, tenancy §14, contractor job J-5512
+
+**Actions taken**
+1. contractors.book("HeatRight") failed with 503, twice
+2. contractors.book("Northway Heating") held a slot 15:00–17:00, £420
+
+**Actions refused**
+Confirm £420 job without landlord approval (rule: property.spend_limit)
+
+**Escalated**
+To the property manager. £420 is above the landlord's £300 limit.
+
+**Final result**
+Escalated with a held slot. Confidence 0.82.</pre>
+<pre class="code c-6"><span class="c">&lt;!-- ANSWERS/7/REASONING.md --&gt;</span>
+# Reasoning · PM-7731
+
+## Step 1 · Classified as an emergency
+Vulnerable occupant (newborn, [email:src_2]) and no heating
+in October ([call:src_1]). Policy property.emergency applies.
+
+## Step 2 · Contractor booking
+...
+
+## Alternatives considered
+- Approve £420 myself: refused, over the spend limit.
+- Wait for HeatRight: rejected, two failures and an emergency.
+
+## Trace
+See trace.jsonl (41 events) in this folder.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TOKENS ===================== -->
+  <section class="sec" id="tokens" aria-labelledby="h-tokens">
+    <div class="sec-h"><h2 id="h-tokens">Token reference</h2><p>Components use semantic tokens only. Each direction is one CSS file that sets these variables under <code>[data-dir]</code>. No component contains a hex value, and no component checks which direction is active, except the mascot and the outcome stamp, which have per-direction skins.</p></div>
+    <div class="spec-grid">
+      <div class="card pad tbl c-7">
+        <table style="min-width:520px">
+          <thead><tr><th>Token</th><th>Role</th><th>Rule</th></tr></thead>
+          <tbody>
+            <tr><td><code>--bg</code></td><td>Page ground</td><td>Body background only</td></tr>
+            <tr><td><code>--surface</code> / <code>--surface-2</code></td><td>Cards / wells, hovers</td><td>Never nest surface in surface without a rule between</td></tr>
+            <tr><td><code>--ink</code> / <code>--ink-2</code></td><td>Text / secondary text</td><td>ink-2 is never used for anything a person must act on</td></tr>
+            <tr><td><code>--line</code> / <code>--line-strong</code></td><td>Rules / input borders</td><td>Inputs and selected items use line-strong</td></tr>
+            <tr><td><code>--accent</code> / <code>--accent-ink</code></td><td>Primary action, focus, active</td><td>At most one accent-filled element per pane</td></tr>
+            <tr><td><code>--accent-soft</code></td><td>Selected rows, citations</td><td>Background only</td></tr>
+            <tr><td><code>--ok</code> <code>--hold</code> <code>--info</code> <code>--bad</code> <code>--neutral</code></td><td>Resolved, escalated, needs info, failed, blocked</td><td>Always paired with a text label, never colour alone</td></tr>
+            <tr><td><code>--font-d</code> <code>--font-b</code> <code>--font-m</code></td><td>Display, body, data</td><td>Machine output (refs, tool calls, money in tables) uses --font-m</td></tr>
+            <tr><td><code>--r</code> <code>--r-lg</code> <code>--bw</code> <code>--shadow</code></td><td>Shape of the direction</td><td>Docket 3/4/1/none · Switchboard 6/10/1/soft · Relay 12/20/2/offset</td></tr>
+            <tr><td><code>--ease</code> <code>--out</code> <code>--spring</code></td><td>Motion curves</td><td>--spring only on the stamp and Relay pops</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card pad c-5" style="display:grid;gap:14px;align-content:start">
+        <div class="comp-h"><h4>Scales</h4><span class="label">Shared by all directions</span></div>
+        <div class="kv">
+          <div><span>Space (4px base)</span><span>2 4 6 8 12 16 20 24 32 40 56 64</span></div>
+          <div><span>Type scale (px)</span><span>11 12.5 13.5 15 17 20 26 30 · display 40–84</span></div>
+          <div><span>Line height</span><span>1.1 headings · 1.5 body · 1.65 code</span></div>
+          <div><span>Durations</span><span>120 fast · 200 base · 350 slow · 420 stamp</span></div>
+          <div><span>Z-index</span><span>10 sticky · 40 nav · 50 toast · 60 dialog · 70 palette</span></div>
+          <div><span>Breakpoints</span><span>560 · 860 · 1120</span></div>
+          <div><span>Hit target</span><span>≥ 36px desktop · ≥ 44px touch</span></div>
+          <div><span>Focus ring</span><span>2px accent, 2px offset</span></div>
+        </div>
+<pre class="code"><span class="c">/* apps/web/src/tokens/relay.css */</span>
+[data-dir="relay"] {
+  --bg: #EDF1FA; --surface: #FFFFFF;
+  --accent: #2946F0; --r: 12px; --bw: 2px;
+  ...
+}
+<span class="c">/* app/globals.css — Tailwind reads the tokens */</span>
+@theme inline {
+  --color-accent: var(--accent);
+  --radius-ui: var(--r);
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CATALOGUE ===================== -->
+  <section class="sec cat" id="catalogue" aria-labelledby="h-cat">
+    <div class="sec-h"><h2 id="h-cat">Component catalogue</h2><p>Every component, hook and server module, down to the smallest formatter. Open a row for props, states, accessibility and motion notes. <b>Copy brief</b> gives you a ready-made prompt for a Claude instance to build that piece.</p></div>
+    <div class="cat-bar">
+      <div class="cat-tiers" id="catTiers" role="group" aria-label="Filter by layer"></div>
+      <input class="input" id="catSearch" type="search" placeholder="Search components, files, libraries" aria-label="Search catalogue">
+    </div>
+    <div class="cat-list" id="catList"></div>
+  </section>
+
+  <!-- ===================== MODULES ===================== -->
+  <section class="sec" id="modules" aria-labelledby="h-mod">
+    <div class="sec-h"><h2 id="h-mod">Modules and ownership</h2><p>The folder tree is the org chart. Each workstream, whether a person or a Claude instance, owns a folder and builds against fixtures, so nobody waits on anyone else.</p></div>
+    <div class="spec-grid">
+<pre class="code c-7">casework/
+├─ CLAUDE.md                 <span class="c">← read first: commands, rules, where things live</span>
+├─ README.md · LICENSE (Apache-2.0) · SUBMISSION.md
+├─ docs/                     <span class="c">← this artifact + the plan as markdown</span>
+├─ .claude/skills/           <span class="c">← project skills (see Skills)</span>
+├─ data/                     <span class="c">← synthetic data as supplied, read-only</span>
+├─ ANSWERS/&lt;n&gt;/             <span class="c">← ANSWER.md, REASONING.md, trace.jsonl</span>
+├─ packages/
+│  ├─ core/src/
+│  │  ├─ schema/             <span class="c">common · case · events · handover · index</span>
+│  │  ├─ agent/              <span class="c">loop · guard · retry · decide · handover · triage</span>
+│  │  ├─ run/                <span class="c">view.ts (pure reducer) · mascot.ts</span>
+│  │  ├─ answers/            <span class="c">render.ts (ANSWER.md + REASONING.md)</span>
+│  │  └─ track.ts            <span class="c">TrackPack interface</span>
+│  └─ tracks/src/
+│     ├─ meta.ts             <span class="c">labels + vocabulary, safe for the browser</span>
+│     └─ &lt;track&gt;/            <span class="c">index · tools · policy · prompt · fixtures/</span>
+└─ apps/
+   ├─ cli/src/               <span class="c">reality.ts · replay.ts (no Next needed)</span>
+   └─ web/src/
+      ├─ app/
+      │  ├─ (app)/           <span class="c">inbox · cases/[ref] · runs · escalations · reality · tools</span>
+      │  ├─ design/          <span class="c">every token and component in every state</span>
+      │  └─ api/             <span class="c">route handlers: cases · runs · decisions · tools · reality · voice</span>
+      ├─ tokens/             <span class="c">base · docket · switchboard · relay .css</span>
+      ├─ ui/&lt;Name&gt;/          <span class="c">Name.tsx · index.ts · Name.test.tsx</span>
+      ├─ domain/             <span class="c">case · run · handover · voice · reality · mascot</span>
+      ├─ layout/             <span class="c">AppShell · TopNav · CommandPalette · panes</span>
+      ├─ features/           <span class="c">one folder per route; pages stay thin</span>
+      ├─ server/             <span class="c">db · run registry · SSE helpers (server-only)</span>
+      ├─ lib/                <span class="c">api · sse · format · hotkeys · cn</span>
+      ├─ state/ui.ts         <span class="c">zustand: direction, track, autonomy</span>
+      └─ mocks/              <span class="c">msw handlers fed by tracks/*/fixtures</span></pre>
+      <div class="c-5" style="display:grid;gap:20px;align-content:start">
+        <div class="card pad" style="display:grid;gap:12px">
+          <div class="comp-h"><h4>Import rules</h4><span class="label">Enforced by eslint-plugin-boundaries</span></div>
+          <ul class="check">
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><code>ui/</code> imports only tokens and other <code>ui/</code>.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><code>domain/</code> imports <code>ui/</code>, <code>lib/</code> and core types.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><code>features/</code> compose domain and ui. Features never import each other.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Client components import core types, schemas and <code>@casework/tracks/meta</code> only. Agent code stays in <code>server/</code> and route handlers.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><code>core</code> never imports a track. Tracks import <code>core</code>.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Every folder has an <code>index.ts</code>. Import from the folder, never a deep file.</span></li>
+          </ul>
+        </div>
+        <div class="card pad" style="display:grid;gap:12px">
+          <div class="comp-h"><h4>Why it stays modular</h4></div>
+          <div class="prose" style="font-size:13.5px"><ul>
+            <li>Track knowledge is in one folder, so a fifth track is one new folder.</li>
+            <li>The UI only reads events, so live, replay and recorded fixtures all use the same code path.</li>
+            <li><code>run/view.ts</code> is shared by the web app and the ANSWERS writer. What judges read and what the demo shows can't drift apart.</li>
+            <li>Directions are token files plus two skinned components. Picking a direction later costs nothing.</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+    <div class="card pad tbl">
+      <table>
+        <thead><tr><th>Workstream</th><th>Owns</th><th>Builds against</th><th>Main skills</th><th>Done when</th></tr></thead>
+        <tbody>
+          <tr><td>Contracts</td><td class="m">packages/core/src/schema</td><td>The supplied data</td><td class="m">claude-api</td><td>Schemas parse every supplied case. Fixtures recorded.</td></tr>
+          <tr><td>Agent core</td><td class="m">packages/core/src/agent, run</td><td>Schema + one pack</td><td class="m">claude-api</td><td>A case runs end to end and emits a valid event stream.</td></tr>
+          <tr><td>Track pack</td><td class="m">packages/tracks/src/&lt;track&gt;</td><td>TrackPack interface</td><td class="m">claude-api, pdf, xlsx</td><td>Loader, tools, policy and prompt pass the pack test suite.</td></tr>
+          <tr><td>API + CLI</td><td class="m">apps/web/src/app/api, src/server, apps/cli</td><td>Core functions</td><td class="m">security-review</td><td>All routes validated, SSE resumes, CLI writes ANSWERS.</td></tr>
+          <tr><td>UI system</td><td class="m">apps/web/src/{tokens,ui,layout}</td><td>This page</td><td class="m">frontend-design, impeccable, design:accessibility-review</td><td>Every primitive is in /design in every state.</td></tr>
+          <tr><td>Product screens</td><td class="m">apps/web/src/{domain,features}</td><td>msw fixtures</td><td class="m">frontend-design, emil-design-eng, dataviz</td><td>The demo flow works on fixtures, then on the live API.</td></tr>
+          <tr><td>Voice</td><td class="m">domain/voice, routes/voice.ts</td><td>Pack tools</td><td class="m">claude-api</td><td>A phone-style call reaches a decision through the same tools.</td></tr>
+          <tr><td>Reality Test + submission</td><td class="m">apps/cli, ANSWERS/, README, demo/</td><td>Everything above</td><td class="m">webapp-testing, code-review, security-review</td><td>A full batch runs unattended. README covers all 8 required points.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== PERFORMANCE ===================== -->
+  <section class="sec" id="perf" aria-labelledby="h-perf">
+    <div class="sec-h"><h2 id="h-perf">Performance and reliability</h2><p>Two kinds of speed matter. The UI has to feel instant in the demo. The agent has to finish every unseen case in the Reality Test window without anyone stepping in.</p></div>
+    <div class="budget">
+      <div><b>≤ 170 KB</b><span>First-load JS on /inbox, gzip</span></div>
+      <div><b>≤ 1.2 s</b><span>Largest contentful paint on the inbox</span></div>
+      <div><b>≤ 100 ms</b><span>From SSE event to trace step on screen</span></div>
+      <div><b>60 fps</b><span>Animations use only transform and opacity</span></div>
+      <div><b>≥ 90%</b><span>Prompt cache hit rate on system + tools + policy</span></div>
+      <div><b>0</b><span>Unhandled errors that end a batch</span></div>
+    </div>
+    <div class="spec-grid">
+      <div class="card pad c-6" style="display:grid;gap:12px;align-content:start">
+        <div class="comp-h"><h4>Frontend</h4></div>
+        <div class="prose" style="font-size:13.5px"><ul>
+          <li><b>Server Components by default.</b> Next splits per route. Only interactive pieces (trace, controls, voice) are client components, so static panes ship no JS.</li>
+          <li><b>Load animation code lazily.</b> Use <code>LazyMotion</code> with <code>domAnimation</code> and the <code>m.</code> components, which saves about two-thirds of motion's size. Mascot and chip animations are plain CSS keyframes.</li>
+          <li><b>One stream per run.</b> <code>useRunStream</code> parses each event with zod, reduces with <code>runView</code>, and batches renders with <code>startTransition</code>. On reconnect it resumes from <code>Last-Event-ID</code>.</li>
+          <li><b>Memoise trace steps.</b> They're keyed by <code>seq</code> and only re-render when their own event changes. Long traces are virtualised once they pass 200 steps.</li>
+          <li><b>Virtualise the inbox</b> with <code>@tanstack/react-virtual</code> once there are more than 100 cases.</li>
+          <li><b>Fonts:</b> <code>next/font</code> self-hosts variable latin subsets with <code>display: swap</code>. Each direction’s faces are CSS variables.</li>
+          <li><b>Icons</b> are named imports from lucide, so only the icons used are bundled.</li>
+          <li><b>Query cache:</b> cases stay fresh for 30 s. A human decision updates the case optimistically and rolls back on error.</li>
+          <li><b>Shared clock:</b> one 30 s ticker drives every RelativeTime and SlaTimer, instead of one interval per row.</li>
+        </ul></div>
+      </div>
+      <div class="card pad c-6" style="display:grid;gap:12px;align-content:start">
+        <div class="comp-h"><h4>Agent and API</h4></div>
+        <div class="prose" style="font-size:13.5px"><ul>
+          <li><b>Prompt caching.</b> Order the prompt as system, then tool definitions, then track policy, then case sources, with cache breakpoints after policy and after sources. Every turn after the first reads from cache.</li>
+          <li><b>Two models.</b> The fast model summarises and tags each source once. The decision model only sees the summaries plus the raw passages it cites.</li>
+          <li><b>Parallel tools.</b> Let Claude make independent tool calls in one turn, and run them with <code>Promise.all</code> inside the guard.</li>
+          <li><b>Retry wrapper.</b> Timeout per tool, 3 attempts with exponential backoff and jitter, and an idempotency key per call so a retried booking can't double-book. Every attempt emits an event.</li>
+          <li><b>Failures become events, not crashes.</b> A tool error is returned to the model as a <code>tool_result</code> with <code>is_error</code>, so it can recover or escalate.</li>
+          <li><b>Hard limits:</b> max 12 turns and a token budget per case. If either is hit, the run escalates with the context so far rather than failing silently.</li>
+          <li><b>Batch throughput:</b> <code>p-limit</code> at <code>REALITY_CONCURRENCY</code>. On a 429 the batch backs off as a whole. Each case's ANSWERS folder is written when that case finishes, so a crash keeps finished work.</li>
+          <li><b>Replay without spend.</b> Events are stored in SQLite, so the demo and UI work can replay runs without calling the model.</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SKILLS ===================== -->
+  <section class="sec" id="skills" aria-labelledby="h-skills">
+    <div class="sec-h"><h2 id="h-skills">Skills</h2><p>Claude Code skills available in this setup, and the job each one is for. Invoke them by name (for example <code>/frontend-design</code>) or describe the task and Claude will load the right one. The second group are project skills to add to <code>.claude/skills/</code> so every instance does common jobs the same way.</p></div>
+    <div class="skill-grid" id="skillGrid"></div>
+    <div class="comp-h" style="margin-top:8px"><h4>Project skills to create</h4><span class="label">Use skill-creator to scaffold each one</span></div>
+    <div class="skill-grid" id="projSkillGrid"></div>
+  </section>
+
+  <!-- ===================== PLAYBOOK ===================== -->
+  <section class="sec" id="playbook" aria-labelledby="h-play">
+    <div class="sec-h"><h2 id="h-play">Playbook for a new Claude instance</h2><p>Paste the CLAUDE.md below into the repo root. Any instance that opens the repo then knows the commands, the rules and where everything goes.</p></div>
+    <div class="spec-grid">
+      <div class="c-7" style="display:grid;gap:12px;min-width:0">
+        <div class="brief-h"><span class="label">CLAUDE.md</span><button class="btn btn-secondary btn-sm" id="copyClaudeMd">Copy CLAUDE.md</button></div>
+<pre class="code" id="claudeMd"># Casework
+
+An operations agent for messy real-world cases (calls, emails, documents, CRM, tickets).
+It resolves what it safely can and hands everything else to a person with full context.
+Track-agnostic: track knowledge lives only in packages/tracks/src/&lt;track&gt;.
+
+## Commands
+pnpm i                      # install
+pnpm dev                    # Next.js on :3000 (UI + API)
+pnpm test                   # vitest, all packages
+pnpm e2e                    # playwright demo flow
+pnpm typecheck
+pnpm reality --track $TRACK --in data/reality --out ANSWERS
+pnpm replay &lt;runId&gt;         # re-emit a stored run, no model calls
+
+## Where things go
+- Schemas: packages/core/src/schema (zod). Change these first, in their own commit.
+- Agent loop, guard, retry, handover: packages/core/src/agent
+- Track data, tools, policy, prompt: packages/tracks/src/&lt;track&gt;
+- UI primitives: apps/web/src/ui/&lt;Name&gt;/  Domain UI: apps/web/src/domain
+- Pages: apps/web/src/app/(app)/&lt;route&gt;/page.tsx stay thin; logic in src/features/&lt;route&gt;
+- API: apps/web/src/app/api/**/route.ts; server-only code in apps/web/src/server
+- Reality Test CLI: apps/cli (runs the agent without Next)
+- Design reference: /design route and docs/design/casework-design-directions.html
+
+## Rules
+- Colours, radii, fonts and shadows come from CSS variables in src/tokens. No hex values in components.
+- Never name a track in core, api, ui, domain or layout. Use pack.vocabulary.
+- Every new event type goes into RunEvent, runView, mascotFor and answers/render.
+- Tool errors become tool.failed events. Never throw out of the agent loop.
+- Prohibited actions are enforced in agent/guard.ts, not only in prompts.
+- Money is integer pence. Format with lib/format.money.
+- Server Components by default; add "use client" only where there is interaction.
+- Every UI component: all states in /design, keyboard reachable, honours reduced motion.
+- Never hand-edit ANSWERS/. Re-run the CLI instead.
+- Never commit .env or keys. .env.example lists every variable.
+
+## Definition of done
+typecheck, test and build pass · component is in /design · README updated if behaviour changed</pre>
+      </div>
+      <div class="c-5" style="display:grid;gap:20px;align-content:start">
+        <div class="card pad" style="display:grid;gap:12px">
+          <div class="comp-h"><h4>Picking up a task</h4></div>
+          <ol class="prose" style="padding-left:18px;margin:0;font-size:13.5px">
+            <li>Read <code>CLAUDE.md</code>, then this piece's catalogue entry. Use its build brief as the prompt.</li>
+            <li>Work only inside the folder your workstream owns. Contract changes are a separate commit.</li>
+            <li>Build against fixtures and msw. Don't wait for the backend.</li>
+            <li>Add the component to <code>/design</code> with every state from its entry.</li>
+            <li>Run <code>pnpm typecheck &amp;&amp; pnpm test</code>, then open it with the <code>run</code> skill.</li>
+            <li>Before committing, run <code>/code-review</code> on the diff.</li>
+          </ol>
+        </div>
+        <div class="card pad" style="display:grid;gap:12px">
+          <div class="comp-h"><h4>Done means</h4><span class="label">UI component</span></div>
+          <ul class="check">
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Uses tokens only. Looks right in all three directions.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Works with all four tracks' sample data, with no track words in the code.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Every state listed in its entry renders in /design.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Keyboard reachable, visible focus, a label for every control.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Status always has text as well as colour. Reduced motion gives the static pose.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>No horizontal scroll at 400px wide.</span></li>
+          </ul>
+          <div class="comp-h" style="margin-top:6px"><h4>Done means</h4><span class="label">Server module</span></div>
+          <ul class="check">
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Input and output validated with the shared zod schema.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Emits events for everything it does, including failures.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Tested against recorded fixtures, with no network in unit tests.</span></li>
+            <li><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>No secrets in code, logs or traces.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot"><span>All case data on this page is synthetic sample content.</span><span id="footDir"></span></footer>
+</div>
+<div class="toaster" id="toaster" aria-live="polite"></div>
+
+<script>
+const IC={
+  phone:'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
+  email:'M3 6h18v12H3z M3 7l9 6 9-6',
+  doc:'M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 16h6',
+  crm:'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+  ticket:'M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z M14 6v12',
+  tool:'M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5a4 4 0 0 1-2-2z',
+  read:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
+  decide:'M6 3v6a4 4 0 0 0 4 4h8 M14 9l4 4-4 4 M6 21v-6',
+  fail:'M12 3l10 18H2z M12 10v5 M12 18v.5',
+  escalate:'M8 13V6a1.5 1.5 0 0 1 3 0v5 M11 11V4a1.5 1.5 0 0 1 3 0v7 M14 11V5.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7 6 6 0 0 1-5-3l-2.5-4a1.5 1.5 0 0 1 2.5-1.5L8 15',
+  resolve:'M5 12l5 5 9-10',
+  check:'M5 12l5 5 9-10',
+  x:'M6 6l12 12M18 6L6 18',
+  retry:'M4 12a8 8 0 0 1 14-5l2 2 M20 4v5h-5 M20 12a8 8 0 0 1-14 5l-2-2 M4 20v-5h5',
+  search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M21 21l-5-5',
+  lock:'M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4',
+  spark:'M12 3v4 M12 17v4 M3 12h4 M17 12h4 M6 6l2.5 2.5 M15.5 15.5L18 18 M6 18l2.5-2.5 M15.5 8.5L18 6',
+  arrow:'M5 12h14 M13 6l6 6-6 6',
+  clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2',
+  shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'
+};
+const icon=(n,c='')=>`<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
+const SRC={call:['phone','Call'],email:['email','Email'],doc:['doc','Document'],crm:['crm','CRM'],ticket:['ticket','Ticket']};
+const STATUS={resolved:'Resolved',escalated:'Escalated',info:'Needs info',failed:'Failed',running:'Running',blocked:'Blocked'};
+const chip=s=>`<span class="chip s-${s}">${STATUS[s]}</span>`;
+
+const DIRS={
+  docket:{key:'A',name:'Docket',eyebrow:'Direction A · The careful clerk',
+    concept:'The agent works like a meticulous case clerk. Paper, ledgers and rubber stamps: every claim it makes cites a source, every decision is filed, and nothing gets stamped until it is final. Calm and legible for operations teams who live in forms.',
+    principles:['Every fact the agent states carries a citation to the document it came from.','Stamps mark decisions. Nothing is stamped until the run is finished.','Motion is short and physical: a stamp lands, a page slides in, nothing floats.'],
+    mascot:'Thump',line:'A rubber stamp that only lands when it is sure. When it isn’t, it raises a flag and waits for you.',
+    accentName:'Stamp violet',
+    motion:[['Stamp lands','420ms','cubic-bezier(.3,1.5,.5,1) · scale 1.9 → 1, rotate −12° → −4°'],['Step completes','250ms','ease-out · node fills, line inks in'],['Page change','180ms','ease-out · 8px slide, no fade']]},
+  switchboard:{key:'B',name:'Switchboard',eyebrow:'Direction B · The live operator',
+    concept:'The agent works like an operator at a live switchboard. Dark and dense, built for a control room watching many runs at once. Calls and lines are the main metaphor, which suits a voice agent: an escalation is a line patched through to a person with the context attached.',
+    principles:['Live things glow. Finished things go quiet.','Monospace for anything a machine produced: refs, tool calls, timings.','An escalation is a call transferred with the full context patched through.'],
+    mascot:'Patch',line:'A plug with an LED face. Its eyes change colour with the run, and the bars on its screen move when it calls a tool or speaks.',
+    accentName:'Phosphor amber',
+    motion:[['LED blink on decision','600ms','steps(2) × 3'],['Active node glow','250ms','ease · 0 → 18px amber halo'],['Waveform','500ms','ease-in-out alternate · per-bar offsets']]},
+  relay:{key:'C',name:'Relay',eyebrow:'Direction C · The friendly teammate',
+    concept:'The agent is a teammate passing the baton. Bright, chunky and tactile, so it reads from across a room and holds up in a 60-second demo video. The human handover is the hero moment, presented as a single card with everything needed to decide.',
+    principles:['Big, obvious states. You can tell what happened from the back of the room.','Handover is a baton pass: one card, everything a person needs to decide.','Motion is springy and playful, but it never sits on top of the data.'],
+    mascot:'Pip',line:'A pebble with an antenna. The bulb shows the agent’s state, and Pip raises a hand when a person needs to decide.',
+    accentName:'Cobalt',
+    motion:[['Outcome pops','500ms','cubic-bezier(.3,1.5,.5,1) · scale .4 → 1'],['Button press','150ms','ease · 3px offset shadow collapses'],['Toggle thumb','300ms','spring · overshoot 1.5']]}
+};
+
+const TRACKS={
+  claims:{label:'Insurance claims',
+    c:{ref:'CLM-20418',title:'Escape of water: kitchen ceiling collapse',who:'Priya Nair',meta:'Policy HH-882114 · Home & contents · Peckham SE15',sla:'2h 14m left',status:'escalated',
+      sources:[['call','Inbound call','6m 12s'],['email','Email','4 photos'],['doc','Contractor quote','£3,860'],['crm','Policy record','HH-882114']],
+      steps:[['read','Read 3 inbound items','Call transcript, email with photos, contractor quote','00:02'],
+        ['tool','policy.lookup("HH-882114")','Active since 01 Oct 2026 · excess £250','00:04'],
+        ['decide','Date of loss conflicts','Call says 28 Sep. Email says 2 Oct. Policy began 1 Oct.','00:07'],
+        ['fail','weather.history() timed out','Retrying in 4s (1 of 3)','00:13'],
+        ['tool','weather.history("SE15", "26 Sep–3 Oct")','No storm events recorded','00:18'],
+        ['escalate','Handed to a claims handler','Cover depends on which date is true','00:19']],
+      outcome:'escalated',reason:'The date of loss may fall before the policy started. Whether this is covered needs a person to decide.',
+      blocked:'Approve the £3,860 payout before the date is confirmed',
+      kv:[['Policyholder','Priya Nair'],['Excess','£250.00'],['Claimed','£3,860.00'],['Inception','01 Oct 2026'],['Handler queue','Home · Tier 2']],
+      facts:[['Ceiling collapsed after a slow leak from the bathroom above','call'],['She gave two dates: 28 Sep on the call, 2 Oct by email','email'],['Policy started 1 Oct 2026 with a £250 excess','crm'],['Quote of £3,860 covers ceiling and rewiring','doc']],
+      tried:[['check','Asked her to confirm the date. She isn’t sure.'],['check','Checked weather history. No storm, so not a storm claim.'],['retry','Weather lookup timed out once, then succeeded.']],
+      options:[['Request the plumber’s report','Recommended'],['Accept 2 Oct and proceed','Pays out'],['Refer to fraud review','Pauses claim']],
+      voice:[['Caller','The ceiling came down on Saturday. The 28th, I think.'],['Agent','Thanks, Priya. Your email says the 2nd of October. Do you know which day the leak started?'],['Caller','Honestly, no. It dripped for days before it fell.'],['Agent','That’s fine. I’ll pass this to a claims handler with everything you’ve sent, so you won’t need to repeat it.']],voiceLen:'6m 12s',
+      toasts:[['failed','fail','weather.history() timed out','Retrying in 4s (1 of 3)'],['escalated','escalate','CLM-20418 handed to Home · Tier 2','Context, sources and options attached'],['resolved','check','CLM-20415 resolved','Windscreen repair booked, £0 excess']]},
+    inbox:[['CLM-20418','Kitchen ceiling collapse','Priya Nair','call','escalated','4m'],['CLM-20415','Windscreen chip repair','Owen Hart','email','resolved','12m'],['CLM-20411','Theft from car, no crime ref','Lena Brooks','email','info','31m'],['CLM-20409','Storm damage to fence','Ade Coker','call','resolved','48m'],['CLM-20402','Duplicate claim detected','J. Fairley','ticket','blocked','1h']],
+    rt:{resolved:13,escalated:7,info:2,failed:2}},
+  property:{label:'Property management',
+    c:{ref:'PM-7731',title:'No heating or hot water in Flat 4B',who:'Tom Okafor (tenant)',meta:'12 Harcourt Rd, Leeds LS6 · Landlord R. Whitfield',sla:'Emergency · 3h 40m',status:'escalated',
+      sources:[['call','Voicemail','1m 48s'],['email','Tenant email','09:12'],['doc','Tenancy §14','Repairs'],['ticket','Contractor job','J-5512']],
+      steps:[['read','Read voicemail and email','Boiler failed overnight. A newborn lives in the flat.','00:02'],
+        ['decide','Classified as an emergency','Vulnerable occupant, no heating in October','00:03'],
+        ['fail','contractors.book("HeatRight") → 503','Retried twice, both failed','00:09'],
+        ['tool','contractors.book("Northway Heating")','Today 15:00–17:00 · quote £420 · slot held to 13:00','00:14'],
+        ['decide','Quote exceeds the approval limit','Landlord auto-approves up to £300','00:15'],
+        ['escalate','Handed to the property manager','Landlord must approve £420 before 13:00','00:16']],
+      outcome:'escalated',reason:'An engineer can attend today, but £420 is above the landlord’s £300 limit. Someone must get approval before the slot expires at 13:00.',
+      blocked:'Confirm the £420 job without landlord approval',
+      kv:[['Tenant','Tom Okafor'],['Landlord limit','£300.00'],['Quote','£420.00'],['Slot held until','13:00 today'],['Priority','Emergency']],
+      facts:[['Boiler shows fault F28, no heating or hot water','call'],['A two-week-old baby lives in the flat','email'],['Landlord auto-approval limit is £300','doc'],['Northway can attend today 15:00–17:00 for £420','ticket']],
+      tried:[['x','Booked HeatRight twice. Their system returned 503 both times.'],['check','Held the Northway slot until 13:00.'],['check','Texted the tenant that an engineer is being arranged.']],
+      options:[['Approve £420 for the landlord','Recommended'],['Call the landlord now','Phone'],['Send the tenant temporary heaters','Stop-gap']],
+      voice:[['Caller','The boiler’s showing F28 and there’s no hot water. We’ve got a two-week-old.'],['Agent','That’s an emergency, Tom. I’m booking a Gas Safe engineer for today and I’ll text you the slot.'],['Caller','Please. It’s freezing in here.'],['Agent','I’ve held a slot for this afternoon. I need the landlord to approve the cost, and I’ve flagged it as urgent.']],voiceLen:'1m 48s',
+      toasts:[['failed','fail','HeatRight booking failed (503)','Trying the next approved contractor'],['escalated','escalate','PM-7731 needs landlord approval','Slot held until 13:00'],['resolved','check','PM-7729 resolved','Rent reference sent to letting agent']]},
+    inbox:[['PM-7731','No heating, Flat 4B','Tom Okafor','call','escalated','6m'],['PM-7729','Rent reference request','Sara Lind','email','resolved','20m'],['PM-7724','Mould in bathroom, Flat 1A','Kofi Mensah','email','info','42m'],['PM-7720','Key fob not working','Ella Ward','call','resolved','1h'],['PM-7718','Deposit deduction dispute','D. Novak','ticket','escalated','2h']],
+    rt:{resolved:12,escalated:8,info:3,failed:1}},
+  banking:{label:'Banking',
+    c:{ref:'BNK-55102',title:'Disputed card payment of £1,249.00',who:'Hannah Reyes',meta:'Current account ••4417 · Customer since 2019',sla:'Dispute window · 14 days',status:'escalated',
+      sources:[['call','Inbound call','4m 30s'],['email','Secure message','Today'],['crm','Device log','2 events'],['ticket','Chargeback form','Draft']],
+      steps:[['read','Read call and secure message','She says she didn’t make the payment','00:02'],
+        ['tool','cards.transactions("••4417", days=7)','£1,249.00 · TECHMARKT-ONLINE · 09 Oct 23:52','00:04'],
+        ['tool','auth.events(customer="HR-30117")','Password reset and new device two hours earlier','00:06'],
+        ['decide','Looks like account takeover','Matches a fraud pattern, so not a normal dispute','00:08'],
+        ['tool','cards.freeze("••4417")','Card frozen. Customer told by secure message.','00:10'],
+        ['escalate','Handed to the fraud team','Refund and identity checks need a person','00:11']],
+      outcome:'escalated',reason:'This looks like account takeover. The card is frozen to stop further loss. Refund and identity checks have to go through the fraud team.',
+      blocked:'Refund £1,249.00 before fraud review',
+      kv:[['Customer','Hannah Reyes'],['Amount','£1,249.00'],['Merchant','TECHMARKT-ONLINE'],['Card status','Frozen 10:41'],['Queue','Fraud · Priority']],
+      facts:[['£1,249.00 to TECHMARKT-ONLINE at 23:52','crm'],['Password reset and new Android device at 21:40','crm'],['She says she was asleep at the time','call'],['No earlier purchases from this merchant','crm']],
+      tried:[['check','Froze card ••4417.'],['check','Sent a secure message confirming the freeze.'],['check','Drafted the chargeback form, not submitted.']],
+      options:[['Open a fraud case','Recommended'],['Call her back to verify identity','Phone'],['Treat as a standard dispute','Not advised']],
+      voice:[['Caller','There’s a payment for twelve hundred pounds that I didn’t make.'],['Agent','I’ve frozen your card so nothing else can go through. Did you reset your password last night?'],['Caller','No. I was asleep.'],['Agent','Thank you. I’m passing this to our fraud team now. They’ll contact you today about the refund.']],voiceLen:'4m 30s',
+      toasts:[['running','tool','Card ••4417 frozen','Customer notified by secure message'],['escalated','escalate','BNK-55102 sent to Fraud','Device log and transcript attached'],['failed','fail','Standing order retry failed','BNK-55088 · insufficient funds']]},
+    inbox:[['BNK-55102','Disputed payment £1,249','Hannah Reyes','call','escalated','3m'],['BNK-55099','Direct debit cancellation','Raj Patel','email','resolved','15m'],['BNK-55097','Mortgage overpayment query','Claire Dunn','email','resolved','38m'],['BNK-55090','Address change, proof missing','Sam Ito','email','info','1h'],['BNK-55088','Standing order failed twice','M. Grant','ticket','failed','2h']],
+    rt:{resolved:14,escalated:6,info:2,failed:2}},
+  logistics:{label:'Delivery & logistics',
+    c:{ref:'DLV-30987',title:'Marked delivered, not received',who:'Marcus Lee',meta:'Order 44-1902 · 1 parcel · £86.40 · Driver D-208',sla:'Promise · resolve by 18:00',status:'resolved',
+      sources:[['email','Customer email','10:05'],['doc','Delivery photo','11:42'],['crm','Driver GPS','14 scans'],['ticket','Carrier ticket','CT-7781']],
+      steps:[['read','Read complaint and delivery record','Driver D-208 marked it delivered at 11:42','00:02'],
+        ['tool','pod.photo("44-1902")','Photo shows a blue door. His door is black.','00:04'],
+        ['tool','gps.scan("D-208", "11:42")','Scan was 380 m from the address','00:06'],
+        ['decide','Likely misdelivery','£86.40 is under the £150 auto-reship limit','00:07'],
+        ['fail','reship.create("44-1902") rejected','Item is out of stock, switching to a refund','00:09'],
+        ['resolve','refund.issue(£86.40) · driver flagged','Customer emailed, route logged for review','00:12']],
+      outcome:'resolved',reason:'Most likely delivered to the wrong house. The item is out of stock, so the agent refunded £86.40 in full and flagged the driver’s route.',
+      blocked:'Mark as customer error and close',
+      kv:[['Customer','Marcus Lee'],['Order value','£86.40'],['Auto-reship limit','£150.00'],['Refund','£86.40 · issued'],['Driver','D-208 · flagged']],
+      facts:[['Driver D-208 marked it delivered at 11:42','crm'],['Photo shows a blue door. His door is black.','doc'],['GPS scan was 380 m from the address','crm'],['£86.40 is under the £150 auto-reship limit','doc']],
+      tried:[['x','Tried to reship. Rejected because the item is out of stock.'],['check','Issued a full refund of £86.40.'],['check','Logged driver feedback for route review.']],
+      options:[['Reopen the case','If he finds it'],['View the audit log','12 events'],['Message the driver','Optional']],
+      voice:[['Caller','It says delivered, but there’s nothing here.'],['Agent','The delivery photo shows a blue door. Is yours black?'],['Caller','Yes, it’s black. That’s not my house.'],['Agent','Thanks, Marcus. I’ve refunded you in full and reported it to the driver’s depot.']],voiceLen:'2m 05s',
+      toasts:[['failed','fail','reship.create() rejected','Out of stock. Switched to a refund.'],['resolved','check','DLV-30987 resolved','£86.40 refunded, driver flagged'],['escalated','escalate','DLV-30979 needs a person','Courier no-show at a business address']]},
+    inbox:[['DLV-30987','Delivered, not received','Marcus Lee','email','resolved','2m'],['DLV-30985','Address change after dispatch','Ana Silva','call','resolved','18m'],['DLV-30981','Damaged in transit, 3 photos','Ben Cole','email','info','33m'],['DLV-30979','Courier no-show, business','Northgate Ltd','call','escalated','51m'],['DLV-30974','Customs hold, invoice missing','K. Osei','ticket','failed','2h']],
+    rt:{resolved:16,escalated:5,info:2,failed:1}}
+};
+
+const MSTATES=[['idle','Idle','Watching the inbox'],['think','Thinking','Reading sources'],['act','Acting','Calling a tool'],['fail','Recovering','A tool failed, retrying'],['esc','Hand up','A person needs to decide'],['done','Done','Case closed']];
+
+function mascotSVG(dir,state='idle',cls=''){
+  const spark=`<g class="m-spark"><path d="M12 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/><path d="M104 14l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/></g>`;
+  if(dir==='docket') return `<svg class="m m-thump st-${state} ${cls}" viewBox="0 0 120 120" aria-hidden="true">
+    <ellipse class="m-shadow" cx="60" cy="110" rx="36" ry="4"/>
+    <g class="m-body">
+      <circle class="m-wood" cx="60" cy="20" r="12"/><rect class="m-wood" x="54" y="29" width="12" height="17" rx="2"/>
+      <rect class="m-block" x="26" y="44" width="68" height="46" rx="9"/>
+      <rect class="m-pad" x="22" y="88" width="76" height="12" rx="3"/>
+      <g class="m-eyes"><ellipse class="m-eye" cx="47" cy="63" rx="4" ry="5.5"/><ellipse class="m-eye" cx="73" cy="63" rx="4" ry="5.5"/></g>
+      <circle class="m-cheek" cx="37" cy="73" r="3.5"/><circle class="m-cheek" cx="83" cy="73" r="3.5"/>
+      <path class="m-mouth m-mouth-n" d="M54 76 Q60 79 66 76"/><path class="m-mouth m-mouth-h" d="M51 74 Q60 85 69 74"/>
+      <path class="m-sweat" d="M88 30q5 7 0 10q-5-3 0-10z"/>
+    </g>
+    <g class="m-hand"><path class="m-arm" d="M94 72 L106 46"/><rect class="m-flag" x="100" y="28" width="18" height="15" rx="2"/><text class="m-flag-t" x="109" y="40" text-anchor="middle">?</text></g>
+    ${spark}</svg>`;
+  if(dir==='switchboard') return `<svg class="m m-patch st-${state} ${cls}" viewBox="0 0 120 120" aria-hidden="true">
+    <path class="m-cable" d="M60 86 C60 106 86 96 94 108 S108 118 118 114"/>
+    <g class="m-body">
+      <rect class="m-pin" x="43" y="8" width="9" height="18" rx="2"/><rect class="m-pin" x="68" y="8" width="9" height="18" rx="2"/>
+      <rect class="m-block" x="24" y="24" width="72" height="62" rx="16"/>
+      <rect class="m-screen" x="33" y="33" width="54" height="40" rx="9"/>
+      <g class="m-eyes"><rect class="m-eye" x="44" y="41" width="8" height="12" rx="3"/><rect class="m-eye" x="68" y="41" width="8" height="12" rx="3"/></g>
+      <path class="m-mouth m-mouth-n" d="M54 63 H66"/><path class="m-mouth m-mouth-h" d="M52 61 Q60 68 68 61"/>
+      <g class="m-bars"><rect x="48" y="60" width="3" height="6" rx="1"/><rect x="53" y="60" width="3" height="6" rx="1"/><rect x="58.5" y="60" width="3" height="6" rx="1"/><rect x="64" y="60" width="3" height="6" rx="1"/><rect x="69" y="60" width="3" height="6" rx="1"/></g>
+      <path class="m-sweat" d="M92 14q5 7 0 10q-5-3 0-10z"/>
+    </g>
+    <g class="m-hand"><path class="m-arm" d="M96 58 L108 36"/><circle class="m-flag" cx="109" cy="29" r="9"/><text class="m-flag-t" x="109" y="33" text-anchor="middle">!</text></g>
+    ${spark}</svg>`;
+  return `<svg class="m m-pip st-${state} ${cls}" viewBox="0 0 120 120" aria-hidden="true">
+    <ellipse class="m-shadow" cx="60" cy="110" rx="32" ry="4"/>
+    <g class="m-body">
+      <path class="m-arm" d="M60 34 V18"/><circle class="m-bulb" cx="60" cy="13" r="7"/>
+      <ellipse class="m-foot" cx="46" cy="102" rx="8" ry="5"/><ellipse class="m-foot" cx="74" cy="102" rx="8" ry="5"/>
+      <path class="m-block" d="M60 32C88 32 98 52 98 70C98 92 82 102 60 102C38 102 22 92 22 70C22 52 32 32 60 32Z"/>
+      <circle class="m-sclera" cx="48" cy="62" r="8.5"/><circle class="m-sclera" cx="72" cy="62" r="8.5"/>
+      <g class="m-eyes"><circle class="m-eye" cx="49" cy="63" r="4"/><circle class="m-eye" cx="73" cy="63" r="4"/></g>
+      <path class="m-mouth m-mouth-n" d="M54 80 Q60 84 66 80" style="stroke:#fff"/><path class="m-mouth m-mouth-h" d="M51 78 Q60 90 69 78" style="stroke:#fff"/>
+      <path class="m-sweat" d="M90 34q5 7 0 10q-5-3 0-10z"/>
+    </g>
+    <g class="m-hand"><path class="m-arm" d="M96 76 Q110 66 108 44"/><circle class="m-palm" cx="108" cy="38" r="8"/></g>
+    ${spark}</svg>`;
+}
+
+let dir='docket',track='claims',runT=[],voiceT=null,mState='esc';
+try{const s=JSON.parse(localStorage.getItem('casework')||'{}');if(DIRS[s.dir])dir=s.dir;if(TRACKS[s.track])track=s.track}catch(e){}
+const h=location.hash.slice(1);if(DIRS[h])dir=h;
+const save=()=>{try{localStorage.setItem('casework',JSON.stringify({dir,track}))}catch(e){}};
+const $=id=>document.getElementById(id);
+
+function renderSegs(){
+  $('dirSeg').innerHTML=Object.entries(DIRS).map(([k,d])=>`<button aria-pressed="${k===dir}" data-dir="${k}"><span class="k">${d.key}</span>${d.name}</button>`).join('');
+  $('trackSeg').innerHTML=Object.entries(TRACKS).map(([k,t])=>`<button aria-pressed="${k===track}" data-track="${k}">${t.label}</button>`).join('');
+}
+function renderIntro(){
+  const d=DIRS[dir];
+  $('dirEyebrow').textContent=d.eyebrow;$('dirName').textContent=d.name;$('dirConcept').textContent=d.concept;
+  $('dirPrinciples').innerHTML=d.principles.map(p=>`<li>${icon('check')}<span>${p}</span></li>`).join('');
+  $('brandMascot').innerHTML=mascotSVG(dir,'idle');
+  $('footDir').textContent=`Direction ${d.key} · ${d.name} · mascot: ${d.mascot}`;
+}
+function srcChip([k,t,v]){return `<span class="src">${icon(SRC[k][0])}<b>${t}</b><span class="mono" style="color:var(--ink-2);font-size:11px">${v}</span></span>`}
+
+function renderShell(){
+  const T=TRACKS[track],c=T.c;
+  const esc=T.inbox.filter(i=>i[4]==='escalated').length;
+  $('shell').innerHTML=`
+  <div class="shell-nav">
+    <div class="shell-brand"><span id="shellMascot">${mascotSVG(dir,'idle')}</span>Casework</div>
+    <nav class="tabs" aria-label="Product">
+      <a href="#inbox" aria-current="page">Inbox <span class="n">${T.inbox.length}</span></a>
+      <a href="#runs">Live runs <span class="n">1</span></a>
+      <a href="#escalations">Escalations <span class="n">${esc}</span></a>
+      <a href="#reality">Reality Test</a>
+      <a href="#tools">Tools</a>
+    </nav>
+    <div class="nav-right">
+      <label class="search">${icon('search')}<input id="q" placeholder="Search cases, people, refs" aria-label="Search"><kbd>/</kbd></label>
+      <span class="avatar" title="You">OP</span>
+    </div>
+  </div>
+  <div class="shell-body">
+    <aside class="inbox">
+      <div class="inbox-h"><span class="label">${T.label}</span><span class="label">Newest</span></div>
+      <ul class="inbox-list">${T.inbox.map((i,n)=>`
+        <li class="inbox-item ${n===0?'on':''}">
+          <div class="row"><span class="ref">${icon(SRC[i[3]][0])}${i[0]}</span>${chip(i[4])}</div>
+          <div class="t">${i[1]}</div>
+          <div class="row"><span class="who">${i[2]}</span><span class="who mono" style="font-size:11px">${i[5]}</span></div>
+        </li>`).join('')}</ul>
+    </aside>
+    <main class="case">
+      <div>
+        <div class="case-top"><span class="mono" style="font-size:12px;color:var(--ink-2)">${c.ref}</span>${chip(c.status)}<span class="chip plain">${icon('clock')}${c.sla}</span></div>
+        <h3>${c.title}</h3>
+        <p class="meta">${c.who} · ${c.meta}</p>
+      </div>
+      <div style="display:grid;gap:10px"><span class="label">Sources</span><div class="sources">${c.sources.map(srcChip).join('')}</div></div>
+      <div style="display:grid;gap:8px">
+        <div class="trace-h"><span class="label" id="runLabel">Agent run · ${c.steps.length} steps</span><button class="btn btn-secondary btn-sm" id="replay">${icon('retry')}Replay run</button></div>
+        <ol class="trace" id="trace">${c.steps.map(([k,t,d,tm])=>`
+          <li class="step k-${k}"><span class="node">${icon(k)}</span><div><div class="step-t">${t}</div><div class="step-d">${d}</div></div><span class="step-time">${tm}</span></li>`).join('')}</ol>
+      </div>
+    </main>
+    <section class="decision" aria-label="Agent decision">
+      <span class="label">Agent decision</span>
+      <div class="stamp-wrap"><span class="stamp s-${c.outcome}" id="stamp">${STATUS[c.outcome]}</span></div>
+      <p class="reason">${c.reason}</p>
+      <div class="blocked">${icon('lock')}<div><div class="label" style="color:var(--bad);margin-bottom:3px">Blocked by policy</div><s>${c.blocked}</s></div></div>
+      <div class="kv">${c.kv.slice(0,3).map(([a,b])=>`<div><span>${a}</span><span>${b}</span></div>`).join('')}</div>
+      <div class="actions">${c.outcome==='resolved'
+        ?`<button class="btn btn-primary btn-sm">View audit log</button><button class="btn btn-ghost btn-sm">Reopen</button>`
+        :`<button class="btn btn-primary btn-sm">Open handover ${icon('arrow')}</button><button class="btn btn-ghost btn-sm">Override</button>`}</div>
+    </section>
+  </div>`;
+  $('replay').onclick=run;
+}
+
+function setShellMascot(s){const m=document.querySelector('#shellMascot .m');if(m)m.setAttribute('class',m.getAttribute('class').replace(/st-\w+/,'st-'+s))}
+function run(){
+  runT.forEach(clearTimeout);runT=[];
+  const steps=[...document.querySelectorAll('#trace .step')],stamp=$('stamp'),c=TRACKS[track].c;
+  const map={read:'think',decide:'think',tool:'act',fail:'fail',escalate:'esc',resolve:'done'};
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){setShellMascot(c.outcome==='resolved'?'done':'esc');return}
+  steps.forEach(s=>{s.classList.add('pending');s.classList.remove('active')});
+  stamp.style.visibility='hidden';stamp.classList.remove('reveal');
+  $('runLabel').innerHTML=`<span class="chip s-running">Running</span>`;
+  steps.forEach((s,i)=>{
+    runT.push(setTimeout(()=>{
+      steps.forEach(x=>x.classList.remove('active'));
+      s.classList.remove('pending');s.classList.add('active');
+      setShellMascot(map[c.steps[i][0]]);
+    },500+i*850));
+  });
+  runT.push(setTimeout(()=>{
+    steps.forEach(x=>x.classList.remove('active'));
+    stamp.style.visibility='visible';stamp.classList.add('reveal');
+    $('runLabel').textContent=`Agent run · ${c.steps.length} steps · 12.4s`;
+    setShellMascot(c.outcome==='resolved'?'done':'esc');
+  },500+steps.length*850+200));
+}
+
+function renderMascot(){
+  const d=DIRS[dir];
+  $('mascotName').textContent=d.mascot;$('mascotLine').textContent=d.line;
+  $('mascotStage').innerHTML=mascotSVG(dir,mState);
+  $('mascotStates').innerHTML=MSTATES.map(([k,n,desc])=>`<button class="card mstate" aria-pressed="${k===mState}" data-ms="${k}">${mascotSVG(dir,k)}<b>${n}</b><span>${desc}</span></button>`).join('');
+}
+
+function renderFound(){
+  const cs=getComputedStyle(document.body);
+  const sw=[['bg','Ground'],['surface','Surface'],['ink','Ink'],['ink-2','Muted ink'],['line','Rule'],['accent',DIRS[dir].accentName],['ok','Resolved'],['hold','Escalated'],['info','Needs info'],['bad','Failed']];
+  if(dir==='relay')sw.splice(6,0,['sun','Sunflower']);
+  $('swatches').innerHTML=sw.map(([t,n])=>`<div class="sw"><i style="background:var(--${t})"></i><b>${n}</b><code>--${t} ${cs.getPropertyValue('--'+t).trim()}</code></div>`).join('');
+  const fam=v=>cs.getPropertyValue(v).split(',')[0].replace(/'/g,'').trim();
+  const c=TRACKS[track].c;
+  $('typeSpec').innerHTML=`
+    <div class="comp-h"><h4>Type</h4><span class="label">3 roles</span></div>
+    <div class="row"><span class="label">Display · ${fam('--font-d')}</span><div class="ts-d">${c.title}</div></div>
+    <div class="row"><span class="label">Body · ${fam('--font-b')}</span><p class="ts-b">${c.reason}</p></div>
+    <div class="row"><span class="label">Data · ${fam('--font-m')}</span><div class="ts-m">${c.steps[1][1]}<br><span style="color:var(--ink-2)">${c.ref} · ${c.steps[1][3]} · ${c.steps[1][2]}</span></div></div>
+    <div><span class="label">Motion</span><div class="motion">${DIRS[dir].motion.map(([a,b,cc])=>`<div><b>${a}</b><span class="mono" style="font-size:12px">${b}</span><code>${cc}</code></div>`).join('')}</div></div>`;
+}
+
+function renderComponents(){
+  const T=TRACKS[track],c=T.c;
+  $('iconRetry').innerHTML=icon('retry');
+  $('srcDemo').innerHTML=c.sources.map(srcChip).join('');
+  $('kvDemo').innerHTML=c.kv.map(([a,b])=>`<div><span>${a}</span><span>${b}</span></div>`).join('');
+  const resolved=c.outcome==='resolved';
+  $('handover').innerHTML=`
+    <div>
+      <div class="ho-title">${mascotSVG(dir,resolved?'done':'esc')}<div>
+        <div class="case-top">${chip(c.outcome)}<span class="mono" style="font-size:12px;color:var(--ink-2)">${c.ref} · ${c.who}</span></div>
+        <h4 style="margin-top:6px">${resolved?'Case closed. Here’s the record.':'I stopped here. You need to decide.'}</h4>
+        <p style="color:var(--ink-2);font-size:14px;margin-top:4px">${c.reason}</p>
+      </div></div>
+      <div style="display:grid;gap:8px"><span class="label">What I know</span>
+        <ul class="facts">${c.facts.map(([f,s])=>`<li><span>${f}</span><span class="cite">${icon(SRC[s][0])}${SRC[s][1]}</span></li>`).join('')}</ul></div>
+      <div style="display:grid;gap:8px"><span class="label">What I tried</span>
+        <ul class="tried">${c.tried.map(([i,t])=>`<li style="color:${i==='x'?'var(--bad)':'inherit'}">${icon(i)}<span>${t}</span></li>`).join('')}</ul></div>
+    </div>
+    <div>
+      <span class="label">${resolved?'Follow-ups':'Your options'}</span>
+      <div class="options">${c.options.map(([o,s],i)=>`<button class="option ${i===0&&!resolved?'rec':''}"><span>${o}<small>${s}</small></span>${icon('arrow')}</button>`).join('')}</div>
+      <div class="blocked">${icon('shield')}<div><div class="label" style="color:var(--bad);margin-bottom:3px">The agent will not</div><s>${c.blocked}</s></div></div>
+      <p class="hint">Your choice is logged with this card, so the audit trail shows who decided and why.</p>
+    </div>`;
+  // voice
+  $('voiceLen').textContent=c.voiceLen;
+  const heights=Array.from({length:56},(_,i)=>Math.round(18+42*Math.abs(Math.sin(i*1.7+track.length)*Math.cos(i*.45))));
+  $('voice').innerHTML=`
+    <div class="voice-top">
+      <button class="btn btn-primary btn-icon" id="vPlay" aria-label="Play call">${'<svg class="ic fill" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>'}</button>
+      <div class="who"><b>${c.who}</b><span>${SRC[c.sources[0][0]][1]} · handled by the voice agent</span></div>
+      <span class="chip s-running" id="vChip">Live</span>
+    </div>
+    <div class="wave" id="wave">${heights.map(v=>`<i style="height:${v}%"></i>`).join('')}</div>
+    <ol class="transcript" id="tx">${c.voice.map(([w,t])=>`<li class="${w==='Agent'?'agent':''}"><b>${w}</b><span>${t}</span></li>`).join('')}</ol>`;
+  setVoice(.4);
+  $('vPlay').onclick=playVoice;
+  // reality test
+  const r=T.rt,total=r.resolved+r.escalated+r.info+r.failed,cells=[];
+  [['resolved','ok'],['escalated','hold'],['info','info'],['failed','bad']].forEach(([k,v])=>{for(let i=0;i<r[k];i++)cells.push(v)});
+  $('rt').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap">
+      <div class="big-num">${total-r.failed}<small> / ${total} completed</small></div>
+      <span class="chip s-escalated">${r.escalated} handed to people</span>
+    </div>
+    <div class="rt-cells">${cells.map((v,i)=>`<i style="--c:var(--${v});--i:${i}" title="Case ${i+1}"></i>`).join('')}</div>
+    <div class="rt-legend">
+      <div><span style="--c:var(--ok)">Resolved</span><b>${r.resolved}</b></div>
+      <div><span style="--c:var(--hold)">Escalated</span><b>${r.escalated}</b></div>
+      <div><span style="--c:var(--info)">Needs info</span><b>${r.info}</b></div>
+      <div><span style="--c:var(--bad)">Failed</span><b>${r.failed}</b></div>
+    </div>`;
+  // toasts
+  $('toastDemo').innerHTML=c.toasts.map(toastHTML).join('');
+}
+function toastHTML([s,i,b,t]){return `<div class="toast s-${s}">${icon(i)}<div><b>${b}</b><span>${t}</span></div><button aria-label="Dismiss">${icon('x')}</button></div>`}
+
+function setVoice(p){
+  const bars=[...document.querySelectorAll('#wave i')],lines=[...document.querySelectorAll('#tx li')];
+  const n=Math.round(bars.length*p);bars.forEach((b,i)=>b.classList.toggle('on',i<n));
+  const li=Math.min(lines.length-1,Math.floor(p*lines.length));lines.forEach((l,i)=>l.classList.toggle('on',i<=li));
+}
+function playVoice(){
+  const v=$('voice');
+  if(voiceT){clearInterval(voiceT);voiceT=null;v.classList.remove('playing');return}
+  let p=0;v.classList.add('playing');
+  voiceT=setInterval(()=>{p+=.01;setVoice(p);if(p>=1){clearInterval(voiceT);voiceT=null;v.classList.remove('playing')}},70);
+}
+
+function pushToast(){
+  const list=TRACKS[track].c.toasts,t=list[Math.floor(Math.random()*list.length)];
+  const el=document.createElement('div');el.innerHTML=toastHTML(t);const node=el.firstChild;
+  $('toaster').appendChild(node);
+  const kill=()=>{node.classList.add('out');setTimeout(()=>node.remove(),260)};
+  node.querySelector('button').onclick=kill;setTimeout(kill,4200);
+}
+
+function setAutonomy(i){
+  const btns=[...document.querySelectorAll('#autonomyCtl button')];
+  btns.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
+  document.querySelector('#autonomyCtl .thumb').style.transform=`translateX(${i*100}%)`;
+  $('autonomyHint').textContent=['The agent drafts actions. A person carries them out.','The agent acts on its own up to the limits below and asks before anything larger.','The agent acts alone and escalates only when policy requires it.'][i];
+}
+
+function renderAll(){
+  document.body.dataset.dir=dir;
+  renderSegs();renderIntro();renderShell();renderMascot();renderFound();renderComponents();
+  if(voiceT){clearInterval(voiceT);voiceT=null}
+  setTimeout(run,400);
+}
+
+document.addEventListener('click',e=>{
+  const d=e.target.closest('[data-dir]');if(d&&d.tagName==='BUTTON'){dir=d.dataset.dir;save();renderAll();return}
+  const t=e.target.closest('[data-track]');if(t){track=t.dataset.track;save();renderAll();return}
+  const m=e.target.closest('[data-ms]');if(m){mState=m.dataset.ms;renderMascot();return}
+  const a=e.target.closest('#autonomyCtl button');if(a){setAutonomy([...a.parentNode.querySelectorAll('button')].indexOf(a));return}
+  const td=e.target.closest('#toastDemo .toast button');if(td){td.closest('.toast').remove();return}
+  if(e.target.closest('.tabs a')){e.preventDefault()}
+});
+$('btnRun').onclick=()=>{document.getElementById('shell').scrollIntoView({behavior:'smooth',block:'start'});run()};
+$('toastBtn').onclick=pushToast;
+document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){const q=$('q');if(q){e.preventDefault();q.focus()}}});
+/* ================= Build spec data ================= */
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+const LIBS=[
+  ['react, react-dom','web','All UI','Every Claude instance and teammate knows it well'],
+  ['next (App Router)','web','Pages, layouts, API route handlers, SSE, per-route code splitting','UI and API in one app; file-based routes are easy for agents to find'],
+  ['typescript (strict)','all','Types everywhere','Contracts shared by web, API and agent'],
+  ['@tanstack/react-query','web','Server state: cases, runs, tools','Caching, retries, optimistic decisions'],
+  ['zustand','web','UI state: direction, track, autonomy','Tiny, no provider, persist middleware'],
+  ['tailwindcss v4','web','Utility styling bound to tokens','Fast to write; tokens stay the source of truth'],
+  ['class-variance-authority, clsx, tailwind-merge','web','Component variants','Typed variants without class conflicts'],
+  ['@radix-ui/react-*','web','Dialog, Popover, DropdownMenu, Tooltip, Tabs, ToggleGroup, Switch, Select, ScrollArea, Slot','Keyboard and ARIA handled; we only add the skin'],
+  ['motion','web','Presence and layout animation: trace steps, toasts, segment thumb','LazyMotion keeps it small; honours reduced motion'],
+  ['sonner','web','Toasts','Small, accessible, stacks well'],
+  ['cmdk','web','Command palette (/ and ⌘K)','Fast fuzzy search, works with Radix'],
+  ['lucide-react','web','Icons','Tree-shaken per icon, consistent stroke'],
+  ['@tanstack/react-virtual','web','Long inbox lists and traces','Windowing with no layout lock-in'],
+  ['@elevenlabs/react','web','Live voice call in the browser','useConversation hook exposes volume for the waveform'],
+  ['next/font','web','Self-hosted Google fonts with CSS variables','Built in; no runtime request to Google'],
+  ['msw','web (dev, test)','Mock API and SSE from recorded runs','Frontend never waits on the backend'],
+  ['vitest, @testing-library/react','web, core','Unit and component tests','Fast, ESM-native, no Babel'],
+  ['@playwright/test','e2e','Demo flow, screenshots for the README','Also used by the webapp-testing skill'],
+  ['eslint-plugin-boundaries','all','Enforces import rules between layers','Keeps the module boundaries honest'],
+  ['zod v4','core','Case, event and handover schemas; JSON Schema for Claude tools','One source of truth via z.toJSONSchema'],
+  ['@anthropic-ai/sdk','core','Tool-use loop, structured outputs, prompt caching','Official SDK'],
+  ['drizzle-orm, better-sqlite3','web (server)','Event store, cases, decisions','One file DB, easy to export traces'],
+  ['p-limit, p-retry','core, cli','Batch concurrency, tool retries with backoff','Small and well tested'],
+  ['pino','web (server), cli','Structured logs saved next to ANSWERS','JSON lines judges can read'],
+  ['@elevenlabs/elevenlabs-js','web (server)','Signed voice sessions, server tools','Official SDK'],
+  ['tsx','dev','Runs TypeScript CLIs directly','No build step for scripts']
+];
+
+// [name, tier, path, purpose, props, states, libs, notes]
+const CAT=[
+  // ---- Primitives
+  ['Button','Primitive','apps/web/src/ui/Button','Every clickable action.',"variant: 'primary'|'secondary'|'ghost'|'danger'; size: 'sm'|'md'; loading?: boolean; icon?: IconName; asChild?: boolean",'default, hover, active, focus, disabled, loading','cva, @radix-ui/react-slot','Loading keeps its width and sets aria-busy. At most one primary per pane. Relay skin: offset shadow that collapses when pressed.'],
+  ['IconButton','Primitive','apps/web/src/ui/IconButton','Square button with an icon only.',"icon: IconName; label: string; variant?; size?",'default, hover, focus, disabled','Button, Tooltip','label is required; it becomes aria-label and the tooltip text.'],
+  ['Icon','Primitive','apps/web/src/ui/Icon','Maps domain names (call, email, doc, crm, ticket, tool, escalate) to lucide icons.',"name: IconName; size?: 14|16|20; className?",'n/a','lucide-react','aria-hidden by default. Pass label to make it meaningful.'],
+  ['StatusChip','Primitive','apps/web/src/ui/StatusChip','Shows a case or run status.',"status: CaseStatus; size?: 'sm'|'md'",'resolved, escalated, needs_info, failed, running (pulses), blocked','cva','Always shows text as well as colour. Running dot pulses, static under reduced motion.'],
+  ['Count','Primitive','apps/web/src/ui/Count','Small number badge on nav tabs.',"value: number; max?: 99; tone?: 'neutral'|'accent'",'zero (hidden), normal, overflow (99+)','—','Tabular numbers. Announced as part of the tab label.'],
+  ['Kbd','Primitive','apps/web/src/ui/Kbd','Keyboard hint, e.g. / for search.',"keys: string[]",'default','—','Rendered as <kbd>. Hidden on touch devices.'],
+  ['Avatar','Primitive','apps/web/src/ui/Avatar','A person, or the agent.',"name: string; src?: string; kind?: 'human'|'agent'",'image, initials, agent (mascot)','—','agent kind renders a mini Mascot.'],
+  ['Eyebrow','Primitive','apps/web/src/ui/Eyebrow','Small uppercase label above content.',"children; tone?: 'muted'|'accent'|'bad'",'default','—','Letter-spacing .08em. Never the only label for a control.'],
+  ['Mono','Primitive','apps/web/src/ui/Mono','Inline machine text: refs, tool names, amounts in tables.',"children; muted?: boolean",'default','—','Tabular numbers. Wraps anywhere so long tool calls never overflow.'],
+  ['Surface','Primitive','apps/web/src/ui/Surface','Card container.',"as?; padded?: boolean; interactive?: boolean; tone?: 'base'|'sunken'",'default, hover (interactive), selected','cva','Use for distinct objects only. Don’t wrap every block in a card.'],
+  ['Divider','Primitive','apps/web/src/ui/Divider','Horizontal or vertical rule.',"orientation?; strong?: boolean",'default','—','role="separator" only when it separates landmarks.'],
+  ['Input','Primitive','apps/web/src/ui/Input','Single-line text field.',"label; hint?; error?; prefix?: Icon; suffix?: ReactNode",'default, focus, error, disabled, readOnly','—','Label always visible. Error text replaces the hint and is linked with aria-describedby.'],
+  ['MoneyInput','Primitive','apps/web/src/ui/MoneyInput','Money entry for policy limits and approvals.',"valuePence: number; onChange(pence); currency?: 'GBP'",'default, focus, error, disabled','Intl.NumberFormat','Stores integer pence. Formats on blur, accepts “420”, “£420”, “420.00”.'],
+  ['Textarea','Primitive','apps/web/src/ui/Textarea','Notes on a human decision.',"label; rows?; autosize?: boolean; maxLength?",'default, focus, error, disabled','—','Counter appears near maxLength.'],
+  ['Select','Primitive','apps/web/src/ui/Select','Pick one from a short list.',"label; options: {value,label}[]; value; onChange",'closed, open, focus, disabled','@radix-ui/react-select','Typeahead and arrow keys come from Radix.'],
+  ['Switch','Primitive','apps/web/src/ui/Switch','On or off setting, e.g. the voice agent.',"label; checked; onCheckedChange",'off, on, focus, disabled','@radix-ui/react-switch','Thumb springs 300ms. Whole row is clickable.'],
+  ['SegmentedControl','Primitive','apps/web/src/ui/SegmentedControl','One of 2–4 options with a sliding thumb.',"options: {value,label}[]; value; onChange; size?",'per option: rest, hover, selected, focus','@radix-ui/react-toggle-group, motion','Thumb uses motion layoutId. Arrow keys move the selection.'],
+  ['Tabs','Primitive','apps/web/src/ui/Tabs','Switch panels, e.g. between sources.',"items: {value,label,count?}[]; value; onChange",'rest, hover, selected, focus','@radix-ui/react-tabs','Docket skin: folder tabs. Switchboard: lit underline. Relay: pill.'],
+  ['Tooltip','Primitive','apps/web/src/ui/Tooltip','Short hint on hover or focus.',"content; side?; delay?: 400",'hidden, shown','@radix-ui/react-tooltip','Never put essential information only in a tooltip.'],
+  ['Popover','Primitive','apps/web/src/ui/Popover','Small floating panel, e.g. a citation preview.',"trigger; content; side?",'closed, open','@radix-ui/react-popover','Focus moves into it when opened by keyboard.'],
+  ['Menu','Primitive','apps/web/src/ui/Menu','Case actions menu.',"trigger; items: {label, icon?, onSelect, danger?}[]",'closed, open, item hover, item disabled','@radix-ui/react-dropdown-menu','Danger items last, separated by a rule.'],
+  ['Dialog','Primitive','apps/web/src/ui/Dialog','Confirm a human decision that can’t be undone.',"title; description; confirmLabel; tone?: 'default'|'danger'; onConfirm",'closed, open, confirming (loading)','@radix-ui/react-dialog','The confirm button repeats the effect: “Approve £420”, not “OK”.'],
+  ['Sheet','Primitive','apps/web/src/ui/Sheet','Side panel; holds the source viewer on narrow screens.',"side: 'right'|'bottom'; title; children",'closed, open','@radix-ui/react-dialog','Bottom sheet below 860px.'],
+  ['Toaster','Primitive','apps/web/src/ui/Toaster','Toasts for run events.',"toast.event(RunEvent) helper",'enter, idle, exit, stacked','sonner','Only failures, escalations and completions toast. Never more than 3 visible.'],
+  ['Skeleton','Primitive','apps/web/src/ui/Skeleton','Loading placeholder shaped like the final layout.',"variant: 'line'|'block'|'row'; lines?",'shimmer, static (reduced motion)','—','Matches the real component’s size so nothing jumps when data arrives.'],
+  ['Spinner','Primitive','apps/web/src/ui/Spinner','Small indeterminate loader inside buttons and steps.',"size?: 12|16",'spinning','—','Prefer Skeleton for areas larger than a button.'],
+  ['ProgressBar','Primitive','apps/web/src/ui/ProgressBar','Determinate progress, e.g. a batch of cases.',"value: number; max: number; label",'empty, partial, complete','—','role="progressbar" with aria-valuenow.'],
+  ['ScrollArea','Primitive','apps/web/src/ui/ScrollArea','Scrolling panes in the app shell.',"children; axis?",'default','@radix-ui/react-scroll-area','Keeps native scrolling and keyboard behaviour.'],
+  ['EmptyState','Primitive','apps/web/src/ui/EmptyState','Nothing to show yet.',"mascotState?; title; body; action?",'default','Mascot','Says what will appear and how to make it appear.'],
+  ['ErrorState','Primitive','apps/web/src/ui/ErrorState','Something failed to load.',"error: AppError; onRetry?",'default, retrying','—','Says what failed and what to do. No apologies, no codes alone.'],
+  ['KeyValue','Primitive','apps/web/src/ui/KeyValue','Label/value rows for case metadata.',"items: {label, value, mono?}[]; columns?: 1|2",'default','—','Values right-aligned in mono when numeric.'],
+  ['CopyButton','Primitive','apps/web/src/ui/CopyButton','Copy a ref or a payload.',"value: string; label?",'idle, copied (1.5s), failed','—','Falls back to selecting the text if the clipboard is refused.'],
+  ['RelativeTime','Primitive','apps/web/src/ui/RelativeTime','“4m”, “2h”, with the exact time on hover.',"at: string",'default','date-fns, lib/clock','Uses the shared 30s ticker. <time datetime> for machines. Client component.'],
+  ['MoneyText','Primitive','apps/web/src/ui/MoneyText','Formats pence as £1,249.00.',"pence: number; signed?: boolean",'default, negative','Intl.NumberFormat','en-GB, tabular numbers.'],
+  ['DurationText','Primitive','apps/web/src/ui/DurationText','Formats ms as 12.4s or 6m 12s.',"ms: number",'default','—','Used in trace steps and call cards.'],
+  ['JsonView','Primitive','apps/web/src/ui/JsonView','Collapsible view of tool arguments and results.',"value: unknown; collapsedDepth?: 1; maxHeight?: 240",'collapsed, expanded, truncated','—','Strings over 200 chars truncate with “show more”. Copies as JSON.'],
+  ['VisuallyHidden','Primitive','apps/web/src/ui/VisuallyHidden','Text for screen readers only.',"children",'n/a','@radix-ui/react-visually-hidden','Used for live-region announcements of run progress.'],
+
+  // ---- Domain
+  ['Mascot','Domain','apps/web/src/domain/mascot','The agent’s current state as a character (Thump, Patch or Pip).',"state: 'idle'|'think'|'act'|'fail'|'esc'|'done'; size?: number; label?: string",'idle, think, act, fail, esc, done','CSS keyframes','Skin chosen by data-dir. role="img" with aria-label like “Agent needs a person”. Static pose under reduced motion.'],
+  ['OutcomeStamp','Domain','apps/web/src/domain/run/OutcomeStamp','The final outcome of a run.',"outcome: Outcome; animateIn?: boolean",'hidden (running), revealed, at rest','CSS keyframes','Docket: stamp lands. Switchboard: LED blinks. Relay: pops. Only animates on the live transition, not on reload.'],
+  ['SourceChip','Domain','apps/web/src/domain/case/SourceChip','One piece of evidence (call, email, doc, CRM, ticket).',"source: Source; onOpen?",'default, hover, cited (highlight), focus','Icon','Click opens SourceViewer at that source.'],
+  ['SourceViewer','Domain','apps/web/src/domain/case/SourceViewer','Reads any source, with cited passages highlighted.',"sources: Source[]; activeId; highlight?: {sourceId, span}",'per kind, loading, highlighted','Tabs, Sheet','Dispatches to the five kind-specific views below.'],
+  ['CallTranscript','Domain','apps/web/src/domain/case/CallTranscript','Speaker turns with timestamps.',"turns: {speaker, text, atMs}[]; activeIndex?",'static, playing (active turn)','—','Reused by VoiceCallCard.'],
+  ['EmailView','Domain','apps/web/src/domain/case/EmailView','From, to, date, subject, body, attachments.',"source: Source",'default','—','Quoted replies collapsed.'],
+  ['DocumentView','Domain','apps/web/src/domain/case/DocumentView','Document text with page markers.',"source: Source",'default, highlighted span','—','Shows extracted text, not a PDF renderer, unless a track needs one.'],
+  ['CrmRecordView','Domain','apps/web/src/domain/case/CrmRecordView','A CRM record as fields plus history.',"source: Source",'default','KeyValue','Changed fields marked.'],
+  ['TicketView','Domain','apps/web/src/domain/case/TicketView','A ticket with its status and comments.',"source: Source",'default','—','—'],
+  ['Citation','Domain','apps/web/src/domain/case/Citation','Small link from a fact to its source.',"sourceId; span?; label?",'default, hover (preview), focus','Popover','Hover previews the snippet. Click opens the viewer at the span.'],
+  ['CaseListItem','Domain','apps/web/src/domain/case/CaseListItem','A row in the inbox.',"case: CaseSummary; selected?: boolean",'default, hover, selected, unread, SLA warning','StatusChip, RelativeTime','Whole row is one link. Arrow keys and j/k move selection.'],
+  ['CaseList','Domain','apps/web/src/domain/case/CaseList','The inbox list with status filters.',"cases; selectedRef; onSelect; filters",'loading, empty, list, filtered empty','@tanstack/react-virtual','Virtualised past 100 rows.'],
+  ['CaseHeader','Domain','apps/web/src/domain/case/CaseHeader','Ref, status, SLA, title, customer.',"case: Case; actions?",'default, running','StatusChip, SlaTimer, Menu','Title is the page h1.'],
+  ['SlaTimer','Domain','apps/web/src/domain/case/SlaTimer','Time left before the deadline.',"dueAt: string",'ok (> 2h), warn (< 1h), overdue','lib/clock','Colour changes come with a text change (“Overdue 12m”).'],
+  ['RunTrace','Domain','apps/web/src/domain/run/RunTrace','Ordered steps of a run, live or replayed.',"view: RunView; mode: 'live'|'replay'",'empty, running, complete, failed','motion','Auto-scrolls while live unless the user has scrolled up. Announces new steps in a polite live region.'],
+  ['TraceStep','Domain','apps/web/src/domain/run/TraceStep','One step in the trace.',"kind: 'read'|'tool'|'decide'|'fail'|'retry'|'blocked'|'escalate'|'resolve'; title; detail; at; ms?; payload?",'pending, active, done, expanded','JsonView','Tool titles in mono. Fail steps show the attempt count.'],
+  ['ToolCallBlock','Domain','apps/web/src/domain/run/ToolCallBlock','Arguments, result or error and latency for one tool call.',"call: ToolCallView",'calling, succeeded, failed, retried','JsonView, DurationText','Shows every attempt, not only the last.'],
+  ['RetryBadge','Domain','apps/web/src/domain/run/RetryBadge','“Retry 2 of 3”.',"attempt; max",'retrying, recovered, gave up','—','—'],
+  ['ConfidenceMeter','Domain','apps/web/src/domain/run/ConfidenceMeter','How sure the agent is, and why not more.',"value: number; reasons?: string[]",'low (< .5), medium, high (≥ .8)','Tooltip','Shows a word (Low, Medium, High) next to the bar.'],
+  ['DecisionPanel','Domain','apps/web/src/domain/run/DecisionPanel','Outcome, reason, refused actions, next steps.',"view: RunView",'running, resolved, escalated, needs info, failed','OutcomeStamp, BlockedAction','Primary action changes with outcome: “Open handover” or “View audit log”.'],
+  ['BlockedAction','Domain','apps/web/src/domain/run/BlockedAction','An action the agent refused, and the rule that stopped it.',"action; ruleId; why?",'default','Icon','Struck-through text plus a lock icon. Rule id in mono.'],
+  ['HandoverCard','Domain','apps/web/src/domain/handover/HandoverCard','Everything a person needs to decide, in one card.',"handover: Handover; case: Case; onDecide",'open, deciding, decided','FactList, TriedList, OptionList','The hero component for exception handling. Must make sense with no other screen open.'],
+  ['FactList','Domain','apps/web/src/domain/handover/FactList','Facts, each with a citation.',"facts: {text, sourceId}[]",'default','Citation','A fact without a source is a bug; the handover builder rejects it.'],
+  ['TriedList','Domain','apps/web/src/domain/handover/TriedList','What the agent already attempted.',"tried: {text, ok}[]",'default','Icon','Failures shown in --bad with an X icon.'],
+  ['OptionList','Domain','apps/web/src/domain/handover/OptionList','Choices for the person, with the recommended one marked.',"options: HandoverOption[]; onChoose",'rest, hover, recommended, chosen, disabled','Dialog','Irreversible options open a confirm Dialog first.'],
+  ['HumanDecisionRecord','Domain','apps/web/src/domain/handover/HumanDecisionRecord','Who decided what, when, and why.',"decision: HumanDecision",'default','RelativeTime, Avatar','Appears in the trace after the run as part of the audit trail.'],
+  ['AutonomyControl','Domain','apps/web/src/domain/settings/AutonomyControl','Suggest, Ask first, or Autonomous.',"value: Autonomy; onChange",'per level','SegmentedControl','Explains the selected level in one sentence under the control.'],
+  ['PolicyLimitField','Domain','apps/web/src/domain/settings/PolicyLimitField','Edit one policy limit, e.g. a spend cap.',"rule: PolicyRule; onChange",'default, edited, saving, error','MoneyInput','Shows the rule id and which actions it gates.'],
+  ['VoiceCallCard','Domain','apps/web/src/domain/voice/VoiceCallCard','A live or recorded call handled by the voice agent.',"call: CallView; mode: 'live'|'recording'",'ringing, live, agent speaking, caller speaking, ended, failed','@elevenlabs/react','Mute and end controls in live mode. The transcript follows along.'],
+  ['Waveform','Domain','apps/web/src/domain/voice/Waveform','Audio level bars.',"levels: number[] | () => number; progress?",'idle, playing, paused','canvas','Canvas with requestAnimationFrame. Static peaks under reduced motion.'],
+  ['RealityMeter','Domain','apps/web/src/domain/reality/RealityMeter','One cell per case, coloured by outcome.',"results: CaseResult[]",'pending, running (cells fill), complete','—','Cells are buttons that open the case. Legend shows counts.'],
+  ['RealityCaseRow','Domain','apps/web/src/domain/reality/RealityCaseRow','One case in a batch result.',"result: CaseResult",'pending, running, resolved, escalated, failed','StatusChip, DurationText','Links to ANSWER.md and the trace.'],
+  ['BatchRunControl','Domain','apps/web/src/domain/reality/BatchRunControl','Start, watch and cancel a batch.',"batch?: BatchView; onStart(dir); onCancel",'idle, running, cancelling, done','ProgressBar','Shows concurrency, elapsed time and rate-limit backoff.'],
+  ['ToolHealthRow','Domain','apps/web/src/domain/tools/ToolHealthRow','Success rate, latency and last error for a tool.',"tool: ToolHealth",'healthy, degraded, down','inline SVG sparkline','Sparkline of the last 50 calls.'],
+  ['TrackSwitcher','Domain','apps/web/src/domain/settings/TrackSwitcher','Choose the active track.',"value: TrackId; tracks: TrackSummary[]",'per track','SegmentedControl','Reads labels from the registry. Never hard-coded.'],
+  ['DirectionSwitcher','Domain','apps/web/src/domain/settings/DirectionSwitcher','Switch Docket, Switchboard or Relay (design route only).',"value: Direction",'per direction','SegmentedControl','Sets data-dir on <html>.'],
+  ['AuditLogRow','Domain','apps/web/src/domain/run/AuditLogRow','One line in the audit log.',"event: RunEvent | HumanDecision",'default','RelativeTime, Mono','Read-only.'],
+
+  // ---- Layout
+  ['AppShell','Layout','apps/web/src/layout/AppShell','Nav, list, detail and decision panes.',"nav; list; detail; aside?",'3-pane (≥1120), 2-pane, stacked (<860)','CSS grid','Has a skip link. Each pane is a landmark with a label.'],
+  ['TopNav','Layout','apps/web/src/layout/TopNav','Brand, live mascot, tabs with counts, search, avatar.',"counts; activeRun?",'default, run active','Mascot, Count','Mascot reflects the most recent live run.'],
+  ['CommandPalette','Layout','apps/web/src/layout/CommandPalette','Jump to a case, run the agent, switch track.',"open; onOpenChange",'closed, open, results, empty','cmdk, Dialog','Opens with / or ⌘K. Results grouped: cases, actions, tracks.'],
+  ['PaneHeader','Layout','apps/web/src/layout/PaneHeader','Title row at the top of a pane.',"title; eyebrow?; actions?",'default, sticky','—','Sticky inside its pane.'],
+  ['SectionHeader','Layout','apps/web/src/layout/SectionHeader','Heading plus one-line description inside a page.',"title; description?; actions?",'default','—','—'],
+
+  // ---- Routes
+  ['/inbox','Route','apps/web/src/app/(app)/inbox → src/features/inbox','Case list with the selected case’s detail.',"?status=&track=",'loading, empty, selected','CaseList, RunTrace, DecisionPanel','The default route. Server Component page; the trace and controls are client components.'],
+  ['/cases/[ref]','Route','apps/web/src/app/(app)/cases/[ref] → src/features/case','Deep link to one case.',"ref",'loading, not found, loaded','same as inbox','Same layout as inbox with the list collapsed on mobile.'],
+  ['/runs','Route','apps/web/src/app/(app)/runs → src/features/live-runs','Every running agent as a small live trace.',"—",'idle, active','RunTrace (compact)','Switchboard direction shows this best.'],
+  ['/escalations','Route','apps/web/src/app/(app)/escalations → src/features/escalations','Queue of HandoverCards sorted by deadline.',"?queue=",'empty, list','HandoverCard','Clearing the queue shows a done-state mascot.'],
+  ['/reality','Route','apps/web/src/app/(app)/reality → src/features/reality','Run a batch and review results.',"—",'idle, running, complete','BatchRunControl, RealityMeter','Batch view is a client component.'],
+  ['/tools','Route','apps/web/src/app/(app)/tools → src/features/tools','Tool registry and health.',"—",'default','ToolHealthRow','Server Component.'],
+  ['/design','Route','apps/web/src/app/design → src/features/design','Every token and component in every state.',"?dir=",'default','all','Mirrors this artifact. Hidden from nav.'],
+
+  // ---- Hooks & lib
+  ['useRunStream','Hook','apps/web/src/lib/sse.ts','Subscribe to a run’s events and reduce them.',"(runId) → { view: RunView; status; error }",'connecting, open, reconnecting, closed','zod','Parses every event; ignores unknown types with a console warning. Resumes with Last-Event-ID.'],
+  ['useCases','Hook','apps/web/src/lib/queries.ts','Cases for the active track.',"(filters) → Query<Case[]>",'loading, success, error','@tanstack/react-query','staleTime 30s. Invalidated by run.completed and human.decided.'],
+  ['useDecide','Hook','apps/web/src/lib/queries.ts','Record a human decision.',"() → Mutation<HumanDecision>",'idle, pending, success, error','@tanstack/react-query','Optimistic status update, rolled back on error.'],
+  ['useUi','Hook','apps/web/src/state/ui.ts','Direction, track, autonomy.',"() → { direction, track, autonomy, set… }",'n/a','zustand persist','Persisted to localStorage with try/catch.'],
+  ['useHotkeys','Hook','apps/web/src/lib/hotkeys.ts','Keyboard shortcuts.',"(map: Record<string, fn>)",'n/a','—','j/k move, / search, e open handover, r replay. Ignored inside inputs.'],
+  ['useReducedMotion','Hook','apps/web/src/lib/motion.ts','Whether to skip animation.',"() → boolean",'n/a','motion','Mascot, stamp and waveform read this.'],
+  ['format','Hook','apps/web/src/lib/format.ts','money, duration, relative time, ref helpers.',"money(pence), duration(ms), ago(iso)",'n/a','Intl','Pure functions with unit tests.'],
+  ['api client','Hook','apps/web/src/lib/api.ts','Typed fetch for every route.',"api.cases.list(), api.runs.start()…",'n/a','zod','Parses responses with the shared schemas.'],
+  ['mocks','Hook','apps/web/src/mocks','msw handlers, including an SSE replayer.',"replays tracks/*/fixtures/*.jsonl",'n/a','msw','Lets UI work start before the API exists.'],
+
+  // ---- Server
+  ['schema','Server','packages/core/src/schema','Case, Source, RunEvent, Handover, Money.',"zod objects + inferred types",'n/a','zod','Single source of truth. Converted to JSON Schema for Claude tools.'],
+  ['agent/loop','Server','packages/core/src/agent/loop.ts','Runs one case: triage, tool-use loop, decision, handover.',"runCase(case, pack, { autonomy, emit, signal }) → Outcome",'n/a','@anthropic-ai/sdk','Max 12 turns. Never throws: errors become events, then escalation.'],
+  ['agent/triage','Server','packages/core/src/agent/triage.ts','Summarises and tags each source with the fast model.',"triage(sources) → SourceSummary[]",'n/a','@anthropic-ai/sdk','Cached per source hash.'],
+  ['agent/guard','Server','packages/core/src/agent/guard.ts','Checks every tool call against policy before it runs.',"guard(call, policy, autonomy) → allow | block(ruleId)",'n/a','—','Blocked calls emit action.blocked and return an explanatory error to the model.'],
+  ['agent/retry','Server','packages/core/src/agent/retry.ts','Timeout, backoff and idempotency for tools.',"withRetry(tool, { attempts: 3, timeoutMs })",'n/a','p-retry','Emits tool.failed for every failed attempt.'],
+  ['agent/decide','Server','packages/core/src/agent/decide.ts','Final structured decision.',"decide(context) → { outcome, confidence, rationale, citations }",'n/a','@anthropic-ai/sdk','Structured output validated with zod.'],
+  ['agent/handover','Server','packages/core/src/agent/handover.ts','Builds the Handover for escalations.',"buildHandover(context) → Handover",'n/a','@anthropic-ai/sdk','Rejects facts that cite unknown sources and asks the model again once.'],
+  ['run/view','Server','packages/core/src/run/view.ts','Pure reducer from events to what screens and ANSWERS show.',"runView(events) → RunView",'n/a','—','Shared by web and the ANSWERS writer. Most heavily tested file.'],
+  ['run/mascot','Server','packages/core/src/run/mascot.ts','Maps the latest event to a mascot state.',"mascotFor(event) → MascotState",'n/a','—','Pure, shared.'],
+  ['answers/render','Server','packages/core/src/answers/render.ts','Writes ANSWER.md and REASONING.md from a RunView.',"render(view, case) → { answer, reasoning }",'n/a','—','Covers all six things the rules ask for: received, actions, outputs, escalated, failed, final result.'],
+  ['store/events','Server','apps/web/src/server/db.ts','Append-only event table and run lookups.',"append(event), list(runId, afterSeq?)",'n/a','drizzle-orm, better-sqlite3','WAL mode. Exported to trace.jsonl per case.'],
+  ['api/runs','Server','apps/web/src/app/api/runs','Start a run and stream its events.',"POST /api/runs · GET /api/runs/[id]/events",'n/a','ReadableStream (SSE)','Heartbeat every 15s. Resumes from Last-Event-ID.'],
+  ['api/decisions','Server','apps/web/src/app/api/cases/[ref]/decisions','Record a human decision.',"POST /api/cases/[ref]/decisions",'n/a','zod','Emits human.decided.'],
+  ['api/voice','Server','apps/web/src/app/api/voice','ElevenLabs session and server tools.',"POST /api/voice/session · POST /api/voice/tools/[name]",'n/a','@elevenlabs/elevenlabs-js','Voice tools call the same guarded pack tools as text runs.'],
+  ['cli/reality','Server','apps/cli/src/reality.ts','Runs the unseen Reality Test batch unattended.',"--track --in --out --concurrency",'n/a','p-limit, pino','Writes each case’s folder as soon as it finishes. Prints a summary table.'],
+  ['cli/replay','Server','apps/cli/src/replay.ts','Re-emits a stored run for demos and UI work.',"replay <runId> [--speed 2]",'n/a','—','No model calls.'],
+  ['TrackPack','Server','packages/tracks/src/<track>','Loader, tools, policy, prompt and vocabulary for one track.',"export const pack: TrackPack",'n/a','zod','Copy an existing pack to add a track. Has its own test suite.']
+];
+const TIERS=['All','Primitive','Domain','Layout','Route','Hook','Server'];
+const TIER_LABEL={Primitive:'Primitives · apps/web/src/ui',Domain:'Domain components · apps/web/src/domain',Layout:'Layout · apps/web/src/layout',Route:'Routes · apps/web/src/app + src/features',Hook:'Hooks and lib · apps/web/src/lib',Server:'Server · packages/core, packages/tracks, apps/web/src/app/api, apps/cli'};
+
+const SKILLS=[
+  ['frontend-design','Build any screen or component from this spec with production quality.','“Build HandoverCard from the catalogue brief.”','UI'],
+  ['impeccable','Critique, polish, audit and harden UI; catches generic AI-looking patterns.','“Polish the inbox pane and audit its states.”','UI'],
+  ['emil-design-eng','Motion and interaction detail: the stamp, segmented thumb, toasts.','“Tune the outcome stamp animation.”','UI'],
+  ['design:design-system','Audit token use and naming; document component variants.','“Audit apps/web/src/ui for hard-coded values.”','UI'],
+  ['design:accessibility-review','WCAG pass on the shell, dialogs and handover.','“Check the handover flow for a11y.”','UI'],
+  ['design:ux-copy','Button labels, error and empty states, escalation wording.','“Write the empty state for /escalations.”','UI'],
+  ['design:design-handoff','A spec sheet for a component before a teammate builds it.','“Hand off VoiceCallCard.”','UI'],
+  ['dataviz','RealityMeter, tool-health sparklines, any chart.','“Design the tool health sparkline.”','UI'],
+  ['claude-api','Agent loop, tool use, structured outputs, prompt caching, model choice.','“Implement agent/loop.ts with caching.”','Agent'],
+  ['mcp-builder','Optional: expose track tools as an MCP server for other agents.','“Wrap the property pack tools as MCP.”','Agent'],
+  ['pdf · xlsx','Parse synthetic documents and spreadsheets in a track loader.','“Write the claims loader for these PDFs.”','Agent'],
+  ['run','Launch the app and confirm a change works in the browser.','“Run it and show me the inbox.”','Quality'],
+  ['webapp-testing','Playwright flows and screenshots for the README and demo.','“Script the demo flow and capture screenshots.”','Quality'],
+  ['code-review','Review a diff for bugs before merging.','“/code-review high”','Quality'],
+  ['simplify','Clean up for reuse and clarity after a feature lands.','“/simplify the agent folder.”','Quality'],
+  ['security-review','Check for leaked keys and unsafe handling before going public.','“/security-review before freeze.”','Quality'],
+  ['init','Create or refresh CLAUDE.md from the codebase.','“/init”','Repo'],
+  ['skill-creator','Scaffold the project skills below.','“Create the add-track-pack skill.”','Repo'],
+  ['commit-and-push','Stage, write a commit message, push.','“Commit and push this.”','Repo'],
+  ['Artifact (this page)','Keep this spec current; republish when contracts change.','“Update the catalogue with the new component.”','Repo']
+];
+const PROJ_SKILLS=[
+  ['add-component','Scaffolds ui/<Name> or domain/<area>/<Name>: component, index, test, and a /design entry with every state. Reads the catalogue entry first.','“/add-component ConfidenceMeter”'],
+  ['add-track-pack','Copies a pack, wires the loader to data/<track>, registers it, and generates a test that parses every supplied case.','“/add-track-pack logistics”'],
+  ['add-agent-tool','Adds a tool to a pack: zod input, execute(), retry settings, policy rule if it spends money or changes state, and a fixture.','“/add-agent-tool property contractors.cancel”'],
+  ['run-reality-test','Runs the CLI on a folder, checks every case produced ANSWER.md and REASONING.md, and prints failures. Never edits answers.','“/run-reality-test data/reality”'],
+  ['record-fixture','Runs one case against the real API and saves the event stream to tracks/<track>/fixtures for msw and tests.','“/record-fixture PM-7731”'],
+  ['demo-script','Builds the 60-second demo run order: which case, which screens, what to say, with a Playwright script to drive it.','“/demo-script property”']
+];
+
+function briefFor(e){
+  const [n,t,p,purpose,props,states,libs,notes]=e;
+  return `Build ${n} (${t.toLowerCase()}) at ${p}.
+
+Purpose: ${purpose}
+Interface: ${props}
+States to support: ${states}
+Libraries: ${libs}
+Notes: ${notes}
+
+Rules (from CLAUDE.md):
+- Read CLAUDE.md and the Casework Design Directions artifact first.
+- Style only with CSS variables from src/tokens; no hex values. It must look right under data-dir="docket", "switchboard" and "relay".
+- No track names in the code; use pack.vocabulary for labels.
+- Keyboard reachable, visible focus, status never shown by colour alone, honour prefers-reduced-motion.
+- Add it to /design showing every state above, and add a Vitest test.
+- Work only inside the folder above; propose contract changes separately.`;
+}
+
+let catTier='All',catQ='';
+function renderCatalogue(){
+  const counts={All:CAT.length};CAT.forEach(e=>counts[e[1]]=(counts[e[1]]||0)+1);
+  $('catTiers').innerHTML=TIERS.map(t=>`<button class="tier-btn" data-tier="${t}" aria-pressed="${t===catTier}">${t==='Hook'?'Hooks':t==='All'?'All':t+'s'} <span>${counts[t]||0}</span></button>`).join('');
+  const q=catQ.trim().toLowerCase();
+  const items=CAT.map((e,i)=>[e,i]).filter(([e])=>(catTier==='All'||e[1]===catTier)&&(!q||e.join(' ').toLowerCase().includes(q)));
+  if(!items.length){$('catList').innerHTML=`<div class="cat-empty card">Nothing matches “${esc(catQ)}”. Try a file path, a library or a state.</div>`;return}
+  const groups={};items.forEach(([e,i])=>(groups[e[1]]=groups[e[1]]||[]).push([e,i]));
+  $('catList').innerHTML=Object.entries(groups).map(([t,list])=>`
+    <div class="cat-group"><span class="label">${TIER_LABEL[t]} · ${list.length}</span>
+    ${list.map(([e,i])=>`<details data-i="${i}">
+      <summary><b class="mono">${esc(e[0])}</b><span class="p">${esc(e[3])}</span>
+        <span class="libs">${e[6].split(',').slice(0,2).map(l=>l.trim()).filter(l=>l&&l!=='—').map(l=>`<code>${esc(l)}</code>`).join('')}${icon('arrow','chev')}</span></summary>
+      <div class="cat-body">
+        <dl>
+          <div><dt>File</dt><dd class="mono" style="font-size:12px">${esc(e[2])}</dd></div>
+          <div><dt>Interface</dt><dd><code>${esc(e[4])}</code></dd></div>
+          <div><dt>Libraries</dt><dd>${esc(e[6])}</dd></div>
+        </dl>
+        <dl>
+          <div><dt>States</dt><dd class="states">${e[5].split(',').map(s=>`<span>${esc(s.trim())}</span>`).join('')}</dd></div>
+          <div><dt>Notes · a11y · motion</dt><dd>${esc(e[7])}</dd></div>
+        </dl>
+        <div class="full" style="display:grid;gap:8px">
+          <div class="brief-h"><span class="label">Build brief for Claude</span><button class="btn btn-secondary btn-sm" data-copy="${i}">Copy brief</button></div>
+          <pre class="code" id="brief-${i}">${esc(briefFor(e))}</pre>
+        </div>
+      </div></details>`).join('')}</div>`).join('');
+}
+
+function copyText(text,btn,pre){
+  const done=ok=>{const o=btn.textContent;btn.textContent=ok?'Copied':'Selected, press ⌘C';setTimeout(()=>btn.textContent=o,1600)};
+  const fallback=()=>{if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}done(false)};
+  try{navigator.clipboard.writeText(text).then(()=>done(true),fallback)}catch(e){fallback()}
+}
+
+function renderSpec(){
+  $('libRows').innerHTML=LIBS.map(([p,l,u,w])=>`<tr><td><code>${esc(p)}</code></td><td class="m">${l}</td><td>${esc(u)}</td><td style="color:var(--ink-2)">${esc(w)}</td></tr>`).join('');
+  $('skillGrid').innerHTML=SKILLS.map(([n,d,a,tag])=>`<div class="card skill"><span class="chip plain tag">${tag}</span><span class="name">${esc(n)}</span><p>${esc(d)}</p><span class="ask">${esc(a)}</span></div>`).join('');
+  $('projSkillGrid').innerHTML=PROJ_SKILLS.map(([n,d,a])=>`<div class="card skill"><span class="name">.claude/skills/${esc(n)}</span><p>${esc(d)}</p><span class="ask">${esc(a)}</span></div>`).join('');
+  renderCatalogue();
+  $('catSearch').addEventListener('input',e=>{catQ=e.target.value;renderCatalogue()});
+  $('copyClaudeMd').onclick=e=>copyText($('claudeMd').textContent,e.currentTarget,$('claudeMd'));
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tier]');if(t){catTier=t.dataset.tier;renderCatalogue();return}
+  const c=e.target.closest('[data-copy]');if(c){const i=+c.dataset.copy;copyText(briefFor(CAT[i]),c,$('brief-'+i))}
+});
+
+renderSpec();renderAll();setAutonomy(1);
+</script>
+
+</body>
+</html>

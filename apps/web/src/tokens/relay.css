@@ -1,0 +1,13 @@
+/* Direction C · Relay — the friendly teammate. Bright, chunky, tactile; best on a projector. */
+[data-dir="relay"] {
+  --bg: #EDF1FA; --surface: #FFFFFF; --surface-2: #E1E7F6;
+  --ink: #0F1830; --ink-2: #4F5A75; --line: #C9D2E8; --line-strong: #0F1830;
+  --accent: #2946F0; --accent-ink: #FFFFFF; --accent-soft: #DCE2FF; --sun: #FFCF33;
+  --ok: #0E9E6B; --hold: #E2621A; --info: #2946F0; --bad: #DE3B40; --neutral: #4F5A75;
+  --font-d: var(--ff-bricolage), system-ui, sans-serif;
+  --font-b: var(--ff-figtree), system-ui, sans-serif;
+  --font-m: var(--ff-jetbrains), ui-monospace, Menlo, monospace;
+  --r: 12px; --r-lg: 20px; --bw: 2px; --shadow: 3px 3px 0 #0F1830;
+  --m-body: #2946F0; --m-line: #0F1830; --m-eye: #0F1830; --m-mouth: #0F1830;
+  color-scheme: light;
+}

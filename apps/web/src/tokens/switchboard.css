@@ -1,0 +1,13 @@
+/* Direction B · Switchboard — the live operator. Dark control room, voice first. */
+[data-dir="switchboard"] {
+  --bg: #0E1217; --surface: #151A21; --surface-2: #1C232C;
+  --ink: #E8E3D8; --ink-2: #8E98A6; --line: #28313C; --line-strong: #3E4A58;
+  --accent: #FFBE3D; --accent-ink: #1B1300; --accent-soft: rgba(255,190,61,.12); --sun: #FFCF33;
+  --ok: #4ED19E; --hold: #FF8B4D; --info: #6FA8FF; --bad: #FF5D6C; --neutral: #8E98A6;
+  --font-d: var(--ff-martian), ui-monospace, Menlo, monospace;
+  --font-b: var(--ff-onest), system-ui, sans-serif;
+  --font-m: var(--ff-martian), ui-monospace, Menlo, monospace;
+  --r: 6px; --r-lg: 10px; --bw: 1px; --shadow: 0 14px 34px rgba(0,0,0,.35);
+  --m-body: #2A3440; --m-line: #46525F; --m-eye: #FFBE3D; --m-mouth: #FFBE3D;
+  color-scheme: dark;
+}

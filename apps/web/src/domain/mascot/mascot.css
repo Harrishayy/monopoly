@@ -1,0 +1,75 @@
+/* Mascot skins (Thump · Patch · Pip) and the six states. Ported from docs/design/casework-design-directions.html. */
+.m { overflow: visible; display: block; flex: none; }
+.m * { stroke-linecap: round; stroke-linejoin: round; }
+.m-block { fill: var(--m-body); stroke: var(--m-line); stroke-width: 2.5; }
+.m-eye { fill: var(--m-eye); transition: fill .3s; }
+.m-mouth { fill: none; stroke: var(--m-mouth); stroke-width: 2.5; transition: opacity .25s; }
+.m-mouth-light { stroke: #fff; }
+.m-arm { fill: none; stroke: var(--m-line); stroke-width: 3; }
+.m-flag, .m-palm { fill: var(--hold); stroke: var(--m-line); stroke-width: 2; }
+.m-flag-t { fill: #fff; font: 700 11px var(--font-m); }
+.m-spark path { fill: var(--accent); }
+.m-sweat { fill: var(--info); }
+.m-shadow { fill: var(--ink); opacity: .12; }
+.m-wood { fill: #A86F43; stroke: var(--m-line); stroke-width: 2.5; }
+.m-pad { fill: var(--accent); stroke: var(--m-line); stroke-width: 2.5; transition: fill .3s; }
+.m-cheek { fill: #E39A8F; opacity: .55; }
+.m-pin { fill: #AEB6C2; }
+.m-screen { fill: #07090C; }
+.m-bars rect { fill: var(--m-eye); }
+.m-cable { fill: none; stroke: #3D4957; stroke-width: 5; }
+.m-sclera { fill: #fff; stroke: var(--m-line); stroke-width: 2; }
+.m-bulb { fill: var(--m-bulb, var(--sun)); stroke: var(--m-line); stroke-width: 2.5; transition: fill .3s; }
+.m-foot { fill: var(--m-line); }
+
+/* Per-skin state colours */
+.m-switchboard { --m-line: #46525F; --m-eye: var(--accent); }
+.m-switchboard .m-eyes { filter: drop-shadow(0 0 3px var(--m-eye)); }
+.m-switchboard.st-esc { --m-eye: var(--hold); }
+.m-switchboard.st-fail { --m-eye: var(--bad); }
+.m-switchboard.st-done { --m-eye: var(--ok); }
+.m-relay.st-esc { --m-bulb: var(--hold); }
+.m-relay.st-fail { --m-bulb: var(--bad); }
+.m-relay.st-done { --m-bulb: var(--ok); }
+.m-docket.st-esc .m-pad { fill: var(--hold); }
+.m-docket.st-done .m-pad { fill: var(--ok); }
+.m-docket.st-fail .m-pad { fill: var(--bad); }
+
+.m-body, .m-eyes, .m-hand, .m-bars rect, .m-spark path { transform-box: fill-box; }
+.m-body { transform-origin: 50% 100%; }
+.m-hand { transform-origin: 0% 100%; }
+.m-bars rect, .m-spark path { transform-origin: 50% 50%; }
+
+.m .m-mouth-h, .m .m-bars, .m .m-sweat, .m .m-hand, .m .m-spark { opacity: 0; transition: opacity .25s; }
+
+.st-idle .m-body { animation: m-bob 3.2s ease-in-out infinite; }
+.st-think .m-body { animation: m-bob 2s ease-in-out infinite; }
+.st-think .m-eyes { animation: m-look 1.8s ease-in-out infinite; }
+.st-act .m-body { animation: m-thump .9s cubic-bezier(.3,0,.2,1) infinite; }
+.m-switchboard.st-act .m-body, .m-relay.st-act .m-body { animation: m-hop .7s ease-in-out infinite; }
+.m-switchboard.st-act .m-bars { opacity: 1; }
+.m-switchboard.st-act .m-mouth-n { opacity: 0; }
+.st-act .m-bars rect { animation: m-bar .45s ease-in-out infinite alternate; }
+.m-bars rect:nth-child(2) { animation-delay: -.15s; }
+.m-bars rect:nth-child(3) { animation-delay: -.3s; }
+.m-bars rect:nth-child(4) { animation-delay: -.1s; }
+.m-bars rect:nth-child(5) { animation-delay: -.25s; }
+.st-fail .m-body { animation: m-shake .45s ease-in-out infinite; }
+.st-fail .m-sweat { opacity: 1; }
+.st-esc .m-hand { opacity: 1; animation: m-wave 1.4s ease-in-out infinite; }
+.st-esc .m-body { animation: m-bob 2.6s ease-in-out infinite; }
+.st-done .m-mouth-h, .st-done .m-spark { opacity: 1; }
+.st-done .m-mouth-n { opacity: 0; }
+.st-done .m-spark path { animation: m-tw 1.6s ease-in-out infinite; }
+.st-done .m-body { animation: m-hop 1.6s ease-in-out infinite; }
+.m-relay.st-think .m-bulb { animation: m-pulse 1s ease-in-out infinite; }
+
+@keyframes m-bob { 50% { transform: translateY(-3px); } }
+@keyframes m-look { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-4px); } 70% { transform: translateX(4px); } }
+@keyframes m-thump { 0%, 100% { transform: translateY(-7px); } 40% { transform: translateY(2px) scaleY(.93); } 60% { transform: translateY(0); } }
+@keyframes m-hop { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-6px); } }
+@keyframes m-shake { 25% { transform: translateX(-2px) rotate(-2deg); } 75% { transform: translateX(2px) rotate(2deg); } }
+@keyframes m-wave { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
+@keyframes m-bar { from { transform: scaleY(.4); } to { transform: scaleY(1.6); } }
+@keyframes m-tw { 50% { transform: scale(.55) rotate(45deg); } }
+@keyframes m-pulse { 50% { opacity: .25; } }

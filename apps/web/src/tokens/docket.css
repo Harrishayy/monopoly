@@ -1,0 +1,13 @@
+/* Direction A · Docket — the careful clerk. Paper, ledgers, rubber stamps. Light. */
+:root, [data-dir="docket"] {
+  --bg: #E8EBE4; --surface: #F6F7F2; --surface-2: #DCE1D6;
+  --ink: #17202E; --ink-2: #566170; --line: #C2C9BC; --line-strong: #17202E;
+  --accent: #4A2DB5; --accent-ink: #FFFFFF; --accent-soft: #E2DCF6; --sun: #FFCF33;
+  --ok: #2B6E45; --hold: #A14E00; --info: #1E5A9E; --bad: #A8261E; --neutral: #566170;
+  --font-d: var(--ff-archivo), system-ui, sans-serif;
+  --font-b: var(--ff-archivo), system-ui, sans-serif;
+  --font-m: var(--ff-plex-mono), ui-monospace, Menlo, monospace;
+  --r: 3px; --r-lg: 4px; --bw: 1px; --shadow: none;
+  --m-body: #F6F7F2; --m-line: #17202E; --m-eye: #17202E; --m-mouth: #17202E;
+  color-scheme: light;
+}
