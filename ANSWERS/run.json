@@ -1,0 +1,10 @@
+{
+ "kind": "reality",
+ "name": "challenges-c",
+ "command": "answer",
+ "agent": "c",
+ "track": "property",
+ "model": "c: read claude-haiku-5-5, decide claude-opus-5-5, review claude-sonnet-5-5",
+ "startedAt": "2026-10-10T15:37:04.328Z",
+ "finishedAt": "2026-10-10T15:46:37.393Z"
+}
