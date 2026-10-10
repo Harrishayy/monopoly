@@ -16,7 +16,6 @@ const ROUTES: { href: string; label: string; icon: IconName }[] = [
   { href: '/reality', label: 'Go to Reality Test and eval', icon: 'check' },
   { href: '/tools', label: 'Go to tools and policy', icon: 'tool' },
   { href: '/agents', label: 'Compare the agents', icon: 'decide' },
-  { href: '/design', label: 'Open the design reference', icon: 'doc' },
 ];
 
 /** Jump to a case, run an action, or switch direction. Opens with / or ⌘K. */

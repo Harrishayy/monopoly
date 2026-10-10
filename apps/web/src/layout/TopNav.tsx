@@ -77,9 +77,6 @@ export function TopNav() {
         <Link href="/agents" aria-current={pathname.startsWith('/agents') ? 'page' : undefined} className="hidden rounded-ui px-2 py-1.5 text-[13px] text-ink-2 hover:text-ink aria-[current=page]:text-ink sm:inline">
           Agents
         </Link>
-        <Link href="/design" className="hidden rounded-ui px-2 py-1.5 text-[13px] text-ink-2 hover:text-ink sm:inline">
-          Design
-        </Link>
         <Avatar name="Operator" />
       </div>
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
