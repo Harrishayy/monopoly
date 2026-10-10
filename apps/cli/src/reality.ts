@@ -6,6 +6,7 @@
  *   pnpm reality --in data/public --out .casework/practice --withhold outcomes
  * Each case's folder is written as soon as it finishes, so a crash keeps finished work.
  * Never hand-edit the output; fix the system and re-run.
+ * --kind (smoke, practice, reality, …), --name and --note go into <out>/run.json for the UI.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -14,6 +15,7 @@ import { randomUUID } from 'node:crypto';
 import { renderAnswers, runView, RunEvent, type Case } from '@casework/core';
 import { runCase, type EmitInput } from '@casework/core/agent';
 import { getPack } from '@casework/tracks';
+import { manifestOptions, runKind, writeManifest } from './manifest';
 
 const root = resolve(import.meta.dirname, '../../..');
 const { values } = parseArgs({
@@ -23,6 +25,7 @@ const { values } = parseArgs({
     out: { type: 'string', default: 'ANSWERS' },
     withhold: { type: 'string', default: 'none' },
     concurrency: { type: 'string', default: process.env.REALITY_CONCURRENCY ?? '6' },
+    ...manifestOptions,
   },
 });
 
@@ -59,6 +62,17 @@ async function main() {
     console.error(`No ${pack.label} cases found in ${inDir}. Nothing written. See data/README.md for the expected layout.`);
     process.exit(1);
   }
+  const manifest = {
+    kind: runKind(values.kind, withhold === 'outcomes' ? 'practice' : /challenge/i.test(values.in!) ? 'reality' : 'adhoc'),
+    name: values.name,
+    note: values.note,
+    command: 'reality',
+    agent: 'a',
+    track: pack.id,
+    model: process.env.MODEL_DECIDE,
+    startedAt: new Date().toISOString(),
+  };
+  await writeManifest(outDir, manifest);
   console.log(`Running ${cases.length} ${pack.vocabulary.cases.toLowerCase()} with concurrency ${limit}…`);
   const results: Awaited<ReturnType<typeof runOne>>[] = [];
   let next = 0;
@@ -73,6 +87,7 @@ async function main() {
     }),
   );
   results.sort((a, b) => a.n - b.n);
+  await writeManifest(outDir, { ...manifest, finishedAt: new Date().toISOString() });
   console.table(results.map(({ n, ref, outcome, next, decidedBy }) => ({ n, ref, outcome, next, decidedBy })));
   const fallbacks = results.filter((r) => r.decidedBy !== 'model').length;
   if (fallbacks) console.warn(`${fallbacks} of ${results.length} cases were decided by the rules-only playbook (model unavailable or failed). Re-run them once the model is reachable.`);

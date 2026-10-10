@@ -6,16 +6,17 @@
  *   pnpm eval --track property --resume .casework/eval   # keep model decisions, re-run the rest
  * Each cut hides every event from `cutBefore` on (and the Overview/Outcome), runs the case as of
  * `asOf`, and checks the chosen action against `accept` and `prohibit`.
- * Writes <out>/results.jsonl and <out>/SUMMARY.md.
+ * Writes <out>/results.jsonl, <out>/SUMMARY.md and <out>/run.json (--kind smoke|train|val|test|full, --name, --note).
  */
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { randomUUID } from 'node:crypto';
-import { RunEvent, runView, type Case } from '@casework/core';
+import { guessRunKind, RunEvent, runView, type Case } from '@casework/core';
 import { runCase, type EmitInput } from '@casework/core/agent';
 import { getPack } from '@casework/tracks';
+import { manifestOptions, runKind, writeManifest } from './manifest';
 
 interface Cut {
   case: string;
@@ -60,6 +61,7 @@ const { values } = parseArgs({
     limit: { type: 'string' },
     concurrency: { type: 'string', default: process.env.REALITY_CONCURRENCY ?? '6' },
     resume: { type: 'string' },
+    ...manifestOptions,
   },
 });
 
@@ -125,6 +127,17 @@ async function main() {
 
   const cases = new Map((await pack.loadCases(resolve(root, values.in!), { withhold: 'outcomes' })).map((c) => [c.ref.split('-').at(-1)!, c]));
   const mode = values.offline || !process.env.ANTHROPIC_API_KEY ? 'rules-only playbook' : `model ${process.env.MODEL_DECIDE ?? 'default'}`;
+  const manifest = {
+    kind: runKind(values.kind, values.limit || values.only ? 'smoke' : values.cuts ? guessRunKind(values.cuts) : 'full'),
+    name: values.name,
+    note: values.note,
+    command: 'eval',
+    agent: 'a',
+    track: pack.id,
+    model: values.offline || !process.env.ANTHROPIC_API_KEY ? 'rules' : process.env.MODEL_DECIDE,
+    startedAt: new Date().toISOString(),
+  };
+  await writeManifest(outDir, manifest);
   console.log(`Scoring ${cuts.length} cuts on ${pack.label} with the ${mode}…`);
 
   const results: Result[] = [];
@@ -195,6 +208,7 @@ ${results
   await mkdir(outDir, { recursive: true });
   await writeFile(join(outDir, 'results.jsonl'), results.map((r) => JSON.stringify(r)).join('\n') + '\n');
   await writeFile(join(outDir, 'SUMMARY.md'), summary);
+  await writeManifest(outDir, { ...manifest, finishedAt: new Date().toISOString() });
   console.log(`\n${row('All', results)}\n${row('Determined', results.filter((r) => r.kind === 'determined'))}\n${row('Judgement', results.filter((r) => r.kind === 'judgement'))}`);
   console.log(`Wrote ${join(outDir, 'SUMMARY.md').replace(`${root}/`, '')}`);
 }
