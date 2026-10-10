@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Autonomy, Usage } from './common';
+import { Assessment, NextStep } from './assessment';
 import { Handover, Outcome } from './handover';
 
 const base = {
@@ -58,6 +59,8 @@ export const RunEvent = z.discriminatedUnion('type', [
     confidence: z.number().min(0).max(1),
     citations: z.array(z.string()),
   }),
+  z.object({ ...base, type: z.literal('case.assessed'), assessment: Assessment }),
+  z.object({ ...base, type: z.literal('next.proposed'), next: NextStep }),
   z.object({ ...base, type: z.literal('escalation.created'), handover: Handover }),
   z.object({
     ...base,
