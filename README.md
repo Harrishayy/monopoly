@@ -159,6 +159,8 @@ pnpm eval --offline                                   # rules only, no network
 pnpm eval                                             # with the model; writes .casework/eval/SUMMARY.md
 pnpm eval --resume .casework/eval                     # re-run only cuts that fell back to the rules
 pnpm --filter @casework/tracks inspect 033 --cut 9    # how the rules read one case at one moment
+# Claude Code plan (no API credit): sign in with `claude`, then
+EVAL_BACKEND=claude-code pnpm harness run --agent c --suite smoke --backend claude-code
 ```
 
 On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a
@@ -188,6 +190,7 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 | Variable | Required | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | recommended | Claude API. Without it, decisions come from the rules-only playbook |
+| `EVAL_BACKEND` | no | `api` (default) or `claude-code`: evals and bench use the logged-in Claude Code plan (`claude -p`) instead of the API |
 | `MODEL_DECIDE` / `MODEL_FAST` | no | Models (default `claude-haiku-5-5`) |
 | `MODEL_MAX_RETRIES` | no | SDK retries on rate limits and overload (default 8) |
 | `ENGINE` | no | `d` (default), `a` or `b`: which agent the product and `pnpm reality` run |

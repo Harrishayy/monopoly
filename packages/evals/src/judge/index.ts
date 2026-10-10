@@ -5,11 +5,13 @@ import pLimit from 'p-limit';
 import { z } from 'zod';
 import { JudgeVerdict, TokenUsage, type JudgeOptions, type JudgeInput, type JudgeClient, type JudgeRecord, type JudgeResponse } from '../schema';
 import { defaultOutRoot } from '../paths';
+import { evalBackend } from '@casework/core/claude-code';
 import { createAnthropicJudgeClient, JudgeCompletionError, judgeErrorMessage } from './client';
+import { createClaudeCodeJudgeClient } from './claude-code';
 import { buildJudgeRequest } from './request';
 import { mergeVerdicts } from './merge';
 
-export { buildJudgeRequest, createAnthropicJudgeClient };
+export { buildJudgeRequest, createAnthropicJudgeClient, createClaudeCodeJudgeClient };
 export const JUDGE_PROMPT_VERSION: string = '2';
 export const DEFAULT_JUDGE_MODEL = 'claude-opus-5-5';
 
@@ -26,13 +28,15 @@ function positiveInteger(value: number, name: string): number {
 
 /** Resolve judge settings from environment and explicit overrides, validating effort and counts. */
 export function judgeOptionsFromEnv(env: NodeJS.ProcessEnv = process.env, overrides?: Partial<JudgeOptions>): JudgeOptions {
+  const backend = overrides?.backend ?? evalBackend(env);
   const opts = {
     enabled: true, model: env.MODEL_JUDGE ?? DEFAULT_JUDGE_MODEL,
     effort: env.JUDGE_EFFORT ?? 'high', samples: Number(env.JUDGE_SAMPLES ?? 1),
-    concurrency: Number(env.JUDGE_CONCURRENCY ?? 4), fallbacks: env.JUDGE_FALLBACKS !== 'off',
+    concurrency: Number(env.JUDGE_CONCURRENCY ?? (backend === 'claude-code' ? 2 : 4)),
+    fallbacks: env.JUDGE_FALLBACKS !== 'off', backend,
     cacheDir: join(defaultOutRoot(), 'cache/judge'), ...overrides,
   };
-  return { ...opts, effort: effortSchema.parse(opts.effort), samples: positiveInteger(opts.samples, 'samples'), concurrency: positiveInteger(opts.concurrency, 'concurrency') };
+  return { ...opts, backend, effort: effortSchema.parse(opts.effort), samples: positiveInteger(opts.samples, 'samples'), concurrency: positiveInteger(opts.concurrency, 'concurrency') };
 }
 
 async function readCache(path: string): Promise<JudgeResponse | null> {
@@ -72,7 +76,10 @@ export async function judgeScenario(input: JudgeInput, opts: JudgeOptions): Prom
       if (!response) {
         cached = false;
         let client = opts.client ?? clients.get(opts);
-        if (!client) { client = createAnthropicJudgeClient(opts); clients.set(opts, client); }
+        if (!client) {
+          client = opts.backend === 'claude-code' ? createClaudeCodeJudgeClient(opts) : createAnthropicJudgeClient(opts);
+          clients.set(opts, client);
+        }
         let limit = limiters.get(opts.concurrency);
         if (!limit) { limit = pLimit(opts.concurrency); limiters.set(opts.concurrency, limit); }
         const activeClient = client;

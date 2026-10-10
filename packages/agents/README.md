@@ -31,6 +31,18 @@ pnpm --filter @casework/agents judge --limit 30    # agent B on the other tracks
 pnpm --filter @casework/agents split               # print the split
 ```
 
+To run the bench or harness on a Claude Code plan instead of the API (no `ANTHROPIC_API_KEY`):
+
+```bash
+# once: install Claude Code and sign in
+claude
+
+EVAL_BACKEND=claude-code pnpm bench --agent c --split val --limit 10
+pnpm harness run --agent c --suite smoke --backend claude-code --judge on
+```
+
+`claude -p` is used for every model call (agents and the judge). Tools are disabled. Default concurrency is 2. Scores will not match API-graded runs.
+
 Flags:
 - `--model`: one model for both agents. Default `claude-haiku-5-5`.
 - `--labels both|cuts|holdout`

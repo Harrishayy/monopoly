@@ -81,7 +81,7 @@ export function createAnthropicJudgeClient(opts: { model: string; effort: JudgeE
 /** Convert SDK authentication failures and other errors into batch-safe messages. */
 export function judgeErrorMessage(error: unknown): string {
   if (error instanceof Anthropic.AuthenticationError) {
-    return 'Judge unavailable: no valid Anthropic credentials (set ANTHROPIC_API_KEY or run `ant auth login`, or use --judge off)';
+    return 'Judge unavailable: no valid Anthropic credentials (set ANTHROPIC_API_KEY, use --backend claude-code after `claude` login, or --judge off)';
   }
   return error instanceof Error ? error.message : String(error);
 }

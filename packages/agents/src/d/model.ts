@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { claudeCodeModelClient, evalBackend } from '@casework/core/claude-code';
 import { z } from 'zod';
 import { outputFormat } from '../b/llm/client';
 import type { ModelCallRecord, Usage } from './types';
@@ -56,6 +57,7 @@ function usageOf(model: string, u: Anthropic.Usage | undefined): Usage {
 }
 
 export function defaultCaller(): Caller | undefined {
+  if (evalBackend() === 'claude-code') return claudeCodeModelClient();
   if (!process.env.ANTHROPIC_API_KEY) return undefined;
   const client = new Anthropic({ maxRetries: 4, timeout: 240_000 });
   return (params, signal) => client.messages.create(params, { signal });

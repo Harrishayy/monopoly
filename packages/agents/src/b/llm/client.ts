@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import { claudeCodeModelClient, evalBackend } from '@casework/core/claude-code';
 import { z } from 'zod';
 import type { ModelCall } from '../types';
 
@@ -18,6 +19,7 @@ export const MODELS = {
 
 /** The real caller, or undefined when no API key is configured. */
 export function defaultCaller(): Caller | undefined {
+  if (evalBackend() === 'claude-code') return claudeCodeModelClient();
   if (!process.env.ANTHROPIC_API_KEY) return undefined;
   const client = new Anthropic({ maxRetries: 4, timeout: 240_000 });
   return (params, signal) => client.messages.create(params, { signal });

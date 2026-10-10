@@ -1,6 +1,7 @@
 /** Harness adapter for agent B: runs its pipeline on the materialized case and grades its own ANSWER.md. */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { evalBackend } from '@casework/core/claude-code';
 import { RunEvent, type Outcome } from '@casework/core';
 import {
   ExampleBank, defaultCaller, domainActionOf, getAgents, renderAnswer, renderReasoning, runCase, traceLines,
@@ -64,7 +65,7 @@ export function eventsFromResult(r: CaseResult, toolNames: Set<string>): RunEven
 export async function createAgentBAdapter(opts: { track: string; toolNames: string[]; log?: (line: string) => void }): Promise<AgentAdapter> {
   getAgents(['b']);
   const bank = await ExampleBank.build('all');
-  opts.log?.(`agent B few-shot memory: ${bank.size} labelled moments (the case under test is always excluded)`);
+  opts.log?.(`agent B few-shot memory: ${bank.size} labelled moments (the case under test is always excluded); backend ${evalBackend()}`);
   const caller = defaultCaller();
   const tools = new Set(opts.toolNames);
   return {

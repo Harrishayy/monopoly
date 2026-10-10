@@ -4,6 +4,7 @@
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { evalBackend } from '@casework/core/claude-code';
 import { RunEvent, type Outcome } from '@casework/core';
 import {
   ExampleBank, cModels, decideCase, defaultCaller, getAgents, loadForD, renderAnswerC, renderAnswerD,
@@ -43,7 +44,7 @@ export async function createAgentCAdapter(opts: { track: string; toolNames: stri
   getAgents(['c']);
   const bank = await ExampleBank.build('all');
   const models = cModels();
-  opts.log?.(`agent C models: read ${models.read}, decide ${models.decide}, review ${models.critic}; few-shot memory: ${bank.size} labelled moments (the case under test is always excluded)`);
+  opts.log?.(`agent C models: read ${models.read}, decide ${models.decide}, review ${models.critic}; backend ${evalBackend()}; few-shot memory: ${bank.size} labelled moments (the case under test is always excluded)`);
   const caller = defaultCaller();
   const tools = new Set(opts.toolNames);
   return {
@@ -103,7 +104,7 @@ function eventsFromD(r: DResult, files: Map<string, string>, toolNames: Set<stri
 
 export async function createAgentDAdapter(opts: { track: string; toolNames: string[]; log?: (line: string) => void }): Promise<AgentAdapter> {
   getAgents(['d']);
-  opts.log?.(`agent D voters: ${process.env.AGENT_D_MODEL}; supervisor: ${process.env.AGENT_D_SUPERVISOR_MODEL ?? 'default'}`);
+  opts.log?.(`agent D voters: ${process.env.AGENT_D_MODEL}; supervisor: ${process.env.AGENT_D_SUPERVISOR_MODEL ?? 'default'}; backend ${evalBackend()}`);
   const tools = new Set(opts.toolNames);
   return {
     name: 'agent-d', kind: 'command',

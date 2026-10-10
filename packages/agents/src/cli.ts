@@ -24,7 +24,8 @@ agents bench  [--agent a,b,c,d] [--suite cuts|outside|perturb] [--variants clean
               agent C review: [--rounds 2] [--dispute escalate|gate]
 agents judge  [--limit N] [--manuals off] [--out <dir>]      agent B on the other tracks' escalation examples
 agents split                                                  print the fixed dev/val/test split
-Every run takes --kind smoke|train|val|test|full|practice|reality|adhoc, --name "<label>", --note "<text>" (written to run.json).`;
+Every run takes --kind smoke|train|val|test|full|practice|reality|adhoc, --name "<label>", --note "<text>" (written to run.json).
+EVAL_BACKEND=claude-code uses the logged-in Claude Code plan (claude -p) instead of ANTHROPIC_API_KEY.`;
 
 function args(argv: string[]): { cmd?: string; flags: Record<string, string> } {
   const [cmd, ...rest] = argv;

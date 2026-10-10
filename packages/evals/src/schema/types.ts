@@ -19,7 +19,8 @@ export interface AgentAdapter { name: string; kind: 'inproc' | 'command' | 'base
 export interface CheckInput { scenario: ConcreteScenario; materialized: MaterializedScenario; suite: EvalSuite; events: RunEvent[] | null; answer: string | null; reasoning: string | null; ledger: LedgerEntry[]; agentError: string | null }
 export interface AnswersLint { ok: boolean; rows: { n: number; ok: boolean; problems: string[] }[] }
 export type JudgeEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
-export interface JudgeOptions { enabled: boolean; model: string; effort: JudgeEffort; samples: number; concurrency: number; fallbacks: boolean; cacheDir: string | null; client?: JudgeClient }
+export type EvalBackend = 'api' | 'claude-code';
+export interface JudgeOptions { enabled: boolean; model: string; effort: JudgeEffort; samples: number; concurrency: number; fallbacks: boolean; cacheDir: string | null; backend?: EvalBackend; client?: JudgeClient }
 export interface JudgeRequest { system: string; context: string; output: string; model: string; effort: JudgeEffort; sample: number }
 export interface JudgeResponse { verdict: JudgeVerdict; usage: TokenUsage; model: string; stopReason: string | null }
 export interface JudgeClient { complete(req: JudgeRequest, signal?: AbortSignal): Promise<JudgeResponse> }

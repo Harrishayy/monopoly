@@ -2,6 +2,7 @@
 import { realpath } from 'node:fs/promises';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
+import { evalBackend } from '@casework/core/claude-code';
 import { getPack } from '@casework/tracks';
 import { getEvalSuite } from '@casework/tracks/evals';
 import {
@@ -38,9 +39,13 @@ Selection and paths:
 Run options:
   --agent <name>        runCase|b|c|d|baseline:escalate|baseline:reckless|baseline:replay|cmd
                         (default: runCase; b, c, d = agents from @casework/agents).
+  --backend api|claude-code
+                        api = ANTHROPIC_API_KEY (default). claude-code = claude -p
+                        on the logged-in Claude Code plan (no API credit). Also
+                        EVAL_BACKEND=claude-code. Default concurrency is 2.
   --cmd <command>       Required for cmd; supports {root} {case} {out} {track}.
   --repeat <n>          Runs per scenario (default: 1).
-  --concurrency <n>     Parallel cases (default: REALITY_CONCURRENCY or 4).
+  --concurrency <n>     Parallel cases (default: 2 on claude-code, else REALITY_CONCURRENCY or 4).
   --timeout-ms <n>      Per-case timeout in milliseconds (default: 600000).
   --allow-leaks         Run despite leak findings; leaks still give exit code 1.
   --fail-on-critical    Exit 1 when the summary has critical failures.
@@ -61,7 +66,7 @@ const options = {
   suite: { type: 'string' }, scenarios: { type: 'string' }, agent: { type: 'string' },
   cmd: { type: 'string' }, track: { type: 'string' }, data: { type: 'string' },
   out: { type: 'string' }, judge: { type: 'string' }, 'judge-model': { type: 'string' },
-  'judge-samples': { type: 'string' }, 'judge-effort': { type: 'string' },
+  'judge-samples': { type: 'string' }, 'judge-effort': { type: 'string' }, backend: { type: 'string' },
   repeat: { type: 'string' }, concurrency: { type: 'string' }, 'timeout-ms': { type: 'string' },
   compare: { type: 'string' }, 'allow-leaks': { type: 'boolean' },
   'fail-on-critical': { type: 'boolean' }, 'reality-cmd': { type: 'string' },
@@ -163,7 +168,12 @@ async function main(): Promise<void> {
   }
   nonempty(values.cmd, '--cmd');
   if (agentName === 'cmd' && !values.cmd) throw new UsageError('--agent cmd requires --cmd <command>.');
-  const concurrency = integer(values.concurrency ?? process.env.REALITY_CONCURRENCY ?? '4', '--concurrency');
+  if (values.backend !== undefined && values.backend !== 'api' && values.backend !== 'claude-code') {
+    throw new UsageError('--backend must be api|claude-code.');
+  }
+  const backend = values.backend ?? evalBackend(process.env);
+  if (backend === 'claude-code') process.env.EVAL_BACKEND = 'claude-code';
+  const concurrency = integer(values.concurrency ?? (backend === 'claude-code' ? '2' : process.env.REALITY_CONCURRENCY ?? '4'), '--concurrency');
   const repeat = integer(values.repeat ?? '1', '--repeat');
   const timeoutMs = integer(values['timeout-ms'] ?? '600000', '--timeout-ms');
   if (values['judge-samples'] !== undefined) integer(values['judge-samples'], '--judge-samples');
@@ -190,7 +200,7 @@ async function main(): Promise<void> {
   let judge: ReturnType<typeof judgeOptionsFromEnv>;
   try {
     judge = judgeOptionsFromEnv(process.env, {
-      enabled: judgeFlag === 'on',
+      enabled: judgeFlag === 'on', backend,
       ...(values['judge-model'] === undefined ? {} : { model: nonempty(values['judge-model'], '--judge-model')! }),
       ...(values['judge-samples'] === undefined ? {} : { samples: integer(values['judge-samples'], '--judge-samples') }),
       ...(values['judge-effort'] === undefined ? {} : { effort: values['judge-effort'] as JudgeEffort }),
@@ -243,6 +253,11 @@ async function main(): Promise<void> {
     printSummary(result.summary, null, result.dir, values['fail-on-critical'] ?? false);
     if (!result.lint.ok) process.exitCode = 1;
     return;
+  }
+  if (command === 'run') {
+    print(backend === 'claude-code'
+      ? `eval backend: Claude Code plan (claude -p). Sign in with claude. Tools off. Concurrency ${concurrency}.`
+      : `eval backend: Anthropic API. Concurrency ${concurrency}.`);
   }
   const adapter = agentName === 'runCase' ? createInprocAdapter({ pack })
     : agentName === 'b' ? await createAgentBAdapter({ track, toolNames: pack.tools.map((tool) => tool.name), log: print })

@@ -156,7 +156,7 @@ describe('judge scenario', () => {
     expect(await readdir(dir)).toEqual([]);
     const authentication = new Anthropic.AuthenticationError(401, { type: 'authentication_error' }, 'Invalid credentials', new Headers());
     const result = await judgeScenario(judgeInput(), options({ complete: async () => { throw authentication; } }));
-    expect(result.error).toBe('Judge unavailable: no valid Anthropic credentials (set ANTHROPIC_API_KEY or run `ant auth login`, or use --judge off)');
+    expect(result.error).toBe('Judge unavailable: no valid Anthropic credentials (set ANTHROPIC_API_KEY, use --backend claude-code after `claude` login, or --judge off)');
   });
 
   it('disabled path does no work', async () => {

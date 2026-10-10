@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
-    "./agent": "./src/agent/index.ts"
+    "./agent": "./src/agent/index.ts",
+    "./claude-code": "./src/claude-code.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
