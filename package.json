@@ -22,6 +22,7 @@
     "answer": "pnpm --filter @casework/agents answer",
     "email:setup": "node --no-warnings scripts/email-setup.ts",
     "tunnel": "bash scripts/tunnel.sh",
+    "tunnel:ngrok": "TUNNEL=ngrok bash scripts/tunnel.sh",
     "voice:setup": "node scripts/voice-setup.mts",
     "voice:call": "node scripts/voice-call.mts"
   },

@@ -9,6 +9,11 @@ const config: NextConfig = {
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: ['@casework/core', '@casework/tracks', '@casework/agents'],
   reactStrictMode: true,
+  // Colleagues use the dev server through the tunnel; the floating dev badge covers the portal's call bar on phones.
+  devIndicators: false,
+  // `next dev` serves its scripts only to localhost unless told otherwise: let colleagues use the app
+  // through the tunnel (pnpm tunnel / pnpm tunnel:ngrok).
+  allowedDevOrigins: ['*.ngrok-free.app', '*.ngrok-free.dev', '*.ngrok.app', '*.ngrok.dev', '*.trycloudflare.com'],
   // Don't generate AGENTS.md: the repo keeps no text aimed at AI models outside CLAUDE.md.
   agentRules: false,
 };

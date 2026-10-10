@@ -134,6 +134,7 @@ cp .env.example .env          # add ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, AGENT
 pnpm email:setup              # once: creates the agency inbox and writes AGENTMAIL_INBOX
 pnpm demo                     # console on http://localhost:3100 (inbox at /inbox, portal at /portal)
 pnpm tunnel                   # separate terminal: public URL + points the ElevenLabs agent at it
+                              # (or pnpm tunnel:ngrok; share <url>/portal so colleagues can call in)
 ```
 
 `pnpm tunnel` creates or updates the ElevenLabs agent through its API (`scripts/voice-setup.mts`). No
