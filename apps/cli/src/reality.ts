@@ -12,9 +12,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { randomUUID } from 'node:crypto';
-import { renderAnswers, runView, RunEvent, type Case } from '@casework/core';
-import type { EmitInput } from '@casework/core/agent';
+import type { Case } from '@casework/core';
+import { executeCase } from '@casework/core/agent';
 import { findCaseDirs, getEngine } from '@casework/agents';
 import { getPack } from '@casework/tracks';
 import { manifestOptions, runKind, writeManifest } from './manifest';
@@ -42,21 +41,23 @@ let folders = new Map<number, string>();
 let dirs: string[] = [];
 
 async function runOne(c: Case, n: number) {
-  const runId = randomUUID();
-  const events: RunEvent[] = [];
-  let seq = 0;
-  const emit = (e: EmitInput) => events.push(RunEvent.parse({ ...e, runId, seq: seq++, at: new Date().toISOString() }));
-  let error: string | undefined;
-  try {
-    await engine.run(c, pack, { runId, autonomy: pack.autonomy, emit, dir: folders.get(n) });
-  } catch (err) {
-    error = err instanceof Error ? err.message : String(err);
-  }
-  const view = runView(events);
-  const { answer, reasoning } = renderAnswers(view, c, n);
+  // executeCase captures runner errors and renders the answers; the engine decides. Agent A is
+  // executeCase's default runner, so it runs exactly as the eval harness grades it.
+  const { events, view, answer, reasoning, error } = await executeCase(c, pack, {
+    n,
+    ...(engine.id === 'a'
+      ? {}
+      : {
+          // executeCase ignores the returned outcome (it reads the events), so the cast is only for the type.
+          runCaseImpl: async (cc, pk, o) => {
+            await engine.run(cc, pk, { runId: o.runId, autonomy: o.autonomy, emit: o.emit, signal: o.signal, dir: folders.get(n) });
+            return 'resolved' as const;
+          },
+        }),
+  });
   const dir = join(outDir, String(n));
   await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, 'ANSWER.md'), error ? `${answer}\n**Runner error**\n${error}\n` : answer);
+  await writeFile(join(dir, 'ANSWER.md'), answer);
   await writeFile(join(dir, 'REASONING.md'), reasoning);
   await writeFile(join(dir, 'trace.jsonl'), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
   return { n, ref: c.ref, outcome: view.outcome ?? 'incomplete', next: view.next?.action ?? 'none', decidedBy: view.next?.decidedBy ?? 'none', error };

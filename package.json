@@ -17,6 +17,7 @@
     "reality": "pnpm --filter @casework/cli reality",
     "replay": "pnpm --filter @casework/cli replay",
     "eval": "pnpm --filter @casework/cli eval",
+    "harness": "pnpm --filter @casework/cli harness",
     "bench": "pnpm --filter @casework/agents bench",
     "answer": "pnpm --filter @casework/agents answer",
     "email:setup": "node --no-warnings scripts/email-setup.ts",

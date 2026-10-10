@@ -6,7 +6,8 @@
   "license": "Apache-2.0",
   "exports": {
     ".": "./src/index.ts",
-    "./meta": "./src/meta.ts"
+    "./meta": "./src/meta.ts",
+    "./evals": "./src/evals.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "vitest": "^5.0.3",
-    "tsx": "^4.23.15"
+    "tsx": "^4.23.15",
+    "@casework/evals": "workspace:*"
   }
 }

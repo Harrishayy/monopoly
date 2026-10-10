@@ -1,0 +1,5 @@
+Priced proposal FX-001
+Provider: Example Service Team
+Scope: Check both units and provide a written result.
+Total: 24000 pence.
+Authorization: Required from the approver before starting.
