@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { parseEnv } from 'node:util';
 import { REPO_ROOT } from '../../config';
 import { amend, ingest, type IngestResult } from '../intake';
-import { getSourceByExternalId, kvGet, kvSet } from '../store';
+import { getSourceByExternalId, kvGet, kvSet, updateCase } from '../store';
 
 /**
  * ElevenLabs voice adapter. Three ways a call reaches a case, all idempotent on the conversation id:
@@ -30,6 +30,11 @@ export function env(name: string, fresh = false): string | undefined {
 const key = () => env('ELEVENLABS_API_KEY');
 const agentId = () => env('ELEVENLABS_AGENT_ID');
 const extId = (conversationId: string) => `elevenlabs:${conversationId}`;
+
+/** The case a call has been filed on so far, if any. The portal shows it to the caller during and after the call. */
+export function caseForConversation(conversationId: string): string | undefined {
+  return getSourceByExternalId(extId(conversationId))?.caseRef;
+}
 
 async function el<T>(path: string): Promise<T> {
   const res = await fetch(`${API}${path}`, { headers: { 'xi-api-key': key()! }, cache: 'no-store' });
@@ -71,6 +76,52 @@ function noteBody(a: LogIssueArgs) {
     .join('\n');
 }
 
+/** Details the caller typed on the portal during or after the call. Exact spelling, so they beat the transcript. */
+export interface TypedDetails {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
+const TYPED_HEAD = 'Typed by the caller on the portal (exact spelling; prefer these over the transcript):';
+
+function typedBlock(t?: TypedDetails) {
+  const rows = [t?.name && `Name: ${t.name}`, t?.email && `Email: ${t.email}`, t?.phone && `Phone: ${t.phone}`, t?.address && `Property: ${t.address}`].filter(Boolean);
+  return rows.length ? [TYPED_HEAD, ...rows].join('\n') : undefined;
+}
+
+/** Puts the typed block in a source body, replacing an earlier one. Blocks are separated by blank lines. */
+function withTyped(body: string, t?: TypedDetails) {
+  const block = typedBlock(t);
+  const parts = body.split('\n\n').filter((p) => !p.startsWith(TYPED_HEAD));
+  if (block) parts.splice(Math.min(1, parts.length), 0, block);
+  return parts.join('\n\n');
+}
+
+/** Files what the caller typed on the call's case (opening it if the agent has not yet), and corrects the case's name and contact. */
+export function saveTypedDetails(conversationId: string, typed: TypedDetails): IngestResult {
+  const id = extId(conversationId);
+  const existing = getSourceByExternalId(id);
+  const merged = { ...(existing?.meta.typed as TypedDetails | undefined), ...stripEmpty(typed) } as TypedDetails;
+  const contact = merged.email || merged.phone;
+  if (!existing)
+    return ingest({
+      channel: 'call',
+      contact,
+      name: merged.name,
+      title: 'Phone call',
+      body: withTyped('Phone call in progress.', merged),
+      externalId: id,
+      meta: { provider: 'elevenlabs', conversationId, callState: 'in_progress', typed: merged },
+    });
+  // While the call runs the post-call transcript reruns the agent anyway; after it, rerun so the reply goes to the right person.
+  const ended = existing.meta.callState === 'ended';
+  const r = amend(id, withTyped(existing.body, merged), { typed: merged }, ended)!;
+  updateCase(r.caseRef, { ...(merged.name && { customerName: merged.name }), ...(contact && { contact }), updatedAt: new Date().toISOString() });
+  return r;
+}
+
 /** The in-call `log_issue` tool. Opens the case on the first call and updates it on later ones. */
 export function logIssue(a: LogIssueArgs): IngestResult & { say: string } {
   const conversationId = a.conversation_id || `unknown-${Date.now()}`;
@@ -82,7 +133,7 @@ export function logIssue(a: LogIssueArgs): IngestResult & { say: string } {
   const rank = (u?: string) => ['routine', 'urgent', 'emergency'].indexOf(u ?? 'routine');
   const prior = existing?.meta.logged as LogIssueArgs | undefined;
   const r = existing
-    ? amend(id, noteBody(logged), meta, rank(logged.urgency) > rank(prior?.urgency))!
+    ? amend(id, withTyped(noteBody(logged), existing.meta.typed as TypedDetails | undefined), meta, rank(logged.urgency) > rank(prior?.urgency))!
     : ingest({
         channel: 'call',
         contact: a.contact || undefined,
@@ -99,7 +150,7 @@ export function logIssue(a: LogIssueArgs): IngestResult & { say: string } {
   return { ...r, say };
 }
 
-const stripEmpty = (a: LogIssueArgs) => Object.fromEntries(Object.entries(a).filter(([, v]) => v)) as LogIssueArgs;
+const stripEmpty = <T extends object>(a: T) => Object.fromEntries(Object.entries(a).filter(([, v]) => v)) as T;
 /** "LIVE-004" → "LIVE-004 (live, 0, 0, 4)" so the voice reads the digits one by one. */
 const spoken = (ref: string) => `${ref} (live, ${ref.replace(/^LIVE-/, '').split('').join(', ')})`;
 
@@ -138,6 +189,7 @@ export function recordFinishedCall(d: ConversationData, via: 'webhook' | 'poller
   const summary = d.analysis?.transcript_summary;
   const body = [
     `Phone call, ${fmtTime(d.metadata?.call_duration_secs)} long.`,
+    typedBlock(existing?.meta.typed as TypedDetails | undefined),
     logged && `Logged during the call:\n${noteBody(logged).split('\n').slice(1).join('\n')}`,
     summary && `Call summary (voice platform): ${summary}`,
     transcript ? `Transcript:\n${transcript}` : 'No transcript was captured.',

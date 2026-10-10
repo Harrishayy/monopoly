@@ -58,7 +58,11 @@ Rules you must keep:
 - If the caller smells gas: tell them to leave the property, not to use switches or flames, and to call the National Gas Emergency line on 0800 111 999 now. Then log it as an emergency.
 - For fire, flooding near electrics, or anyone in danger: tell them to call 999 first, then log it as an emergency.
 - If the caller wants to complain, dispute a charge, or talk about rent or their deposit, log it and say a manager will call back.
-- Be calm, warm and brief. Use British English. Ask one question at a time. Don't read out long lists.`;
+- Be calm, warm and brief. Use British English. Ask one question at a time. Don't read out long lists.
+- Callers on the web portal can type their name, email, phone and address while you talk. If you receive typed details, use them exactly as written and do not ask the caller to spell them again.
+
+Ending the call:
+- When the caller says goodbye, or confirms they have nothing else to add, say one short goodbye and then call the end_call tool straight away. Don't keep talking after the goodbye.`;
 
 const FIRST_MESSAGE = `Hello, you're through to ${AGENCY}'s tenant line. I can log a repair or a problem with your home. Can I take your name, please?`;
 
@@ -135,10 +139,23 @@ async function main() {
       agent: {
         first_message: FIRST_MESSAGE,
         language: 'en',
-        prompt: { prompt: PROMPT, llm: process.env.ELEVENLABS_LLM || 'gemini-2.5-flash', temperature: 0.3, tool_ids: [toolId] },
+        prompt: {
+          prompt: PROMPT,
+          llm: process.env.ELEVENLABS_LLM || 'gemini-2.5-flash',
+          temperature: 0.3,
+          tool_ids: [toolId],
+          // Lets the agent hang up after the goodbye instead of waiting for the caller to.
+          built_in_tools: {
+            end_call: { type: 'system', name: 'end_call', description: 'End the call once the caller has said goodbye or has nothing more to add.', params: { system_tool_type: 'end_call' } },
+          },
+        },
       },
       tts: { voice_id: VOICE_ID, model_id: 'eleven_turbo_v2' },
-      conversation: { max_duration_seconds: 600 },
+      conversation: {
+        max_duration_seconds: 600,
+        // The portal shows live captions: tentative_user_transcript streams the caller's words as they speak.
+        client_events: ['audio', 'interruption', 'user_transcript', 'tentative_user_transcript', 'agent_response', 'agent_response_correction', 'agent_tool_response'],
+      },
     },
     platform_settings: {
       ...(webhookId ? { workspace_overrides: { webhooks: { post_call_webhook_id: webhookId, events: ['transcript'] } } } : {}),

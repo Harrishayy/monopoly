@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { cn } from '@/lib/cn';
 import { useReducedMotion } from '@/lib/hooks';
 
 /**
  * Audio level bars on a canvas. `levels` is a fixed set of peaks (recording) or a function sampled
  * each frame (live). `progress` (0–1) lights the bars already played. Static peaks under reduced motion.
+ * Bars use `--wave-on` when set (e.g. `[--wave-on:var(--ink-2)]`), otherwise the accent.
  */
-export function Waveform({ levels, progress = 0, playing = false, label = 'Call audio levels', height = 44 }: { levels: number[] | (() => number); progress?: number; playing?: boolean; label?: string; height?: number }) {
+export function Waveform({ levels, progress = 0, playing = false, label = 'Call audio levels', height = 44, className }: { levels: number[] | (() => number); progress?: number; playing?: boolean; label?: string; height?: number; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();
   const history = useRef<number[]>([]);
@@ -27,7 +29,7 @@ export function Waveform({ levels, progress = 0, playing = false, label = 'Call 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
       const cs = getComputedStyle(canvas);
-      const on = cs.getPropertyValue('--accent').trim() || 'currentColor';
+      const on = (cs.getPropertyValue('--wave-on') || cs.getPropertyValue('--accent')).trim() || 'currentColor';
       const off = cs.getPropertyValue('--line-strong').trim() || 'currentColor';
       let peaks: number[];
       if (typeof levels === 'function') {
@@ -50,5 +52,5 @@ export function Waveform({ levels, progress = 0, playing = false, label = 'Call 
     return () => cancelAnimationFrame(raf);
   }, [levels, progress, playing, reduced]);
 
-  return <canvas ref={ref} role="img" aria-label={label} className="block w-full" style={{ height }} />;
+  return <canvas ref={ref} role="img" aria-label={label} className={cn('block w-full', className)} style={{ height }} />;
 }

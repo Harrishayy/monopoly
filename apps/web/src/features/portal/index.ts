@@ -1,1 +1,1 @@
-export { Portal } from './Portal';
+export { Portal, type PortalConfig } from './Portal';
