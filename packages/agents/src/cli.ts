@@ -8,16 +8,16 @@ import { defaultCaller } from './b/llm/client';
 import { runBench, summarise } from './bench/bench';
 import { ExampleBank } from './bench/examples';
 import { escalationLabels, runEval, spread } from './bench/judge';
-import { cutsFor, type LabelSource, loadSplit, REPO } from './bench/labels';
+import { cutsFor, type LabelSource, loadOutside, loadSplit, OUTSIDE_DIR, REPO } from './bench/labels';
 import type { Split } from './bench/split';
 import { getAgents } from './registry';
 import { assessmentHint } from './hybrid';
 
 const USAGE = `agents answer --agent a|b --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
               [--examples all|dev|none] [--concurrency 4] [--offline] [--model claude-haiku-5-5]
-agents bench  [--agent a,b] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
+agents bench  [--agent a,b] [--suite cuts|outside] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
               [--concurrency 6] [--offline] [--model …] [--out <dir>]
-              agent B stages: [--samples 3] [--situate off] [--review off] [--hints a]  (a = agent A's rules read as advice)
+              agent B stages (defaults chosen on val: 1 sample, no situate, no review): [--samples N] [--situate on] [--review on] [--hints a]  (a = agent A's rules read as advice)
 agents judge  [--limit N] [--manuals off] [--out <dir>]      agent B on the other tracks' escalation examples
 agents split                                                  print the fixed dev/val/test split
 Every run takes --kind smoke|train|val|test|full|practice|reality|adhoc, --name "<label>", --note "<text>" (written to run.json).`;
@@ -77,8 +77,8 @@ async function main() {
   const bOptions = (examples?: ExampleBank) => ({
     examples: examples ? (c: Parameters<ExampleBank['render']>[0]) => examples.render(c) : undefined,
     samples: flags.samples ? Number(flags.samples) : undefined,
-    situate: flags.situate !== 'off',
-    review: flags.review !== 'off',
+    situate: flags.situate ? flags.situate !== 'off' : undefined,
+    review: flags.review ? flags.review !== 'off' : undefined,
     hints: flags.hints === 'a' ? assessmentHint : undefined,
   });
 
@@ -106,6 +106,22 @@ async function main() {
 
   if (cmd === 'bench') {
     const ids = (flags.agent ?? 'a,b').split(',') as AgentId[];
+    if (flags.suite === 'outside') {
+      // Our own stress cases: none of them are in the example data, so B may draw on every labelled example.
+      const examples = ids.includes('b') ? await bank(flags.examples, 'all') : undefined;
+      const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+      const labels = spread(await loadOutside(), flags.limit ? Number(flags.limit) : undefined);
+      const categories = Object.fromEntries(labels.map((l) => [l.case, l.category ?? '']));
+      const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/outside-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
+      const finish = await manifest(out, { kind: kindOf(flags.kind, flags.limit ? 'smoke' : 'adhoc'), name: flags.name ?? 'outside suite', note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: process.env.MODEL_DECIDE, split: 'outside' });
+      log(`bench: agents ${ids.join(', ')} · outside suite · ${labels.length} cases · model ${process.env.MODEL_DECIDE} → ${out}`);
+      const rows = await runBench(agents, labels, out, { caseRoot: OUTSIDE_DIR, withhold: 'none', concurrency: num('concurrency', 6), offline, log });
+      const md = summarise(rows, 'Bench · outside suite', categories);
+      await writeFile(join(out, 'SUMMARY.md'), md);
+      await finish();
+      log('\n' + md.split('\n## By expected action')[0]);
+      return;
+    }
     const split = (flags.split ?? 'val') as Split | 'all';
     // Evaluation never shows the agent examples from the set it is scored on.
     const examples = ids.includes('b') ? await bank(flags.examples, split === 'dev' || split === 'all' ? 'none' : 'dev') : undefined;

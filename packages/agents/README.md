@@ -10,6 +10,8 @@ packages/agents/src/
                   @casework/tracks (property pack: assessment, tools, policy, prompt), which the web app also uses
   b/              agent B, a fixed pipeline: ingest → ledger → situate → decide ×3 → check + review → gate → write
                   (design notes in b/PLAN.md)
+  d/              agent D: A's rules + forced triggers in code + 3 Haiku votes + gated Opus supervisor + code guard
+                  (design and measurements in docs/plan/12-agent-d.md)
   bench/          split.json (fixed dev/val/test), labels, few-shot memory, shared scorer, model judge
   cli.ts          answer · bench · judge · split
 ```
@@ -68,3 +70,34 @@ Agent B:
 - decides in code whether to act, ask or escalate
 
 Domain knowledge is written as prose manuals in `b/knowledge/`; there are no keyword rules. If the model fails, every case still gets an honest escalation that says what failed. See `b/PLAN.md` for the design.
+
+## Results (Property, Haiku 5.5, 2026-10-10)
+
+Scored as "the chosen action is in the label's accepted list". Validation has 71 cuts and test has 66 (`cuts.json` + `holdout.json`).
+
+| Agent / setup | Val | Test | Prohibited (val / test) |
+|---|---|---|---|
+| A: rules + model | 83.1% | 81.8% | 1.4% / 0% |
+| A: rules only (no model) | 78.9% | 59.1% | 1.4% / 4.5% |
+| B: lean, one decision (default) | 63.4% | 71.2% | 4.2% / 0% |
+| B: full pipeline (situate, 3 votes, review) | 52.1% | – | 7.0% |
+| B: 3 votes, no review | 63.4% | – | 9.9% |
+| B: lean + agent A's rules read as a hint | 59.2% | – | 4.2% |
+| B: full pipeline without manuals | 45.1% | – | 9.9% |
+| D: A's rules + 3 Haiku votes + gated Opus supervisor | 88.7% | 90.9% | 1.4% / 0% |
+| A, re-run on the same 66 test cuts the same day as D | – | 86.4% | – / 0% |
+
+A's rules and prompt were tuned on all 50 cases, so its validation and test scores are in-sample. D is built on those rules, so its scores are in-sample too, and its contracts were measured on the same labels. B's numbers are held out. A scored 81.8% and 86.4% on two test runs, so a difference of about 5 points is within run-to-run noise. D used the supervisor on 38% of val cuts and 41% of test cuts. Estimated cost was $0.029 per test cut, against roughly a third of that for A.
+
+## Outside suite (data/outside, 30 stress cases, Haiku 5.5, three runs each)
+
+| | Run 1 | Run 2 | Run 3 | Prohibited |
+|---|---|---|---|---|
+| A | 86.7% | 86.7% | 86.7% | 0% |
+| B (after the ingest and amount-check fixes) | 96.7% | 93.3% | 96.7% | 0% |
+| D, before the loader fallback | 76.7% | – | – | 0% |
+| D, with the loader fallback | 86.7% | – | – | 3.3% (112) |
+
+- **A's misses.** A can't load a case with renamed files (127, all three runs). It reads a JSON history as no history (126). It treats a phoned-in "hold off" as news rather than a conflict (111).
+- **D's misses.** Once D could fall back to B's ingest, the format-drift cases 125, 126 and 127 all passed. D still takes a routine step where escalating or chasing was expected (107, 111, 130). Its supervisor sent a quote in 112, which counts as prohibited there and passed on the run before.
+- **B's misses.** B sometimes escalates where a routine step was expected: a window lock with a security worry (123), and a report written in Polish (129).

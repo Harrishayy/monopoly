@@ -14,7 +14,8 @@ export const SPLIT_FILE = join(dirname(fileURLToPath(import.meta.url)), 'split.j
 
 export const Cut = z.object({
   case: z.string(),
-  cutBefore: z.number(),
+  /** Hide events from this number on; absent when the case folder already ends at the decision moment. */
+  cutBefore: z.number().optional(),
   asOf: z.string().optional(),
   kind: z.enum(['determined', 'judgement']).default('judgement'),
   situation: z.string().default(''),
@@ -36,7 +37,7 @@ async function readCuts(file: string): Promise<Cut[]> {
 /** Property cut points: what the team did next at a moment, which actions are acceptable and which are not. */
 export async function loadCuts(source: LabelSource = 'both'): Promise<Cut[]> {
   const [a, b] = await Promise.all([source !== 'holdout' ? readCuts(CUTS_FILE) : [], source !== 'cuts' ? readCuts(HOLDOUT_FILE) : []]);
-  return [...a, ...b].sort((x, y) => x.case.localeCompare(y.case) || x.cutBefore - y.cutBefore);
+  return [...a, ...b].sort((x, y) => x.case.localeCompare(y.case) || (x.cutBefore ?? 0) - (y.cutBefore ?? 0));
 }
 
 export async function loadSplit(file = SPLIT_FILE): Promise<Record<string, Split>> {
@@ -49,4 +50,13 @@ export async function cutsFor(split: Split | 'all', source: LabelSource = 'both'
   return split === 'all' ? cuts : cuts.filter((c) => sp[c.case] === split);
 }
 
-export const cutId = (c: Pick<Cut, 'case' | 'cutBefore'>) => `${c.case}@${c.cutBefore}`;
+export const cutId = (c: Pick<Cut, 'case' | 'cutBefore'>) => (c.cutBefore === undefined ? c.case : `${c.case}@${c.cutBefore}`);
+
+/** The team's own stress suite (data/outside): whole cases ending at the decision moment, labelled separately. */
+export const OUTSIDE_DIR = join(REPO, 'data/outside/Property Management');
+export const OUTSIDE_LABELS = join(REPO, 'data/outside/labels.json');
+
+export async function loadOutside(file = OUTSIDE_LABELS): Promise<(Cut & { category?: string; why?: string })[]> {
+  const Outside = Cut.extend({ category: z.string().optional(), why: z.string().optional(), format: z.string().optional() });
+  return z.array(Outside).parse(JSON.parse(await readFile(file, 'utf8'))).map((l) => ({ ...l, situation: l.situation || l.why || '' }));
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "ts": "2026-07-06T12:31:48Z",
+    "medium": "portal",
+    "sender": "Tenant",
+    "recipient": "Copperleaf Property Management",
+    "text": "Front gutter is overflowing whenever it rains, water is pouring down the front wall over the door. Think it's blocked with leaves."
+  },
+  {
+    "ts": "2026-07-06T12:32:10Z",
+    "medium": "system",
+    "sender": "Copperleaf Property Management",
+    "recipient": null,
+    "text": "Please complete landlord approval step first"
+  },
+  {
+    "ts": "2026-07-06T15:04:27Z",
+    "medium": "email",
+    "sender": "Copperleaf Property Management",
+    "recipient": "Landlord",
+    "text": "Hi Mrs Adeyemi,\n\nYour tenants at 47 Linnet Road report the front gutter is overflowing in rain and they believe it is blocked with leaves. Would you like us to arrange gutter clearing? Our usual contractor charges around £100–£130 for a house this size.\n\nKind regards,\nSophie Marsh"
+  },
+  {
+    "ts": "2026-07-06T19:48:02Z",
+    "medium": "email",
+    "sender": "Landlord",
+    "recipient": "Copperleaf Property Management",
+    "text": "Hi Sophie, yes please go ahead. Ngozi Adeyemi"
+  },
+  {
+    "ts": "2026-07-07T08:30:15Z",
+    "medium": "system",
+    "sender": "Copperleaf Property Management",
+    "recipient": null,
+    "text": "Landlord approval confirmed. Proceed to provider selection."
+  },
+  {
+    "ts": "2026-07-07T08:31:02Z",
+    "medium": "email",
+    "sender": "Copperleaf Property Management",
+    "recipient": "Contractor",
+    "text": "Dear ClearFlow Gutters,\n\nPlease attend 47 Linnet Road, Brackley Vale, ZZ9 3ZZ to clear the front gutters and downpipe, which are overflowing. Tenant: Liam Doyle, 07700 900372. Please send photos and your invoice on completion.\n\nSophie Marsh\nCopperleaf Property Management"
+  },
+  {
+    "ts": "2026-07-07T08:31:30Z",
+    "medium": "email",
+    "sender": "Copperleaf Property Management",
+    "recipient": "Tenant",
+    "text": "Hi Liam,\n\nClearFlow Gutters will be in touch to arrange a visit to clear the gutter.\n\nSophie"
+  },
+  {
+    "ts": "2026-07-08T10:12:44Z",
+    "medium": "email",
+    "sender": "Contractor",
+    "recipient": "Copperleaf Property Management",
+    "text": "Booked for Monday 13th, 9am. ClearFlow"
+  },
+  {
+    "ts": "2026-07-13T12:05:19Z",
+    "medium": "email",
+    "sender": "Contractor",
+    "recipient": "Copperleaf Property Management",
+    "text": "Job done. Front and rear gutters cleared, downpipe rodded and flushed, all running freely. Before/after photos attached. Invoice CG-1182 attached: £120.00 (no VAT).\n\nAttachments: photos-before-after.zip (unavailable); invoice-CG-1182.txt"
+  },
+  {
+    "ts": "2026-07-13T12:05:20Z",
+    "medium": "system",
+    "sender": "Copperleaf Property Management",
+    "recipient": null,
+    "text": "Invoice received from provider."
+  },
+  {
+    "ts": "2026-07-13T17:40:51Z",
+    "medium": "portal",
+    "sender": "Tenant",
+    "recipient": "Copperleaf Property Management",
+    "text": "They came this morning, all sorted now, thanks."
+  }
+]
