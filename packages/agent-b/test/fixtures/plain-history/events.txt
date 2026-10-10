@@ -1,0 +1,6 @@
+2025-11-03 09:12 From: Tenant To: Agency
+The radiator valve is leaking, can someone come?
+2025-11-03 10:40 From: Agency To: Landlord
+Tenant reports a leaking radiator valve. Could you approve a plumber visit? Estimated call-out £95 + VAT.
+2025-11-05 16:00 From: Landlord To: Agency
+I'll let you know by Friday.

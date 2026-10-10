@@ -1,0 +1,25 @@
+{
+  "name": "@casework/agent-b",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Agent B: a fixed-pipeline case agent (ingest, ledger, situate, decide x3, check, gate, write)",
+  "bin": { "agent-b": "./src/cli.ts" },
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "answer": "tsx --env-file-if-exists=../../.env src/cli.ts run",
+    "eval": "tsx --env-file-if-exists=../../.env src/cli.ts eval",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "unpdf": "1.8.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.3"
+  }
+}
