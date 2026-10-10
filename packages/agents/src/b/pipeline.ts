@@ -6,6 +6,7 @@ import { caseContent, DOSSIER_CHAR_BUDGET, renderDossier } from './stages/dossie
 import { fallbackDecision, gate, vote } from './stages/gate';
 import { critique, decide, digestEvents, revise, situate, type StageContext } from './stages/model-stages';
 import { systemPrompt } from './stages/prompts';
+import { domainActions } from './knowledge/actions';
 import type { CaseFile, CaseResult, Critique, Decision, HardIssue, ModelCall, Situation } from './types';
 
 export interface RunOptions extends LoadOptions {
@@ -17,6 +18,14 @@ export interface RunOptions extends LoadOptions {
   timeoutMs?: number;
   /** Progress lines. */
   log?: (line: string) => void;
+  /** Similar past moments with what the team did, for few-shot guidance. Returns '' when there are none. */
+  examples?: (c: CaseFile) => string;
+  /** A deterministic read of the case from another engine (agent A's rules), shown to the model as advice. */
+  hints?: (input: { dir: string; track: string; cutBefore?: number; asOf?: string }) => Promise<string>;
+  /** Run the situate stage (default true). */
+  situate?: boolean;
+  /** Run the review and revision stage (default true). */
+  review?: boolean;
 }
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -51,23 +60,43 @@ export async function runCase(dir: string, opts: RunOptions = {}): Promise<CaseR
 
     // Very large cases: summarise the oldest events so the newest stay verbatim.
     let dossier = renderDossier(caseFile, ledger);
+    let hint = '';
+    if (opts.hints) {
+      try {
+        hint = await opts.hints({ dir, track: caseFile.track, cutBefore: opts.cutBefore, asOf: caseFile.asOf });
+      } catch (e) {
+        failures.push(`hints: ${errText(e)}`);
+      }
+    }
+    const withHint = (d: string) => (hint ? `${d}\n\n== PLAYBOOK READ (rules from another engine; a strong hint, not the truth) ==\n${hint}` : d);
+    dossier = withHint(dossier);
     if (dossier.length > DOSSIER_CHAR_BUDGET) {
       try {
         const digest = await digestEvents(opts.caller, system, caseFile, 30, calls, controller.signal);
-        if (digest) dossier = renderDossier(caseFile, ledger, digest);
+        if (digest) dossier = withHint(renderDossier(caseFile, ledger, digest));
         log(`${caseFile.name}: large case, digested events up to ${digest?.upTo}`);
       } catch (e) {
         failures.push(`digest: ${errText(e)}; using the full dossier`);
       }
     }
-    const ctx: StageContext = { caller: opts.caller, system, caseBlocks: await caseContent(dossier, caseFile), calls, signal: controller.signal };
+    const ctx: StageContext = {
+      caller: opts.caller,
+      system,
+      caseBlocks: await caseContent(dossier, caseFile),
+      calls,
+      signal: controller.signal,
+      actions: domainActions(caseFile.track),
+      examples: opts.examples?.(caseFile) || undefined,
+    };
 
     // Situate. Decide can still run without it.
     let situation: Situation | undefined;
-    try {
-      situation = await situate(ctx);
-    } catch (e) {
-      failures.push(`situate: ${errText(e)}`);
+    if (opts.situate !== false) {
+      try {
+        situation = await situate(ctx);
+      } catch (e) {
+        failures.push(`situate: ${errText(e)}`);
+      }
     }
 
     // Decide, sampled.
@@ -86,25 +115,29 @@ export async function runCase(dir: string, opts: RunOptions = {}): Promise<CaseR
 
     // Review, and revise once if needed.
     let review: Critique | undefined;
-    try {
-      review = await critique(ctx, candidate, hard.map(describe));
-      critiques.push(review);
-    } catch (e) {
-      failures.push(`critic: ${errText(e)}`);
+    if (opts.review !== false) {
+      try {
+        review = await critique(ctx, candidate, hard.map(describe));
+        critiques.push(review);
+      } catch (e) {
+        failures.push(`critic: ${errText(e)}`);
+      }
     }
     let revised = false;
     const problems = [...majors(hard).map(describe), ...(review && review.verdict !== 'pass' ? review.problems.map((p) => `${p.severity}: ${p.issue}`) : [])];
-    if (problems.length && review?.verdict !== 'escalate') {
+    if (problems.length && review?.verdict !== 'escalate' && (opts.review !== false || majors(hard).length)) {
       try {
         candidate = await revise(ctx, situation, problems);
         revised = true;
         hard = hardChecks(candidate, caseFile, ledger, situation);
-        try {
-          review = await critique(ctx, candidate, hard.map(describe));
-          critiques.push(review);
-        } catch (e) {
-          failures.push(`critic (after revision): ${errText(e)}`);
-          review = undefined;
+        if (opts.review !== false) {
+          try {
+            review = await critique(ctx, candidate, hard.map(describe));
+            critiques.push(review);
+          } catch (e) {
+            failures.push(`critic (after revision): ${errText(e)}`);
+            review = undefined;
+          }
         }
       } catch (e) {
         failures.push(`revise: ${errText(e)}`);

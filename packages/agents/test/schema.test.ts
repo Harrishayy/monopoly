@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { outputFormat } from '../src/llm/client';
-import { Critique, Decision, Situation } from '../src/types';
-import { Judgement } from '../src/eval/eval';
+import { outputFormat } from '../src/b/llm/client';
+import { Critique, Decision, Situation } from '../src/b/types';
+import { Judgement } from '../src/bench/judge';
 
 describe('tool input schemas', () => {
   it.each([

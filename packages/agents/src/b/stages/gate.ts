@@ -14,7 +14,9 @@ export const humanOwner = (track: string) => HUMAN_OWNER[track] ?? HUMAN_OWNER._
 /** Asking and chasing are the same move for agreement purposes. */
 const family = (a: Decision['action']) => (a === 'chase' || a === 'request_information' ? 'ask' : a);
 export const sameMove = (a: Decision, b: Decision) =>
-  family(a.action) === family(b.action) && (sameParty(a.recipient, b.recipient) || (!a.recipient.trim() && !b.recipient.trim()));
+  a.domainAction && b.domainAction
+    ? a.domainAction === b.domainAction
+    : family(a.action) === family(b.action) && (sameParty(a.recipient, b.recipient) || (!a.recipient.trim() && !b.recipient.trim()));
 
 /** The sample most others agree with (ties broken by confidence), and the share that agrees. */
 export function vote(samples: Decision[]): { pick: Decision; agreement: number } | undefined {

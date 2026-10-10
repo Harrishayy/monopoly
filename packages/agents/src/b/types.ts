@@ -199,6 +199,8 @@ export const Handover = z.object({
 export type Handover = z.infer<typeof Handover>;
 
 export const Decision = z.object({
+  /** The track's own action name, when the track has an action list (e.g. "landlord.send_quote"). */
+  domainAction: z.string().optional(),
   action: z.enum(ACTIONS),
   actionLabel: z.string().describe('The action in the domain’s words, e.g. "Ask the landlord to approve the £240 quote"'),
   recipient: z.string().describe('Named party or team that receives it; "" for wait/update_record'),

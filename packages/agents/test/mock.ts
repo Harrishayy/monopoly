@@ -1,6 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import type { Caller } from '../src/llm/client';
-import type { Critique, Decision, Situation } from '../src/types';
+import type { Caller } from '../src/b/llm/client';
+import type { Critique, Decision, Situation } from '../src/b/types';
 
 export const situation = (over: Partial<Situation> = {}): Situation => ({
   summary: 'Tenant reported a fault; landlord asked to approve.',

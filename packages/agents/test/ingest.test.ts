@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findDates, parseDate } from '../src/ingest/dates';
-import { detectTrack, findCaseDirs, loadCase } from '../src/ingest/casefile';
-import { parseHistory } from '../src/ingest/history';
+import { findDates, parseDate } from '../src/b/ingest/dates';
+import { detectTrack, findCaseDirs, loadCase } from '../src/b/ingest/casefile';
+import { parseHistory } from '../src/b/ingest/history';
 
 const FIX = join(__dirname, 'fixtures');
 const PUBLIC = join(__dirname, '../../../data/public');
@@ -111,5 +111,17 @@ describe('track detection', () => {
   it('uses words when the path says nothing', () => {
     expect(detectTrack('/x/case-1', 'The tenant asked the landlord; the contractor will attend. Tenant again, landlord again.')).toBe('property');
     expect(detectTrack('/x/case-1', 'hello')).toBe('_default');
+  });
+});
+
+describe('attachment timing', () => {
+  it('hides attachments that arrive after the cut', async () => {
+    const dir = join(PUBLIC, 'Property Management/007');
+    if (!existsSync(dir)) return;
+    const early = await loadCase(dir, { withhold: 'outcomes', cutBefore: 10 });
+    expect(early.attachments.map((a) => a.name)).not.toContain('attachments/attachment-02-tax-invoice.pdf');
+    expect(early.withheld.join(' ')).toMatch(/tax-invoice.*after the decision moment/);
+    const late = await loadCase(dir, { withhold: 'outcomes' });
+    expect(late.attachments.map((a) => a.name)).toContain('attachments/attachment-02-tax-invoice.pdf');
   });
 });

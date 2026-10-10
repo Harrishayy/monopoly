@@ -1,4 +1,5 @@
 import { manuals, TRACK_LABELS } from '../knowledge';
+import { type DomainAction, renderCatalogue } from '../knowledge/actions';
 
 /**
  * The shared system prompt. It is identical for every stage of every case in a track, so it is cached.
@@ -32,16 +33,29 @@ export const SITUATE_INSTRUCTIONS = `Read the whole case above and report the si
 - List commitments, conflicts (cite both sides), missing information (and who can supply it, and whether it is safe to infer), failed actions, noise, and risks.
 - Be exact about who is waiting on whom right now.`;
 
-export function decideInstructions(situationJson: string): string {
+export function decideInstructions(situationJson: string, actions?: DomainAction[], examples?: string): string {
+  const catalogue = actions?.length
+    ? `
+The organisation's actions. Choose exactly one as domainAction, by its exact name, and set action to the generic verb it amounts to:
+${renderCatalogue(actions)}
+`
+    : '';
+  const shots = examples
+    ? `
+Similar moments from past cases and what the team did next. They show the team's habits; the current records decide.
+${examples}
+`
+    : '';
   return `A colleague's reading of the situation (check it against the records; the records win):
 <situation>
 ${situationJson}
 </situation>
-
+${catalogue}${shots}
 Decide the single next action from the decision moment and return it.
 Steps:
 1. What is the next step that this stage normally needs, given the manuals?
 2. Is anything blocking it: a missing approval, missing information, a conflict, a failed action, a safety risk, a date someone promised that has not arrived?
+   Prefer the step that moves the job forward. Ask for information only when the next step cannot happen without it; a gap in the records that the team does not need is not a reason to ask or chase. When work is evidenced done and the people who pay have been told, closing is a valid move.
 3. Choose:
    - send_message: move the workflow on (instruct, inform, confirm, forward, relay).
    - request_information: ask the party who holds a missing fact or decision (including re-asking someone whose earlier answer was unclear or partial).
@@ -64,6 +78,7 @@ Check, against the records and the manuals:
 - Does it ignore a conflict, a failed action, a safety risk, or a date a party promised that has not arrived?
 - Is it premature (acting before a needed approval or answer) or late (waiting when action is overdue)?
 - Is the escalation needed? Escalating when the playbook covers the case is a mistake. Not escalating a case that needs a person is a serious mistake.
+- Is the question or chase needed? Asking for information the next step does not need, or chasing someone who has already answered, is a mistake too. Do not ask for revisions that only add caution.
 Verdict: "pass" if an experienced lead would send it as is or with cosmetic edits. "revise" if the action, recipient or content should change, and say exactly how. "escalate" only if no autonomous action is safe and a person must decide now.
 Major problems are ones that change the action, the recipient, or would cause harm or a rule breach. Minor problems are wording.`;
 

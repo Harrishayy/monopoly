@@ -1,22 +1,19 @@
-import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { z } from 'zod';
-import { pool, writeResult } from '../batch';
-import { findCaseDirs } from '../ingest/casefile';
-import { parseMarkdown } from '../ingest/markdown';
-import { type Caller, MODELS, structured } from '../llm/client';
-import { runCase, type RunOptions } from '../pipeline';
-import type { CaseResult, ModelCall } from '../types';
+import { pool, writeResult } from '../b/batch';
+import { findCaseDirs } from '../b/ingest/casefile';
+import { parseMarkdown } from '../b/ingest/markdown';
+import { type Caller, MODELS, structured } from '../b/llm/client';
+import { REPO } from './labels';
+import { runCase, type RunOptions } from '../b/pipeline';
+import type { CaseResult, ModelCall } from '../b/types';
 
-const here = dirname(fileURLToPath(import.meta.url));
-export const REPO = join(here, '../../../..');
 
 /** What happened next in an example, used as the reference answer. */
 export interface Label {
   id: string;
-  set: 'escalations' | 'property-cuts';
+  set: 'escalations';
   dir: string;
   cutBefore?: number;
   expected: string;
@@ -44,35 +41,6 @@ export async function escalationLabels(root = join(REPO, 'data/public')): Promis
     });
   }
   return out;
-}
-
-const Cut = z.object({
-  case: z.string(),
-  cutBefore: z.number(),
-  kind: z.string().optional(),
-  situation: z.string().optional(),
-  accept: z.array(z.string()).default([]),
-  prohibit: z.array(z.string()).default([]),
-  boundaries: z.array(z.string()).default([]),
-  happened: z.string(),
-  note: z.string().optional(),
-});
-
-/** Property cut points written for agent A (read only), so both agents are scored on the same moments. */
-export async function propertyCutLabels(file = join(REPO, 'packages/tracks/src/property/eval/cuts.json')): Promise<Label[]> {
-  if (!existsSync(file)) return [];
-  const cuts = z.array(Cut).parse(JSON.parse(await readFile(file, 'utf8')));
-  return cuts.map((c) => ({
-    id: `property/${c.case}@${c.cutBefore}`,
-    set: 'property-cuts' as const,
-    dir: join(REPO, 'data/public/Property Management', c.case),
-    cutBefore: c.cutBefore,
-    expected: `${c.happened}${c.note ? `\nNote: ${c.note}` : ''}`,
-    accept: c.accept,
-    prohibit: c.prohibit,
-    boundaries: c.boundaries.join('; ') || undefined,
-    kind: c.kind,
-  }));
 }
 
 /** Evenly spaced subset, so a small run still covers every track and case. */

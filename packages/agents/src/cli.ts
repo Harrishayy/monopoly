@@ -1,0 +1,154 @@
+#!/usr/bin/env -S npx tsx
+import { mkdir, writeFile } from 'node:fs/promises';
+import { isRunKind, RUN_MANIFEST_FILE, RunManifest, type RunKind } from '@casework/core';
+import { join, resolve } from 'node:path';
+import type { AgentId } from './agent';
+import { findCaseDirs } from './b/ingest/casefile';
+import { defaultCaller } from './b/llm/client';
+import { runBench, summarise } from './bench/bench';
+import { ExampleBank } from './bench/examples';
+import { escalationLabels, runEval, spread } from './bench/judge';
+import { cutsFor, type LabelSource, loadSplit, REPO } from './bench/labels';
+import type { Split } from './bench/split';
+import { getAgents } from './registry';
+import { assessmentHint } from './hybrid';
+
+const USAGE = `agents answer --agent a|b --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
+              [--examples all|dev|none] [--concurrency 4] [--offline] [--model claude-haiku-5-5]
+agents bench  [--agent a,b] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
+              [--concurrency 6] [--offline] [--model …] [--out <dir>]
+              agent B stages: [--samples 3] [--situate off] [--review off] [--hints a]  (a = agent A's rules read as advice)
+agents judge  [--limit N] [--manuals off] [--out <dir>]      agent B on the other tracks' escalation examples
+agents split                                                  print the fixed dev/val/test split
+Every run takes --kind smoke|train|val|test|full|practice|reality|adhoc, --name "<label>", --note "<text>" (written to run.json).`;
+
+function args(argv: string[]): { cmd?: string; flags: Record<string, string> } {
+  const [cmd, ...rest] = argv;
+  const flags: Record<string, string> = {};
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i]!;
+    if (!a.startsWith('--')) continue;
+    const [k, v] = a.slice(2).split('=', 2) as [string, string | undefined];
+    if (v !== undefined) flags[k] = v;
+    else if (rest[i + 1] && !rest[i + 1]!.startsWith('--')) flags[k] = rest[++i]!;
+    else flags[k] = 'true';
+  }
+  return { cmd, flags };
+}
+
+const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+
+/** run.json in each output folder says what the run was for; it is rewritten with finishedAt at the end. */
+async function manifest(out: string, m: Omit<RunManifest, 'startedAt'> & { startedAt?: string }): Promise<() => Promise<void>> {
+  const started = RunManifest.parse({ ...m, startedAt: m.startedAt ?? new Date().toISOString() });
+  await mkdir(out, { recursive: true });
+  await writeFile(join(out, RUN_MANIFEST_FILE), JSON.stringify(started, null, 1) + '\n');
+  return () => writeFile(join(out, RUN_MANIFEST_FILE), JSON.stringify({ ...started, finishedAt: new Date().toISOString() }, null, 1) + '\n');
+}
+
+function kindOf(flag: string | undefined, dflt: RunKind): RunKind {
+  if (flag && !isRunKind(flag)) throw new Error(`--kind must be one of smoke, train, val, test, full, practice, reality, adhoc`);
+  return (flag as RunKind | undefined) ?? dflt;
+}
+
+const suffix = (name?: string) => (name ? `-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)}` : '');
+
+async function main() {
+  const { cmd, flags } = args(process.argv.slice(2));
+  const log = (l: string) => console.log(l);
+  const num = (k: string, d: number) => (flags[k] ? Number(flags[k]) : d);
+  // pnpm runs scripts from the package folder; resolve paths from where the command was typed.
+  const here = (p: string) => resolve(process.env.INIT_CWD ?? process.cwd(), p);
+  if (flags.manuals === 'off') process.env.AGENT_B_MANUALS = 'off';
+  const offline = flags.offline === 'true';
+  if (!offline && (cmd === 'answer' || cmd === 'bench') && !process.env.ANTHROPIC_API_KEY) {
+    console.warn('ANTHROPIC_API_KEY is not set: agents run without a model (A uses its rules playbook, B escalates with a fallback).');
+  }
+
+  /** Few-shot memory for agent B: which labelled sets it may draw on. */
+  const bank = async (from: string | undefined, dflt: 'all' | 'dev' | 'none') => {
+    const f = (from ?? dflt) as 'all' | 'dev' | 'none';
+    if (f === 'none') return undefined;
+    const b = await ExampleBank.build(f === 'all' ? 'all' : ['dev']);
+    log(`few-shot memory: ${b.size} past moments from ${f === 'all' ? 'all labelled cases' : 'the dev split'}`);
+    return b;
+  };
+
+  const bOptions = (examples?: ExampleBank) => ({
+    examples: examples ? (c: Parameters<ExampleBank['render']>[0]) => examples.render(c) : undefined,
+    samples: flags.samples ? Number(flags.samples) : undefined,
+    situate: flags.situate !== 'off',
+    review: flags.review !== 'off',
+    hints: flags.hints === 'a' ? assessmentHint : undefined,
+  });
+
+  if (cmd === 'answer') {
+    if (!flags.in) throw new Error(`--in is required\n${USAGE}`);
+    const id = (flags.agent ?? 'b') as AgentId;
+    const examples = id === 'b' ? await bank(flags.examples, 'all') : undefined;
+    const [agent] = getAgents([id], { model: flags.model, b: bOptions(examples) });
+    let dirs = await findCaseDirs(here(flags.in));
+    if (flags.cases) {
+      const want = new Set(flags.cases.split(','));
+      dirs = dirs.filter((d) => want.has(d.split(/[\\/]/).pop()!));
+    }
+    if (!dirs.length) throw new Error(`No case folders found under ${flags.in}`);
+    const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/answers-${id}${suffix(flags.name)}`);
+    const withhold = flags.withhold === 'outcomes' ? 'outcomes' : 'none';
+    const kind = kindOf(flags.kind, withhold === 'outcomes' ? 'practice' : /challeng/i.test(flags.in) ? 'reality' : 'adhoc');
+    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'answer', agent: id, track: flags.track ?? 'property', model: process.env.MODEL_DECIDE });
+    log(`${agent!.label}: ${dirs.length} case(s) → ${out}`);
+    const res = await agent!.answer(dirs, out, { track: flags.track ?? 'property', withhold, offline, concurrency: num('concurrency', 4), log });
+    await finish();
+    log(`done: ${res.length} answers written.`);
+    return;
+  }
+
+  if (cmd === 'bench') {
+    const ids = (flags.agent ?? 'a,b').split(',') as AgentId[];
+    const split = (flags.split ?? 'val') as Split | 'all';
+    // Evaluation never shows the agent examples from the set it is scored on.
+    const examples = ids.includes('b') ? await bank(flags.examples, split === 'dev' || split === 'all' ? 'none' : 'dev') : undefined;
+    const agents = getAgents(ids, { model: flags.model, b: bOptions(examples) });
+    const cuts = spread(await cutsFor(split, (flags.labels ?? 'both') as LabelSource), flags.limit ? Number(flags.limit) : undefined);
+    const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/bench/${split}-${ids.join('')}-${stamp()}${suffix(flags.name)}`);
+    const kind = kindOf(flags.kind, flags.limit ? 'smoke' : ({ dev: 'train', val: 'val', test: 'test', all: 'full' } as const)[split]);
+    const finish = await manifest(out, { kind, name: flags.name, note: flags.note, command: 'bench', agent: ids.join(','), track: 'property', model: process.env.MODEL_DECIDE, split });
+    log(`bench: agents ${ids.join(', ')} · split ${split} · ${cuts.length} cuts · model ${process.env.MODEL_DECIDE}${offline ? ' (offline)' : ''} → ${out}`);
+    const rows = await runBench(agents, cuts, out, { concurrency: num('concurrency', 6), offline, log });
+    const md = summarise(rows, `Bench · property · split ${split}`);
+    await writeFile(join(out, 'SUMMARY.md'), md);
+    await finish();
+    log('\n' + md.split('\n## By expected action')[0]);
+    log(`summary: ${join(out, 'SUMMARY.md')}`);
+    return;
+  }
+
+  if (cmd === 'judge') {
+    const caller = defaultCaller();
+    if (!caller) throw new Error('judge needs ANTHROPIC_API_KEY.');
+    getAgents(['b'], { model: flags.model });
+    const labels = spread(await escalationLabels(), flags.limit ? Number(flags.limit) : undefined);
+    const out = flags.out ? here(flags.out) : join(REPO, `.casework/agents/judge-${stamp()}${suffix(flags.name)}`);
+    const finish = await manifest(out, { kind: kindOf(flags.kind, flags.limit ? 'smoke' : 'full'), name: flags.name, note: flags.note, command: 'judge', agent: 'b', model: process.env.MODEL_DECIDE });
+    log(`judge: agent B on ${labels.length} escalation examples → ${out}`);
+    await runEval(labels, out, { caller, concurrency: num('concurrency', 4), log });
+    await finish();
+    log(`summary: ${join(out, 'SUMMARY.md')}`);
+    return;
+  }
+
+  if (cmd === 'split') {
+    const sp = await loadSplit();
+    for (const s of ['dev', 'val', 'test'] as const) log(`${s.padEnd(4)} ${Object.keys(sp).filter((k) => sp[k] === s).join(' ')}`);
+    return;
+  }
+
+  console.log(USAGE);
+  process.exitCode = cmd ? 1 : 0;
+}
+
+main().catch((e) => {
+  console.error(e instanceof Error ? e.message : e);
+  process.exitCode = 1;
+});

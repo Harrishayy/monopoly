@@ -15,7 +15,9 @@
     "test": "pnpm -r --if-present test",
     "reality": "pnpm --filter @casework/cli reality",
     "replay": "pnpm --filter @casework/cli replay",
-    "eval": "pnpm --filter @casework/cli eval"
+    "eval": "pnpm --filter @casework/cli eval",
+    "bench": "pnpm --filter @casework/agents bench",
+    "answer": "pnpm --filter @casework/agents answer"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

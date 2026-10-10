@@ -97,6 +97,12 @@ export async function loadCase(dir: string, opts: LoadOptions = {}): Promise<Cas
     cut = opts.cutBefore;
     why = 'evaluation cut point';
   }
+  // An attachment arrives with the first event that mentions it; remember that before cutting.
+  const allEvents = events;
+  const arrival = (file: string) => {
+    const stem = basename(file).replace(/\.[^.]+$/, '').toLowerCase();
+    return allEvents.find((e) => `${e.body}\n${Object.values(e.fields).join('\n')}`.toLowerCase().includes(stem))?.n ?? undefined;
+  };
   if (cut !== undefined) {
     const before = events.length;
     events = events.filter((e) => e.n === null || e.n < cut!);
@@ -114,7 +120,15 @@ export async function loadCase(dir: string, opts: LoadOptions = {}): Promise<Cas
     }
   }
   attachmentPaths.sort((a, b) => a.name.localeCompare(b.name));
-  for (const [i, a] of attachmentPaths.entries()) {
+  const visible = attachmentPaths.filter((a) => {
+    const n = cut !== undefined ? arrival(a.name) : undefined;
+    if (n !== undefined && n !== null && n >= cut!) {
+      withheld.push(`Attachment ${a.name} (arrives with event ${n}, after the decision moment)`);
+      return false;
+    }
+    return true;
+  });
+  for (const [i, a] of visible.entries()) {
     const { attachment, anomaly } = await readAttachment(a.path, a.name, `A${i + 1}`);
     attachments.push(attachment);
     if (anomaly) anomalies.push(anomaly);

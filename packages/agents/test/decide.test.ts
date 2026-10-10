@@ -2,12 +2,12 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { answerNames, runBatch } from '../src/batch';
-import { buildLedger, findAmounts } from '../src/facts/ledger';
-import { loadCase } from '../src/ingest/casefile';
-import { runCase } from '../src/pipeline';
-import { hardChecks, sameParty } from '../src/stages/check';
-import { gate, vote } from '../src/stages/gate';
+import { answerNames, runBatch } from '../src/b/batch';
+import { buildLedger, findAmounts } from '../src/b/facts/ledger';
+import { loadCase } from '../src/b/ingest/casefile';
+import { runCase } from '../src/b/pipeline';
+import { hardChecks, sameParty } from '../src/b/stages/check';
+import { gate, vote } from '../src/b/stages/gate';
 import { decision, mockCaller, pass, situation, stageOf } from './mock';
 
 const FIX = join(__dirname, 'fixtures');

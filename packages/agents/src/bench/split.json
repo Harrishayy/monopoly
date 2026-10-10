@@ -1,0 +1,257 @@
+{
+ "seed": 20261010,
+ "track": "property",
+ "ratio": "30/10/10 by case, stratified by job type",
+ "cases": {
+  "001": {
+   "split": "dev",
+   "jobType": "garden",
+   "title": "Communal Garden and Hedge Maintenance Request"
+  },
+  "002": {
+   "split": "val",
+   "jobType": "door-lock",
+   "title": "Blocked toilet at Flat 3, 15 Willowmere Road, Alderwick, ZZ3 2ZZ"
+  },
+  "003": {
+   "split": "dev",
+   "jobType": "check-out",
+   "title": "Checkout Cleaning Estimate and Invoice"
+  },
+  "004": {
+   "split": "dev",
+   "jobType": "check-out",
+   "title": "Checkout Clean"
+  },
+  "005": {
+   "split": "val",
+   "jobType": "check-out",
+   "title": "Check-Out Cleaning"
+  },
+  "006": {
+   "split": "test",
+   "jobType": "check-out",
+   "title": "Check-Out Works: Carpet Replacement and Repainting"
+  },
+  "007": {
+   "split": "test",
+   "jobType": "check-out",
+   "title": "Check-Out Works: Lounge Lighting and Ceiling Repair"
+  },
+  "008": {
+   "split": "dev",
+   "jobType": "check-out",
+   "title": "Check-Out Works"
+  },
+  "009": {
+   "split": "val",
+   "jobType": "garden",
+   "title": "Front garden maintenance follow-up"
+  },
+  "010": {
+   "split": "dev",
+   "jobType": "other",
+   "title": "Solar panel readings photo request"
+  },
+  "011": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Dishwasher Repair Request"
+  },
+  "012": {
+   "split": "val",
+   "jobType": "appliance",
+   "title": "Dishwasher Door Repair"
+  },
+  "013": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Integrated Dishwasher Repair Request"
+  },
+  "014": {
+   "split": "dev",
+   "jobType": "door-lock",
+   "title": "Front Door Repair Request"
+  },
+  "015": {
+   "split": "val",
+   "jobType": "door-lock",
+   "title": "Front Door Repair Request"
+  },
+  "016": {
+   "split": "dev",
+   "jobType": "garden",
+   "title": "Garden Door Repair Request"
+  },
+  "017": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Kitchen Extractor Fan Repair Request"
+  },
+  "018": {
+   "split": "dev",
+   "jobType": "garden",
+   "title": "Garden Maintenance Request"
+  },
+  "019": {
+   "split": "test",
+   "jobType": "garden",
+   "title": "Garden Maintenance Request"
+  },
+  "020": {
+   "split": "dev",
+   "jobType": "other",
+   "title": "Property inspection"
+  },
+  "021": {
+   "split": "dev",
+   "jobType": "door-lock",
+   "title": "Key Replacement Request"
+  },
+  "022": {
+   "split": "dev",
+   "jobType": "door-lock",
+   "title": "Front Door Lock Repair Request"
+  },
+  "023": {
+   "split": "test",
+   "jobType": "door-lock",
+   "title": "Balcony Door Lock Repair"
+  },
+  "024": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Oven repair request"
+  },
+  "025": {
+   "split": "val",
+   "jobType": "appliance",
+   "title": "Oven Repair Request"
+  },
+  "026": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Oven Repair Request"
+  },
+  "027": {
+   "split": "dev",
+   "jobType": "door-lock",
+   "title": "Blocked Bath Drain Request"
+  },
+  "028": {
+   "split": "dev",
+   "jobType": "garden",
+   "title": "Loose Water Pipe in the Back Garden"
+  },
+  "029": {
+   "split": "val",
+   "jobType": "plumbing",
+   "title": "Cracked basin repair request"
+  },
+  "030": {
+   "split": "test",
+   "jobType": "plumbing",
+   "title": "Plumbing request: slow-filling toilet and bathroom tap"
+  },
+  "031": {
+   "split": "dev",
+   "jobType": "plumbing",
+   "title": "Plumbing request"
+  },
+  "032": {
+   "split": "val",
+   "jobType": "plumbing",
+   "title": "Toilet flush mechanism repair"
+  },
+  "033": {
+   "split": "dev",
+   "jobType": "plumbing",
+   "title": "Bathroom Tap Plumbing Request"
+  },
+  "034": {
+   "split": "dev",
+   "jobType": "plumbing",
+   "title": "Shower Repair Request"
+  },
+  "035": {
+   "split": "test",
+   "jobType": "plumbing",
+   "title": "Shower Repair Request"
+  },
+  "036": {
+   "split": "dev",
+   "jobType": "plumbing",
+   "title": "Shower Tap Repair"
+  },
+  "037": {
+   "split": "dev",
+   "jobType": "plumbing",
+   "title": "Shower Repair Request"
+  },
+  "038": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Washing Machine Replacement Request"
+  },
+  "039": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Washing Machine Repair Request"
+  },
+  "040": {
+   "split": "test",
+   "jobType": "appliance",
+   "title": "Washing Machine Repair Request"
+  },
+  "041": {
+   "split": "dev",
+   "jobType": "appliance",
+   "title": "Washing Machine Repair Request"
+  },
+  "042": {
+   "split": "test",
+   "jobType": "appliance",
+   "title": "Washing Machine Repair Request"
+  },
+  "043": {
+   "split": "val",
+   "jobType": "appliance",
+   "title": "Washing Machine Repair Request"
+  },
+  "044": {
+   "split": "dev",
+   "jobType": "window",
+   "title": "Window Handle Repair Request"
+  },
+  "045": {
+   "split": "dev",
+   "jobType": "door-lock",
+   "title": "Kitchen Window and Patio Door Window Repair"
+  },
+  "046": {
+   "split": "dev",
+   "jobType": "window",
+   "title": "Bedroom Window Repair"
+  },
+  "047": {
+   "split": "test",
+   "jobType": "window",
+   "title": "Bedroom Window Repair Request"
+  },
+  "048": {
+   "split": "dev",
+   "jobType": "window",
+   "title": "Bathroom Window Repair Request"
+  },
+  "049": {
+   "split": "test",
+   "jobType": "garden",
+   "title": "Shed Door Repair Request"
+  },
+  "050": {
+   "split": "val",
+   "jobType": "window",
+   "title": "Bedroom Window Repair"
+  }
+ }
+}
