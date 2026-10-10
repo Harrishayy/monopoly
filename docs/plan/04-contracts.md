@@ -32,7 +32,7 @@ Change a contract in its own commit, and update every user of it in the same pul
 ## CLI (`apps/cli`)
 
 ```
-pnpm reality --track property --in data/reality --out ANSWERS [--concurrency 6]
+pnpm reality --track property --in data/challenges --out ANSWERS [--concurrency 6]
 pnpm replay ANSWERS/7/trace.jsonl [--speed 2]
 ```
 

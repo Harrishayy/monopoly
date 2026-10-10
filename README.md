@@ -2,6 +2,8 @@
 
 An operations agent for messy real-world cases. It reads calls, emails, documents, CRM records and tickets, takes actions with real tools, recovers from failures, and resolves what it safely can. Everything else goes to a person as a single handover card that has all the context needed to decide.
 
+https://app.notion.com/p/Dwelly-AI-Hackathon-2026-Hacker-Guide-3eaf87e8ff7280c3beb6fb2fab8e2123#a58d6cadf230424dace26b12063fc7ea
+
 > **Status:** project skeleton. The architecture, contracts, UI shell, design system and Reality Test runner are in place. The agent loop (`packages/core/src/agent/loop.ts`) and the track tools come next. Sections marked _TBD_ get filled in as they're built.
 
 ## 1. What we built
@@ -28,16 +30,16 @@ Every screen, the mascot and the `ANSWERS/` files are views of one append-only e
 Prerequisites: Node 22 or later, and pnpm 10.
 
 ```bash
+git clone --recurse-submodules <this repo>   # or: git submodule update --init
 pnpm i
 cp .env.example .env          # add ANTHROPIC_API_KEY
-# put the synthetic data in data/<track>/
 pnpm dev                      # http://localhost:3000
 ```
 
-Reality Test:
+Reality Test (put the released cases in `data/challenges/` first, see [data/README.md](data/README.md)):
 
 ```bash
-pnpm reality --track property --in data/reality --out ANSWERS
+pnpm reality --track property --in data/challenges --out ANSWERS
 ```
 
 Checks: `pnpm typecheck && pnpm test && pnpm build`.
@@ -50,7 +52,8 @@ Checks: `pnpm typecheck && pnpm test && pnpm build`.
 | `MODEL_DECIDE` | no | Decision model (default `claude-opus-5-5`) |
 | `MODEL_FAST` | no | Triage and extraction model (default `claude-haiku-4-5-20251001`) |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID` | voice only | ElevenLabs voice agent |
-| `DATA_DIR` | no | Synthetic data folder (default `./data`) |
+| `DATA_DIR` | no | Case folder the web app reads (default `./data/public`) |
+| `DATA_WITHHOLD` | no | `outcomes` (default) hides how example cases ended; `none` loads cases as supplied |
 | `TRACK` | no | `claims`, `property`, `banking` or `logistics` |
 | `REALITY_CONCURRENCY` | no | Parallel cases in a batch (default 6) |
 | `TOOL_TIMEOUT_MS` | no | Per-tool timeout (default 8000) |

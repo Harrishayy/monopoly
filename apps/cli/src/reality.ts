@@ -1,6 +1,9 @@
 /**
  * Reality Test runner. Runs every case in --in unattended and writes ANSWERS/<n>/.
- *   pnpm reality --track property --in data/reality --out ANSWERS
+ *   pnpm reality --track property --in data/challenges --out ANSWERS
+ * <n> is the supplied case number (folder 007 → ANSWERS/7).
+ * Practice on the public examples with outcomes hidden:
+ *   pnpm reality --in data/public --out .casework/practice --withhold outcomes
  * Each case's folder is written as soon as it finishes, so a crash keeps finished work.
  * Never hand-edit the output; fix the system and re-run.
  */
@@ -16,8 +19,9 @@ const root = resolve(import.meta.dirname, '../../..');
 const { values } = parseArgs({
   options: {
     track: { type: 'string', default: process.env.TRACK ?? 'property' },
-    in: { type: 'string', default: 'data/reality' },
+    in: { type: 'string', default: 'data/challenges' },
     out: { type: 'string', default: 'ANSWERS' },
+    withhold: { type: 'string', default: 'none' },
     concurrency: { type: 'string', default: process.env.REALITY_CONCURRENCY ?? '6' },
   },
 });
@@ -49,10 +53,10 @@ async function runOne(c: Case, n: number) {
 }
 
 async function main() {
-  // Reality Test cases are expected under <in>/<track>/*.json; adjust once the format is known.
-  const cases = await pack.loadCases(inDir);
+  const withhold = values.withhold === 'outcomes' ? 'outcomes' : 'none';
+  const cases = await pack.loadCases(inDir, { withhold });
   if (!cases.length) {
-    console.error(`No cases found for "${pack.id}" in ${inDir}/${pack.id}. Nothing written.`);
+    console.error(`No ${pack.label} cases found in ${inDir}. Nothing written. See data/README.md for the expected layout.`);
     process.exit(1);
   }
   console.log(`Running ${cases.length} ${pack.vocabulary.cases.toLowerCase()} with concurrency ${limit}…`);
@@ -62,7 +66,7 @@ async function main() {
     Array.from({ length: Math.min(limit, cases.length) }, async () => {
       while (next < cases.length) {
         const i = next++;
-        const r = await runOne(cases[i]!, i + 1);
+        const r = await runOne(cases[i]!, caseNumber(cases[i]!, i));
         results.push(r);
         console.log(`#${r.n} ${r.ref} → ${r.outcome}${r.error ? ` (${r.error})` : ''}`);
       }
@@ -70,6 +74,12 @@ async function main() {
   );
   results.sort((a, b) => a.n - b.n);
   console.table(results.map(({ n, ref, outcome }) => ({ n, ref, outcome })));
+}
+
+/** Case refs end in the supplied folder number (PM-007 → 7); fall back to position. */
+function caseNumber(c: Case, i: number) {
+  const m = c.ref.match(/(\d+)$/);
+  return m ? Number(m[1]) : i + 1;
 }
 
 main().catch((err) => {

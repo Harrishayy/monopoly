@@ -1,6 +1,6 @@
 ---
 name: run-reality-test
-description: Runs the CLI on a folder, checks every case produced ANSWER.md and REASONING.md, and prints failures. Never edits answers. Example: “/run-reality-test data/reality”
+description: Runs the CLI on a folder, checks every case produced ANSWER.md and REASONING.md, and prints failures. Never edits answers. Example: “/run-reality-test data/challenges”
 ---
 
 # run-reality-test

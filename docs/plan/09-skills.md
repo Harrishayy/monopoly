@@ -34,6 +34,6 @@ These live in `.claude/skills/` so every instance does common jobs the same way.
 | `add-component` | Scaffolds ui/<Name> or domain/<area>/<Name>: component, index, test, and a /design entry with every state. Reads the catalogue entry first. | “/add-component ConfidenceMeter” |
 | `add-track-pack` | Copies a pack, wires the loader to data/<track>, registers it, and generates a test that parses every supplied case. | “/add-track-pack logistics” |
 | `add-agent-tool` | Adds a tool to a pack: zod input, execute(), retry settings, policy rule if it spends money or changes state, and a fixture. | “/add-agent-tool property contractors.cancel” |
-| `run-reality-test` | Runs the CLI on a folder, checks every case produced ANSWER.md and REASONING.md, and prints failures. Never edits answers. | “/run-reality-test data/reality” |
+| `run-reality-test` | Runs the CLI on a folder, checks every case produced ANSWER.md and REASONING.md, and prints failures. Never edits answers. | “/run-reality-test data/challenges” |
 | `record-fixture` | Runs one case against the real API and saves the event stream to tracks/<track>/fixtures for msw and tests. | “/record-fixture PM-7731” |
 | `demo-script` | Builds the 60-second demo run order: which case, which screens, what to say, with a Playwright script to drive it. | “/demo-script property” |

@@ -31,5 +31,6 @@ test-results/
 # event material we do not have the right to republish
 Real-World Agents Hackathon Rules For Participants.pdf
 
-# Supplied synthetic data: kept out of the public repo until publishing is confirmed
-Property Management/
+# Reality Test cases are the organisers' material: keep them local, publish only ANSWERS/
+data/challenges/*
+!data/challenges/README.md

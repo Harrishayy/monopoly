@@ -13,7 +13,7 @@ pnpm dev                     # Next.js on :3000 (UI + API)
 pnpm build                   # production build of the web app
 pnpm typecheck               # all packages
 pnpm test                    # vitest
-pnpm reality --track $TRACK --in data/reality --out ANSWERS
+pnpm reality --track $TRACK --in data/challenges --out ANSWERS
 pnpm replay ANSWERS/<n>/trace.jsonl
 ```
 
@@ -23,6 +23,7 @@ pnpm replay ANSWERS/<n>/trace.jsonl
 - Agent loop, guard, retry, handover: `packages/core/src/agent`
 - Event reducer shared by UI, replay and ANSWERS: `packages/core/src/run/view.ts`
 - Track data loader, tools, policy, prompt: `packages/tracks/src/<track>`
+- Case data: `data/public` (organisers' examples, git submodule) and `data/challenges` (Reality Test). Shared loader: `packages/tracks/src/shared/cases.ts`. See `data/README.md`
 - Browser-safe track labels: `packages/tracks/src/meta.ts` (`@casework/tracks/meta`)
 - UI primitives: `apps/web/src/ui/<Name>/`. Domain UI: `apps/web/src/domain`. Layout: `apps/web/src/layout`
 - Pages: `apps/web/src/app/(app)/<route>/page.tsx` stay thin; logic lives in `apps/web/src/features/<route>`

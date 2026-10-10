@@ -1,10 +1,10 @@
 import 'server-only';
 import type { Case, CaseSummary } from '@casework/core';
 import { getPack } from '@casework/tracks';
-import { ACTIVE_TRACK, DATA_DIR } from './config';
+import { ACTIVE_TRACK, DATA_DIR, DATA_WITHHOLD } from './config';
 
 export async function listCases(track = ACTIVE_TRACK): Promise<Case[]> {
-  return getPack(track).loadCases(DATA_DIR);
+  return getPack(track).loadCases(DATA_DIR, { withhold: DATA_WITHHOLD });
 }
 
 export async function getCase(ref: string, track = ACTIVE_TRACK): Promise<Case | undefined> {

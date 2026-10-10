@@ -58,8 +58,13 @@ export interface Policy {
   mustEscalate: { id: string; describe: string }[];
 }
 
+export interface LoadCasesOptions {
+  /** 'none' loads cases as supplied (Reality Test). 'outcomes' hides how example cases ended. */
+  withhold?: 'none' | 'outcomes';
+}
+
 export interface TrackPack extends TrackMeta {
-  loadCases(dataDir: string): Promise<Case[]>;
+  loadCases(dataDir: string, opts?: LoadCasesOptions): Promise<Case[]>;
   tools: AgentTool<any, any>[];
   policy: Policy;
   systemPrompt: string;
