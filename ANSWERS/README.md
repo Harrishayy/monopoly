@@ -10,9 +10,11 @@ Each case gets its own folder:
 
 ```
 ANSWERS/<n>/
-  ANSWER.md      What the system received, actions taken, actions refused, what it escalated, what failed, final result
-  REASONING.md   Step-by-step decisions with rationale, citations and confidence, plus the handover
-  trace.jsonl    Full event trace of the run (inputs, model turns, tool calls, retries, errors)
+  ANSWER.md      Next step and recipient, the message, why (cited sources), the handover if escalated,
+                 disagreements, boundaries, what is still open, how it was decided, what failed
+  REASONING.md   Route taken, forced triggers and warnings, every vote, the supervisor's review,
+                 guard refusals, the decision, every model call with tokens and cost
+  trace.jsonl    Full trace of the run (inputs, model calls, retries, errors)
 ```
 
-`<n>` is the supplied case number: `data/challenges/<Track Folder>/007/` → `ANSWERS/7/`.
+`ANSWERS/run.json` records the agent, track and timings. `<n>` is the supplied case number: `data/challenges/<Track Folder>/007/` → `ANSWERS/7/`.
