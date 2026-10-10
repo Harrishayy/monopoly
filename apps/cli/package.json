@@ -7,14 +7,16 @@
   "scripts": {
     "reality": "tsx --env-file-if-exists=../../.env src/reality.ts",
     "replay": "tsx --env-file-if-exists=../../.env src/replay.ts",
-    "typecheck": "tsc --noEmit",
-    "eval": "tsx --env-file-if-exists=../../.env src/eval.ts"
+    "eval": "tsx --env-file-if-exists=../../.env src/eval.ts",
+    "harness": "tsx --env-file-if-exists=../../.env src/harness.ts",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "tsx": "^4.23.15"
   },
   "dependencies": {
     "@casework/core": "workspace:*",
-    "@casework/tracks": "workspace:*"
+    "@casework/tracks": "workspace:*",
+    "@casework/evals": "workspace:*"
   }
 }

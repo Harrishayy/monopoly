@@ -11,9 +11,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { randomUUID } from 'node:crypto';
-import { renderAnswers, runView, RunEvent, type Case } from '@casework/core';
-import { runCase, type EmitInput } from '@casework/core/agent';
+import type { Case } from '@casework/core';
+import { executeCase } from '@casework/core/agent';
 import { getPack } from '@casework/tracks';
 import { manifestOptions, runKind, writeManifest } from './manifest';
 
@@ -35,21 +34,10 @@ const outDir = resolve(root, values.out!);
 const limit = Math.max(1, Number(values.concurrency));
 
 async function runOne(c: Case, n: number) {
-  const runId = randomUUID();
-  const events: RunEvent[] = [];
-  let seq = 0;
-  const emit = (e: EmitInput) => events.push(RunEvent.parse({ ...e, runId, seq: seq++, at: new Date().toISOString() }));
-  let error: string | undefined;
-  try {
-    await runCase(c, pack, { runId, autonomy: pack.autonomy, emit });
-  } catch (err) {
-    error = err instanceof Error ? err.message : String(err);
-  }
-  const view = runView(events);
-  const { answer, reasoning } = renderAnswers(view, c, n);
+  const { events, view, answer, reasoning, error } = await executeCase(c, pack, { n });
   const dir = join(outDir, String(n));
   await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, 'ANSWER.md'), error ? `${answer}\n**Runner error**\n${error}\n` : answer);
+  await writeFile(join(dir, 'ANSWER.md'), answer);
   await writeFile(join(dir, 'REASONING.md'), reasoning);
   await writeFile(join(dir, 'trace.jsonl'), events.map((e) => JSON.stringify(e)).join('\n') + '\n');
   return { n, ref: c.ref, outcome: view.outcome ?? 'incomplete', next: view.next?.action ?? 'none', decidedBy: view.next?.decidedBy ?? 'none', error };
