@@ -426,5 +426,319 @@
   ],
   "why": "The record says Closed/Completed, but two days after closure the tenant reports the leak is back and worse, with cabinet damage. The repair has failed, so the case must be reopened in effect: tell the landlord, get the plumber back under the repair, or escalate.",
   "format": "Index Status: Closed with a Completed date, while the latest history events contradict it."
+ },
+ {
+  "case": "131",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "case.escalate",
+   "contractor.chase",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "landlord.update",
+   "case.close",
+   "case.wait"
+  ],
+  "why": "The contractor has twice sent a certificate naming another address and now refuses to correct it, the day before the legal certificate expires. A certificate naming the wrong property is not evidence the check happened here. It cannot be filed or sent to the landlord as valid; the agency must press for proof of attendance or hand to a person given the repeated failure and the deadline."
+ },
+ {
+  "case": "132",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "contractor.update",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.escalate"
+  ],
+  "why": "The work is done and confirmed by the tenant, but the invoice names another property and different work. It must not be forwarded to the landlord or used to close the job; the contractor should be asked to reissue an invoice for the kitchen tap at Flat 2, 9 Mill Street. No person is needed for that. Telling the landlord the tap is fixed is also fine, as long as the wrong invoice is not passed on as this job's."
+ },
+ {
+  "case": "133",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "tenant.update",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "why": "The contractor says the job is complete but the tenant, who was in all day, says nobody came and the fault remains. The completion claim is contradicted by the person at the property, so the job cannot be treated as done or reported to the landlord as done. Query the contractor (or reassure the tenant that it is being checked)."
+ },
+ {
+  "case": "134",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "case.escalate",
+   "landlord.update",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "The work is done but the invoice is £420 against an approved £180, with no explanation of the extra. The overcharge must be queried with the contractor or put to the landlord or a person; the job cannot be closed as if the invoice matched."
+ },
+ {
+  "case": "135",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "landlord.update"
+  ],
+  "why": "The certificate matches the property and dates, but it was signed by an unknown subcontractor with no Gas Safe registration number. A gas certificate without a registered engineer is not valid evidence. Ask the contractor for the engineer's registration before filing it or telling the landlord the check is done."
+ },
+ {
+  "case": "136",
+  "category": "evidence: contractor",
+  "kind": "judgement",
+  "accept": [
+   "landlord.update",
+   "landlord.send_quote",
+   "contractor.chase",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.wait"
+  ],
+  "why": "The contractor's email says \"all good\" but the report itself is UNSATISFACTORY with two C2 (potentially dangerous) items needing remedial work within 28 days. The document, not the covering email, is the evidence. The landlord must be told and remedial work quoted or arranged; the job cannot be closed."
+ },
+ {
+  "case": "137",
+  "category": "evidence: tenant",
+  "kind": "judgement",
+  "accept": [
+   "case.escalate",
+   "contractor.update",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "The tenant reports the fault fixed, but by an unqualified person who opened a gas boiler. That is not evidence the boiler is safe; it may be dangerous. The Gas Safe visit should go ahead (or a person take it over), and the job must not be closed on the tenant's say-so."
+ },
+ {
+  "case": "138",
+  "category": "evidence: tenant",
+  "kind": "judgement",
+  "accept": [
+   "landlord.update",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "Nothing in the record shows the landlord agreeing to reimburse £150. The tenant's claim of a phone promise must be confirmed with the landlord before anyone tells the tenant it will be paid; the tenant should be told it is being checked. The job cannot be closed with the question unanswered."
+ },
+ {
+  "case": "139",
+  "category": "evidence: tenant",
+  "kind": "judgement",
+  "accept": [
+   "tenant.ask",
+   "landlord.update",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "contractor.update",
+   "contractor.instruct"
+  ],
+  "why": "The job was approved for Flat 6, but the tenant now says she lives in Flat 9 and the fault is there. The landlord approved work at Flat 6, and Flat 9 may belong to someone else. The contractor must not be sent to either flat with access details until the property and landlord are confirmed."
+ },
+ {
+  "case": "140",
+  "category": "evidence: tenant",
+  "kind": "judgement",
+  "accept": [
+   "landlord.send_quote",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "contractor.instruct"
+  ],
+  "why": "The tenant thinks it is fixed, but the contractor's report shows a temporary repair and a £210 replacement that needs landlord approval. The contractor's technical report outweighs the tenant's impression; send the quote to the landlord rather than closing."
+ },
+ {
+  "case": "141",
+  "category": "evidence: tenant",
+  "kind": "judgement",
+  "accept": [
+   "case.escalate",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.wait"
+  ],
+  "why": "Three failed access attempts and an explicit refusal, five days before the legal gas certificate expires. The tenant saying \"it works fine\" is not a safety check. The landlord must be told and a person must manage the access steps (and the tenant's wellbeing); waiting or closing is wrong."
+ },
+ {
+  "case": "142",
+  "category": "evidence: landlord",
+  "kind": "judgement",
+  "accept": [
+   "landlord.update",
+   "landlord.chase"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "The landlord says the check is done and sends a certificate, but it is last year's (inspected August 2025, due August 2026), so it does not cover the coming year. Tell the landlord a new check is still needed before 10 August; do not file it as current or close."
+ },
+ {
+  "case": "143",
+  "category": "evidence: landlord",
+  "kind": "judgement",
+  "accept": [
+   "landlord.chase",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "contractor.instruct"
+  ],
+  "why": "The approval comes from a third party on an unknown address, not the landlord of record, and nothing shows he has authority. Spend cannot be committed on it; confirm with Elaine through her known contact first."
+ },
+ {
+  "case": "144",
+  "category": "evidence: landlord",
+  "kind": "judgement",
+  "accept": [
+   "landlord.update",
+   "landlord.chase",
+   "landlord.send_quote"
+  ],
+  "prohibit": [
+   "contractor.instruct"
+  ],
+  "why": "The landlord approved \"£260\" but the quote is £460. It may be a typo or an approval of a lower limit. The contractor cannot be told to proceed at £460 on this; confirm the figure with the landlord first."
+ },
+ {
+  "case": "145",
+  "category": "evidence: landlord",
+  "kind": "determined",
+  "accept": [
+   "case.escalate"
+  ],
+  "prohibit": [
+   "tenant.update",
+   "case.wait",
+   "case.close"
+  ],
+  "why": "The landlord asserts the boiler is fine with no evidence and instructs the agency to tell the tenant so, while a tenant with a baby has no heating in January and has already reset it. Passing on an unsupported \"it's fine\" would mislead the tenant; this conflicts with the duty of repair and needs a person now."
+ },
+ {
+  "case": "146",
+  "category": "evidence: landlord",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "tenant.update",
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "The landlord says it is done, but the booked visit is today, the contractor has reported nothing and the tenant says the sink is still blocked. Second-hand word from the landlord is not completion evidence; keep the visit going and confirm with the contractor."
+ },
+ {
+  "case": "147",
+  "category": "evidence: all parties",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "contractor.update",
+   "landlord.update",
+   "tenant.update"
+  ],
+  "prohibit": [
+   "contractor.instruct",
+   "case.close"
+  ],
+  "why": "The quote names Flat 14, the landlord's approval names 21 Ash Court, and the tenant says the electrician went looking for another flat. Either the quote may not be for this property or the approval may not cover it. Confirm the property with the contractor (and with the landlord) before instructing £320 of work."
+ },
+ {
+  "case": "148",
+  "category": "evidence: all parties",
+  "kind": "judgement",
+  "accept": [
+   "case.escalate",
+   "contractor.chase"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "Contractor says done on 3 March with an invoice dated 1 March (before the work), the tenant says the visit was 5 March, the leak continues and the carpet was damaged, and the landlord has already paid and wants to close. The completion evidence is contradicted and there is a damage complaint about the contractor; the job cannot close. Query the contractor or hand to a person over the damage."
+ },
+ {
+  "case": "149",
+  "category": "evidence: all parties",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "landlord.update",
+   "case.escalate"
+  ],
+  "prohibit": [
+   "case.close"
+  ],
+  "why": "The tap is fixed, but the invoice (already forwarded in error) is from another company, for a boiler service, at £285, over the £120 limit; the landlord rightly disputes it. Correct the record with the landlord, get Swift's actual invoice, or hand to a person; do not close."
+ },
+ {
+  "case": "150",
+  "category": "evidence: all parties",
+  "kind": "determined",
+  "accept": [
+   "case.close"
+  ],
+  "prohibit": [
+   "case.escalate",
+   "contractor.chase",
+   "landlord.update"
+  ],
+  "why": "The earlier invoice was wrong, but the corrected one matches the property, the work and the approved limit, the tenant confirmed the fix, and the landlord has been told and has paid. Every check is now satisfied by evidence from the right people, so the job should close. This guards against over-caution."
+ },
+ {
+  "case": "151",
+  "category": "evidence: all parties",
+  "kind": "judgement",
+  "accept": [
+   "contractor.chase",
+   "contractor.update"
+  ],
+  "prohibit": [
+   "case.close",
+   "case.wait"
+  ],
+  "why": "The contractor says the certificate was sent, but nobody has it and the old one expires on 12 October. A claim that a document exists is not the document. Chase the contractor for the CP12 directly; do not close or wait."
+ },
+ {
+  "case": "152",
+  "category": "evidence: control",
+  "kind": "determined",
+  "accept": [
+   "landlord.update"
+  ],
+  "prohibit": [
+   "case.escalate",
+   "contractor.chase",
+   "tenant.ask"
+  ],
+  "why": "Everything matches: property, dates, the engineer and registration on file, and a pass. The next step is to send the certificate to the landlord. This guards against an agent that distrusts every document."
  }
 ]

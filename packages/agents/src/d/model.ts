@@ -13,6 +13,13 @@ export const MODELS = {
   supervisor: () => process.env.AGENT_D_SUPERVISOR_MODEL || 'claude-opus-5-5',
 };
 
+/**
+ * Output budget per call, thinking included. Generous on purpose: a long case at high effort must not be cut
+ * off before it writes its JSON. A call that still stops at the limit is retried once with double the budget.
+ */
+export const MAX_TOKENS = (role: ModelCallRecord['role']) =>
+  role === 'supervisor' ? Number(process.env.AGENT_D_SUPERVISOR_MAX_TOKENS ?? 64_000) : Number(process.env.AGENT_D_MAX_TOKENS ?? 32_000);
+
 export const EFFORT = () => (process.env.AGENT_D_EFFORT as 'low' | 'medium' | 'high' | undefined) || 'high';
 
 /**
@@ -88,13 +95,14 @@ export async function callJson<T>(caller: Caller, req: JsonRequest<T>): Promise<
   let task = req.task;
   let total = zeroUsage();
   let error = 'no attempt';
+  let maxTokens = Math.max(req.maxTokens ?? 0, MAX_TOKENS(req.role));
   const started = Date.now();
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const msg = await caller(
         {
           model: req.model,
-          max_tokens: req.maxTokens ?? 16_000,
+          max_tokens: maxTokens,
           thinking: { type: 'adaptive' },
           system: [{ type: 'text', text: req.system, cache_control: { type: 'ephemeral' } }],
           messages: [
@@ -114,6 +122,11 @@ export async function callJson<T>(caller: Caller, req: JsonRequest<T>): Promise<
       if (msg.stop_reason === 'refusal') {
         error = 'model refused';
         break;
+      }
+      if (msg.stop_reason === 'max_tokens') {
+        error = `stopped at the ${maxTokens}-token output limit`;
+        maxTokens = Math.min(maxTokens * 2, 128_000);
+        continue;
       }
       const raw = msg.content
         .filter((b): b is Anthropic.TextBlock => b.type === 'text')

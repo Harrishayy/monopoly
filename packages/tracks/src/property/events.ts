@@ -91,10 +91,12 @@ const ASK_APPROVAL = /\b(confirm (how|if|whether)|would you like (us|me)|happy f
 const QUOTE = /\b(quote|quotation|estimate)\b/i;
 const INVOICE = /\binvoice/i;
 const DONE = /\b(job (is |has been )?(now )?(done|complete[d]?)|work (is |has been )?(now )?(done|complete[d]?)|has been (completed|fixed|repaired|replaced|sorted|done|resolved)|(all|now|it'?s) (done|fixed|sorted|working)|completed the (job|work|repair)|(i'?ve|i have|we have|we'?ve) (done|completed|fixed|replaced|repaired)|replaced (the|a)|repaired|fixed it|done repair|cleaned and greased|all completed|advising job done|job complete)/i;
+/** A report that opens with "Done." or "Completed today", or names a part as replaced or fitted ("TRV replaced"). */
+const DONE_SHORT = /^\s*(done|completed?|finished|all done)\b(?! (by|on|before)\b)|\b(valve|trv|cartridge|washer|part|cylinder|seal|tap|fan|unit|element|thermostat|pump|hinge|lock)s? (replaced|fitted|renewed)\b/i;
 const NOT_DONE = /\b(will be|to be|once|when (it|the job)|if|needs? to be|not (yet )?(done|fixed|completed)|hasn'?t been|could not|couldn'?t|can'?t fix|unable|whether|inquir\w*|enquir\w*|asks? (if|whether|about)|discuss\w*|waiting for|awaiting|any update)\b/i;
 /** "Fixed X, but please send someone for Y" is not the whole job resolved. */
 const STILL_OPEN = /\b(send (somebody|someone|an? \w+)|still|but the|however|apart from|except)\b/i;
-const TENANT_RESOLVED = /\b(working (fine|again|now)|now works|it works|cleared|sorted (it|now)|problem (is )?solved|no longer (an issue|needed)|fixed (it|now)|managed to)\b/i;
+const TENANT_RESOLVED = /\b(working (fine|again|now)|now works|it works|(is|it'?s) (warm|fine|draining|working|fixed|ok|okay) now|cleared|sorted (it|now)|problem (is )?solved|no longer (an issue|needed)|fixed (it|now)|managed to)\b/i;
 const NO_CHARGE = /\b(no charge|free of charge|without payment|no invoice (is )?required|pays? (the )?contractor directly|invoices? (the )?landlord directly|under (warranty|guarantee))\b/i;
 const ACK_ONLY = /^(hi\b[^\n]*\n+)?\s*(thanks?( you)?( so much| very much)?|thank you|great|perfect|ok(ay)?|noted|cheers|lovely|brilliant|👍|😀)[\s.!,]*([\n\s]*(kind )?regards?[\s\S]{0,60})?$/i;
 
@@ -172,7 +174,7 @@ function classify(s: Source, n: number): PEvent {
   if (QUOTE.test(text) && (from === 'contractor' || e.amounts.length || /attached|uploaded/i.test(text))) signals.add('quote');
   if (INVOICE.test(text)) signals.add('invoice');
   if (NO_CHARGE.test(text)) signals.add('no.charge');
-  if ((fromPerson || from === 'agency') && DONE.test(text) && !NOT_DONE.test(text) && !STILL_OPEN.test(text)) {
+  if ((fromPerson || from === 'agency') && (DONE.test(text) || DONE_SHORT.test(text)) && !NOT_DONE.test(text) && !STILL_OPEN.test(text)) {
     signals.add('work.done');
   }
   if (from === 'tenant' && TENANT_RESOLVED.test(text) && !STILL_OPEN.test(text)) signals.add('tenant.resolved');
