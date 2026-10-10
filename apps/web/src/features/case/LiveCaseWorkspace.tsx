@@ -105,7 +105,7 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
         onChange={setTab}
         items={[
           { value: 'review', label: 'Review messages', count: held.length || undefined },
-          { value: 'conversation', label: 'Conversation', count: c.sources.length },
+          { value: 'conversation', label: 'Conversation', count: c.sources.filter((s) => s.kind !== 'crm').length + (outbound.data?.filter((o) => o.status !== 'superseded').length ?? 0) },
           { value: 'actions', label: 'Agent actions', count: runs.data?.length || undefined },
         ]}
       >
@@ -157,7 +157,7 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
           )}
         </TabPanel>
         <TabPanel value="conversation">
-          <Conversation sources={c.sources} />
+          <Conversation sources={c.sources} outbound={outbound.data ?? []} onReview={() => setTab('review')} />
         </TabPanel>
         <TabPanel value="actions" className="grid gap-4">
           {runs.data && runs.data.length > 0 && (

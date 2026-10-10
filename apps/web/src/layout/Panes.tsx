@@ -5,9 +5,9 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const LIST = { def: 270, min: 200, max: 480 };
-const ASIDE = { def: 340, min: 280 };
+const ASIDE = { def: 440, min: 300 };
 const DETAIL_MIN = 380;
-const KEY = 'casework-panes';
+const KEY = 'casework-panes-v2';
 const STEP = 24;
 
 interface Widths {
