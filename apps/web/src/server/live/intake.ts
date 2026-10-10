@@ -60,6 +60,7 @@ export interface IngestResult {
 export type LiveSignal =
   | { kind: 'case.opened'; caseRef: string; title: string; channel: string }
   | { kind: 'case.updated'; caseRef: string; sourceId: string }
+  | { kind: 'case.hidden'; caseRef: string; hidden: boolean }
   | { kind: 'run.started'; caseRef: string; runId: string }
   | { kind: 'run.finished'; caseRef: string; runId: string; outcome?: string }
   | { kind: 'outbound'; caseRef: string; id: string; status: string };

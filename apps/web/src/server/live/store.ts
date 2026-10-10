@@ -80,6 +80,8 @@ function open(): DatabaseSync {
     );
     CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
   `);
+  // Added later: deleted cases are hidden, not erased, so their history and costs stay on record.
+  if (!(db.prepare(`PRAGMA table_info(cases)`).all() as { name: string }[]).some((c) => c.name === 'hidden_at')) db.exec(`ALTER TABLE cases ADD COLUMN hidden_at TEXT`);
   return db;
 }
 
@@ -142,19 +144,38 @@ export function findOpenCaseByContact(contact: string, withinDays = 14): LiveCas
   const since = new Date(Date.now() - withinDays * 86_400_000).toISOString();
   const r = db()
     // Any recent case: a run "resolving" means the agent took its step, not that the job is closed.
-    .prepare(`SELECT * FROM cases WHERE lower(contact) = lower(?) AND updated_at >= ? ORDER BY updated_at DESC LIMIT 1`)
+    .prepare(`SELECT * FROM cases WHERE lower(contact) = lower(?) AND updated_at >= ? AND hidden_at IS NULL ORDER BY updated_at DESC LIMIT 1`)
     .get(contact, since) as Record<string, unknown> | undefined;
   return r ? toCase(r) : undefined;
 }
 
 export function listLiveCaseRows(): LiveCaseRow[] {
-  return (db().prepare(`SELECT * FROM cases ORDER BY updated_at DESC`).all() as Record<string, unknown>[]).map(toCase);
+  return (db().prepare(`SELECT * FROM cases WHERE hidden_at IS NULL ORDER BY updated_at DESC`).all() as Record<string, unknown>[]).map(toCase);
 }
 
 /** The case an email thread already belongs to. */
 export function findCaseByThread(threadId: string): LiveCaseRow | undefined {
-  const r = db().prepare(`SELECT case_ref FROM sources WHERE json_extract(meta, '$.threadId') = ? ORDER BY received_at DESC LIMIT 1`).get(threadId) as { case_ref: string } | undefined;
+  const r = db()
+    .prepare(`SELECT case_ref FROM sources WHERE json_extract(meta, '$.threadId') = ? AND case_ref NOT IN (SELECT ref FROM cases WHERE hidden_at IS NOT NULL) ORDER BY received_at DESC LIMIT 1`)
+    .get(threadId) as { case_ref: string } | undefined;
   return r ? getLiveCaseRow(r.case_ref) : undefined;
+}
+
+/**
+ * Deletes a case from the console, or brings it back. Only a flag: the case, its messages, runs and costs
+ * stay in the database, it just stops being listed, matched to new messages or run.
+ */
+export function setCaseHidden(ref: string, hidden: boolean): boolean {
+  const r = db().prepare(`UPDATE cases SET hidden_at = ? WHERE ref = ?`).run(hidden ? new Date().toISOString() : null, ref);
+  return r.changes > 0;
+}
+
+export function isCaseHidden(ref: string): boolean {
+  return !!(db().prepare(`SELECT 1 FROM cases WHERE ref = ? AND hidden_at IS NOT NULL`).get(ref));
+}
+
+export function hiddenCaseRefs(): Set<string> {
+  return new Set((db().prepare(`SELECT ref FROM cases WHERE hidden_at IS NOT NULL`).all() as { ref: string }[]).map((r) => r.ref));
 }
 
 // ── sources ──────────────────────────────────────────────────────────────
@@ -198,7 +219,7 @@ export function countSources(caseRef: string): number {
 /** A live case as the agent sees it. */
 export function liveCase(ref: string): Case | undefined {
   const row = getLiveCaseRow(ref);
-  if (!row) return undefined;
+  if (!row || isCaseHidden(ref)) return undefined;
   return {
     ref: row.ref,
     track: row.track as Case['track'],
@@ -319,7 +340,11 @@ export function getOutbound(id: string): Outbound | undefined {
 
 export function listOutbound(filter: { caseRef?: string; status?: OutboundStatus } = {}): Outbound[] {
   const rows = db().prepare(`SELECT * FROM outbound ORDER BY created_at DESC`).all() as Record<string, unknown>[];
-  return rows.map(toOutbound).filter((o) => (!filter.caseRef || o.caseRef === filter.caseRef) && (!filter.status || o.status === filter.status));
+  // Lists across cases (approvals, counts) leave out deleted cases; one case's own list is kept whole.
+  const hidden = filter.caseRef ? new Set<string>() : hiddenCaseRefs();
+  return rows
+    .map(toOutbound)
+    .filter((o) => (!filter.caseRef || o.caseRef === filter.caseRef) && (!filter.status || o.status === filter.status) && !hidden.has(o.caseRef));
 }
 
 // ── key/value (poll cursors) ─────────────────────────────────────────────

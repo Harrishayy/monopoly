@@ -5,7 +5,7 @@ import type { EmitInput } from '@casework/core/agent';
 import { getEngine } from '@casework/agents';
 import type { AgentId, RunCut, RunMode, RunSummary, RunTag } from '@/lib/api-types';
 import { exampleDir } from './agent-b';
-import { finishRun, loadStoredRuns, saveRunDecision, saveRunEvent, saveRunMeta } from './live/store';
+import { finishRun, hiddenCaseRefs, loadStoredRuns, saveRunDecision, saveRunEvent, saveRunMeta } from './live/store';
 
 export type RunSignal = { kind: 'event'; event: RunEvent } | { kind: 'end'; error?: string };
 
@@ -165,8 +165,15 @@ export function summariseRun(rec: RunRecord): RunSummary {
 
 /** Newest first. Filter by case, group, or only runs not part of a batch. */
 export function listRuns(filter: { caseRef?: string; groupId?: string; standalone?: boolean } = {}): RunSummary[] {
+  // Runs on cases deleted from the console drop out of the runs, escalations and counts.
+  let hidden = new Set<string>();
+  try {
+    if (!filter.caseRef) hidden = hiddenCaseRefs();
+  } catch {
+    // Live store unavailable: nothing is hidden.
+  }
   return [...runs.values()]
-    .filter((r) => (!filter.caseRef || r.meta.caseRef === filter.caseRef) && (!filter.groupId || r.meta.groupId === filter.groupId) && (!filter.standalone || !r.meta.groupId))
+    .filter((r) => (!filter.caseRef || r.meta.caseRef === filter.caseRef) && (!filter.groupId || r.meta.groupId === filter.groupId) && (!filter.standalone || !r.meta.groupId) && !hidden.has(r.meta.caseRef))
     .sort((a, b) => b.meta.startedAt.localeCompare(a.meta.startedAt))
     .map(summariseRun);
 }

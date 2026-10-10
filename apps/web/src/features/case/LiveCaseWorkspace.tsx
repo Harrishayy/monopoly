@@ -2,6 +2,7 @@
 
 import type { Case, Vocabulary } from '@casework/core';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { CaseHeader, SourcesProvider } from '@/domain/case';
 import { HandoverCard } from '@/domain/handover';
@@ -14,7 +15,7 @@ import { api, useApi } from '@/lib/api';
 import type { OutboundView, RunSummary } from '@/lib/api-types';
 import { useLiveSignal } from '@/lib/live';
 import { useRunStream } from '@/lib/sse';
-import { Button, Eyebrow, Icon, RelativeTime, StatusChip, TabPanel, Tabs, toast, type ChipStatus } from '@/ui';
+import { Button, Dialog, Eyebrow, Icon, RelativeTime, StatusChip, TabPanel, Tabs, toast, type ChipStatus } from '@/ui';
 
 type Tab = 'review' | 'conversation' | 'actions';
 
@@ -95,9 +96,12 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
         status={held.length ? 'escalated' : runStatus}
         statusLabel={held.length ? 'Needs approval' : undefined}
         actions={
-          <Button size="sm" variant="primary" icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
-            Run agent again
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="primary" icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
+              Run agent again
+            </Button>
+            <DeleteCase caseRef={ref} title={c.title} noun={vocabulary.case.toLowerCase()} />
+          </div>
         }
       />
       {c.customer.id && <p className="-mt-3 font-mono text-[12px] text-ink-2">{c.customer.id}</p>}
@@ -278,5 +282,65 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
     <SourcesProvider sources={c.sources} open={() => setTab('conversation')}>
       <Panes list={list} listOnMobile={false} detail={detail} aside={aside} />
     </SourcesProvider>
+  );
+}
+
+/**
+ * Removes the case from the console (a flag, not an erase), then offers Undo. Held messages on it
+ * stop showing in approvals, and new messages from the same person open a fresh case.
+ */
+function DeleteCase({ caseRef, title, noun }: { caseRef: string; title: string; noun: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const url = `/api/cases/${encodeURIComponent(caseRef)}`;
+
+  async function remove() {
+    setBusy(true);
+    try {
+      await api(url, { method: 'DELETE' });
+      setOpen(false);
+      router.push('/inbox');
+      toast(`${caseRef} deleted`, {
+        description: title,
+        duration: 10_000,
+        action: {
+          label: 'Undo',
+          onClick: () =>
+            void api(url, { method: 'PATCH', json: { hidden: false } })
+              .then(() => router.push(`/cases/${encodeURIComponent(caseRef)}`))
+              .catch((e: Error) => toast.error('Could not restore it', { description: e.message })),
+        },
+      });
+    } catch (e) {
+      toast.error(`Could not delete ${caseRef}`, { description: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
+        <Icon name="delete" size={14} />
+        Delete
+      </Button>
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        title={`Delete ${caseRef}?`}
+        description={`“${title}” disappears from the inbox, approvals and runs. Its history is kept on record, and you can undo straight after.`}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Keep it
+            </Button>
+            <Button variant="danger" onClick={remove} loading={busy}>
+              Delete {noun}
+            </Button>
+          </>
+        }
+      />
+    </>
   );
 }

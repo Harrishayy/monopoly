@@ -1,6 +1,6 @@
 import {
   AlertTriangle, ArrowRight, BookOpen, Check, ClipboardList, Clock, Copy, FileText, GitBranch, Hand, Inbox, Lock, Mail, MessageSquare,
-  Phone, Play, RotateCcw, Search, Shield, StickyNote, Ticket, Database, Wrench, X, type LucideIcon,
+  Phone, Play, RotateCcw, Search, Shield, StickyNote, Ticket, Trash2, Database, Wrench, X, type LucideIcon,
 } from 'lucide-react';
 
 /** Domain names → lucide icons, so call sites say what they mean, not which glyph. */
@@ -8,7 +8,7 @@ export const ICONS = {
   call: Phone, email: Mail, doc: FileText, crm: Database, ticket: Ticket, sms: MessageSquare, note: StickyNote,
   tool: Wrench, escalate: Hand, read: BookOpen, assess: ClipboardList, decide: GitBranch, propose: ArrowRight, fail: AlertTriangle,
   blocked: Lock, resolve: Check, retry: RotateCcw, search: Search, clock: Clock, copy: Copy, shield: Shield, arrow: ArrowRight,
-  check: Check, x: X, play: Play, inbox: Inbox,
+  check: Check, x: X, play: Play, inbox: Inbox, delete: Trash2,
 } satisfies Record<string, LucideIcon>;
 export type IconName = keyof typeof ICONS;
 
