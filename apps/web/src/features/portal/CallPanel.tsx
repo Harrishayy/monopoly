@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Waveform } from '@/domain/voice';
 import { cn } from '@/lib/cn';
 import { Button, CopyButton, Dialog, Eyebrow, Icon, Input, Select, Spinner, StatusChip, Surface, Switch } from '@/ui';
+import { VIDEO_PORTAL_DETAILS } from '@/lib/demo';
 import { type CallControls, type CallLine, type TypedDetails, useCall } from './useCall';
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -154,9 +155,21 @@ function DetailsDialog({ open, onOpenChange, initial, onSubmit }: { open: boolea
   // Prefill with what they gave last time, e.g. when calling again.
   useEffect(() => {
     if (!open) return;
-    setName(initial?.name ?? '');
-    setContact(initial?.email ?? initial?.phone ?? '');
-    setAddress(initial?.address ?? '');
+    if (initial?.name || initial?.email || initial?.phone) {
+      setName(initial.name ?? '');
+      setContact(initial.email ?? initial.phone ?? '');
+      setAddress(initial.address ?? '');
+      return;
+    }
+    if (new URLSearchParams(window.location.search).get('demo') === '1') {
+      setName(VIDEO_PORTAL_DETAILS.name);
+      setContact(VIDEO_PORTAL_DETAILS.email);
+      setAddress(VIDEO_PORTAL_DETAILS.address);
+      return;
+    }
+    setName('');
+    setContact('');
+    setAddress('');
   }, [open, initial]);
 
   function submit(e: React.FormEvent) {

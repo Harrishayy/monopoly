@@ -97,8 +97,8 @@ flowchart TD
 ```
 apps/web          Next.js: console, tenant portal, channel adapters (voice, email), API routes, SSE
 apps/cli          Reality Test runner (`pnpm reality`), eval, replay and the bench harness
-packages/agents   The engine: one interface over agents A–D, bench, few-shot memory
-packages/core     Schemas, agent A's guarded tool loop, policy guard, run reducer, ANSWERS writer
+packages/agents   The engine (Agent C), bench, few-shot memory
+packages/core     Schemas, policy guard, run reducer, ANSWERS writer
 packages/tracks   Track packs: case loader, rules, tools, policy, prompt, vocabulary (property is live)
 packages/evals    Labelled cuts, checks (including a lint that keeps injected instructions out of outputs)
 ```
@@ -106,7 +106,7 @@ packages/evals    Labelled cuts, checks (including a lint that keeps injected in
 **One engine, two front ends.** `getEngine(id).run(case, pack, ctx)` (`packages/agents/src/engine.ts`)
 is the only way a case is run. The live product calls it when a call or email arrives; `pnpm reality`
 calls it over a folder of cases. A live case that never had a folder is written out in the organisers'
-case layout first, so every agent reads it like a supplied case.
+case layout first, so the engine reads it like a supplied case.
 
 | | Live product (`apps/web`) | Reality Test (`apps/cli`) |
 |---|---|---|
@@ -114,106 +114,28 @@ case layout first, so every agent reads it like a supplied case.
 | Around the engine | CRM context, persistence, outbound gate, approvals, live updates | nothing live: unattended, no network channels |
 | Output | sent / held / escalated, visible in the console | `ANSWERS/<n>/ANSWER.md`, `REASONING.md`, `trace.jsonl` |
 
-Every agent implements the same interface, so any of them can sit behind the engine. Pick one with
-`ENGINE=<id>` (product and CLI) or `pnpm reality --agent <id>`. Two earlier designs stay in the repo as
-baselines and building blocks:
-
-| Agent | Idea | Code |
-|---|---|---|
-| **A** | Deterministic property rules + Claude Haiku 5.5 choosing one of 14 action tools in a guarded tool loop | `packages/core/src/agent`, `packages/tracks/src/property` |
-| **B** | Fixed pipeline: format-tolerant ingest, fact ledger, three decide samples, code checks, a critic, a gate | `packages/agents/src/b` |
-
-The current agent is described in its own section below, with its models, settings and results.
-
-<!-- agent-d:start -->
-### Agent D
-
-The default engine (`ENGINE=d`, `--agent d`).
-
-```mermaid
-flowchart TD
-  input["Case folder or live case"] --> load["Load: A's loader, or B's format-tolerant ingest if that fails<br/>d/load.ts"]
-  load --> assess["Rules assessment: parties, stage, who we wait on, cited facts,<br/>risk flags, barred actions, playbook, disagreements between parties<br/>tracks/src/property, d/conflicts.ts"]
-  assess --> trig{{"Forced trigger?<br/>gas or CO, electrical danger, legal threat or regulator,<br/>eviction or harassment, bank-detail change or upfront payment<br/>d/triggers.ts"}}
-  trig -->|"yes"| forced["case.escalate and a tenant safety message<br/>no model call"]
-  trig -->|"no"| votes["3 Claude Haiku 5.5 votes<br/>d/decide.ts, d/prompt.ts"]
-  votes --> guard["Guard checks every vote<br/>d/check.ts"]
-  guard --> route{"Route"}
-  route -->|"all agree, reversible, nothing flagged"| take["Take the agreed step"]
-  route -->|"split, irreversible or flagged, within budget"| sup["Claude Opus 5.5 supervisor picks<br/>and the guard checks it again"]
-  route -->|"otherwise"| maj["Majority of allowed votes<br/>a tie goes to the cautious step"]
-  route -->|"nothing allowed"| retry["One Haiku retry with the guard's reasons"]
-  retry -->|"still refused"| play["Rules playbook, else escalate"]
-  forced --> out["ANSWER.md, REASONING.md, trace.jsonl<br/>d/render.ts"]
-  take --> out
-  sup --> out
-  maj --> out
-  retry -->|"allowed"| out
-  play --> out
-```
-
-- **Forced triggers** count only recent words from a tenant, landlord or contractor, and skip negated
-  mentions ("no smell of gas"). Text that tries to instruct the agency (prompt injection inside a case)
-  is shown to the models as a warning; it is never a reason to escalate on its own.
-- **Votes, not self-reported confidence.** Agreement between the three votes is the uncertainty
-  signal.
-- **The supervisor** runs only when the votes split, the step is irreversible (close, assign,
-  instruct), the rules flagged something or a warning is open. It is capped per process at
-  `AGENT_D_SUPERVISOR_MAX_CALLS` (default 200) and `AGENT_D_SUPERVISOR_MAX_USD` (default 25);
-  `AGENT_D_SUPERVISOR=off` turns it off.
-- **The guard has the last word**, in order: forced trigger means escalate only; a deny-list (tenant
-  fees, bank details or door codes, promises, compensation or admissions, "safe to use"); an ask must
-  name the missing fact and an escalation its trigger; the shared core guard (assessment bars and pack
-  policy); D's contracts (no second approval request, no second contractor, instruct only after an
-  approved quote, send a quote only when a new one exists); every £ figure in a message must appear in
-  the case; while parties disagree on a fact the next step depends on, no assign, instruct, quote or
-  close.
-- **Never stalls a batch.** Each case has a deadline (`AGENT_D_CASE_TIMEOUT_MS`, default 240 s). A
-  failed call, schema error or timeout is recorded under "What failed" and the case still gets an answer.
-
-**Models.** Claude Haiku 5.5 (`claude-haiku-5-5`) for the three votes and the retry; Claude Opus 5.5
-(`claude-opus-5-5`) for the gated supervisor.
-
-**Settings** (all in [.env.example](.env.example)): `AGENT_D_SAMPLES` (votes, default 3),
-`AGENT_D_EFFORT` (`high`), `AGENT_D_SUPERVISOR` (`on`), `AGENT_D_SUPERVISOR_MODEL`,
-`AGENT_D_SUPERVISOR_MAX_CALLS` (200), `AGENT_D_SUPERVISOR_MAX_USD` (25), `AGENT_D_CASE_TIMEOUT_MS` (240000).
-
-**Results** (one run each; summaries in [docs/evals/](docs/evals/)):
-
-| Set | Acceptable next step | Prohibited step |
-|---|---|---|
-| Test split, 66 cuts ([d-test](docs/evals/d-test.md)) | **87.9%** | 0.0% |
-| Validation split, 71 cuts ([d-val](docs/evals/d-val.md)) | 83.1% | 1.4% |
-| Perturbation suite, 120 damaged copies of val + test cuts ([d-perturbation](docs/evals/d-perturbation.md)) | 85.0% | 2.5% |
-| Stress suite, 52 team-written cases in `data/outside` ([d-stress-suite](docs/evals/d-stress-suite.md)) | 90.4% | 0.0% |
-
-D builds on rules tuned on all 50 example cases, so the val and test scores are in-sample. The test
-run cost about $0.02 per cut. Known weakness: on some conflicts where escalating would also be
-acceptable, D picks a routine step instead (stress cases 107, 111, 114, 130).
-
-Design notes and every measurement behind these choices: [docs/plan/12-agent-d.md](docs/plan/12-agent-d.md).
-<!-- agent-d:end -->
+The product and `pnpm reality` run Agent C.
 
 <!-- agent-c:start -->
 ### Agent C
 
-Run it with `ENGINE=c` or `--agent c`.
+The engine behind the console and `pnpm reality`.
 
 ```mermaid
 flowchart TD
-  input["Case folder"] --> ingest["Ingest, fact ledger and dossier, from agent B<br/>long cases are digested first<br/>b/ingest, b/facts, b/stages/dossier"]
+  input["Case folder or live case"] --> ingest["Ingest, fact ledger and dossier<br/>long cases are digested first<br/>c/pipeline.ts"]
   ingest --> situate["Situate: where the job stands<br/>Claude Haiku 5.5"]
   situate --> decide["3 decide samples, vote, code checks<br/>Claude Opus 5.5"]
-  decide --> review{"Review dialogue, up to 2 rounds<br/>the reviewer raises cited issues, Claude Sonnet 5.5<br/>the decider fixes them or rejects with evidence<br/>c/pipeline.ts, c/stages.ts"}
-  review -->|"agreed"| gate["Gate, from agent B"]
+  decide --> review{"Review dialogue, up to 2 rounds<br/>the reviewer raises cited issues, Claude Sonnet 5.5<br/>the decider fixes them or rejects with evidence<br/>c/stages.ts"}
+  review -->|"agreed"| gate["Gate"]
   review -->|"still disagree on a blocking issue"| esc["Escalate with both positions and their evidence"]
   gate --> out["ANSWER.md, REASONING.md, trace.jsonl<br/>c/render.ts"]
   esc --> out
 ```
 
-C adds a property addendum to B's domain manual (`packages/agents/src/c/knowledge/property.md`): query
-conflicting details before acting on them, confirm price and scope before the visit, a new question is
-not a chase, and similar refinements.
+A property addendum (`packages/agents/src/c/knowledge/property.md`) covers the letting-agency refinements:
+query conflicting details before acting on them, confirm price and scope before the visit, and a new
+question is not a chase.
 
 **Models.** Claude Haiku 5.5 (`claude-haiku-5-5`) reads, Claude Opus 5.5 (`claude-opus-5-5`) decides,
 Claude Sonnet 5.5 (`claude-sonnet-5-5`) reviews. Set them with `AGENT_C_MODEL_READ`,
@@ -261,18 +183,16 @@ Copy the released cases so that `data/challenges/Property Management/001/index.m
 [data/README.md](data/README.md)), then:
 
 ```bash
-pnpm reality --track property --in data/challenges --out ANSWERS     # the default agent
-pnpm reality --track property --in data/challenges --out ANSWERS --agent a   # any other agent
+pnpm reality --track property --in data/challenges --out ANSWERS
 ```
 
 Each case gets `ANSWERS/<n>/` (folder `007` → `ANSWERS/7/`), written as soon as it finishes:
 
-- `ANSWER.md`: an "At a glance" block (what the system received, actions taken, actions the guard
-  refused, whether it escalated, what failed, the final result), then the next step and who it goes to, the message, why (with cited source ids), the
-  handover when it escalates, open disagreements, boundaries, what is still open, how it was decided
-  and whether anything was delivered, and what failed.
-- `REASONING.md`: the route taken, forced triggers and warnings, every vote, the supervisor's review,
-  guard refusals, the decision, and every model call with tokens and estimated cost.
+- `ANSWER.md`: what the system received, the next step and who it goes to, the message, why (with
+  cited source ids), the handover when it escalates, open disagreements, what is still open, and what
+  failed.
+- `REASONING.md`: where the job stands, the decide samples and the vote, the review dialogue, the
+  gate, and every model call with tokens and estimated cost.
 - `trace.jsonl`: the full trace (inputs, model calls with tokens and cost, retries, errors).
 
 Plus `ANSWERS/run.json` with the agent, track and timings. The outputs are never edited by hand: see
@@ -288,26 +208,15 @@ The examples record how each case went on. We cut each history at labelled decis
 compare the agent's next step with what was acceptable there (labels: `packages/tracks/src/property/eval`).
 
 ```bash
-pnpm eval --offline                                              # agent A's rules only, no network
-pnpm --filter @casework/agents bench --agent <id> --split val    # an agent on the validation cuts
-pnpm --filter @casework/agents bench --suite outside --agent <id> # team-written stress suite
+pnpm --filter @casework/agents bench --agent c --split val       # Agent C on the validation cuts
+pnpm --filter @casework/agents bench --suite outside --agent c   # team-written stress suite
 pnpm --filter @casework/tracks inspect 033 --cut 9               # how the rules read one case at one moment
 # Claude Code plan instead of API credit: sign in with `claude`, then
-EVAL_BACKEND=claude-code pnpm harness run --agent <id> --suite smoke --backend claude-code
+EVAL_BACKEND=claude-code pnpm harness run --agent c --suite smoke --backend claude-code
 ```
 
-The current agent's results are in its section in §3. Baselines (one run each; summaries in
-[docs/evals/](docs/evals/)):
-
-| Set | Agent | Acceptable next step | Prohibited step |
-|---|---|---|---|
-| Test split, 66 cuts | A | 86.4% | 0.0% |
-| All 258 tuning cuts | A (Haiku) | 81.0% | 1.6% |
-| All 258 tuning cuts | rules only | 65.5% | 4.7% |
-| 70 held-out cuts labelled afterwards | A (Haiku) / rules only | 74.3% / 67.1% | 0.0% / 2.9% |
-
-How to read them: differences of a few points are within run-to-run noise, and the labels were drafted
-by model reviewers, so they are a baseline, not ground truth.
+No benchmark summary for Agent C is committed yet. The labels were drafted by model reviewers, so a
+score is a baseline, not ground truth.
 
 ### Screens
 
@@ -318,7 +227,7 @@ by model reviewers, so they are a baseline, not ground truth.
 | `/runs` | Every agent run as it happens. |
 | `/reality` | Run the eval on the labelled examples and Reality Test batches, and read `ANSWERS/`. |
 | `/architecture` | Overview diagram, plus **Rules**, **Tools**, **Cost** and **Directory** subtabs. |
-| `/agents` | How the agents work and their eval results side by side. |
+| `/agents` | How Agent C works. |
 
 Example cases from `data/public` are kept for evaluation and hidden from the inbox. Set
 `INBOX_EXAMPLES=show` to list them.
@@ -331,21 +240,21 @@ Every variable is listed with its default in [.env.example](.env.example). The m
 |---|---|---|
 | `ANTHROPIC_API_KEY` | recommended | Claude API. Without it, decisions come from the rules-only playbook |
 | `EVAL_BACKEND` | no | `api` (default) or `claude-code`: evals and bench use the logged-in Claude Code plan (`claude -p`) instead of the API |
-| `ENGINE` | no | Which agent the product and `pnpm reality` run (see §3) |
+| `ENGINE` | no | Leave unset. The product and `pnpm reality` run Agent C (see §3) |
 | `AGENTS_MODEL` | no | Shared default model (default `claude-haiku-5-5`) |
 | `ELEVENLABS_API_KEY` | voice | ElevenLabs. `ELEVENLABS_AGENT_ID`, `_TOOL_ID`, `_WEBHOOK_ID` and `_WEBHOOK_SECRET` are written by `pnpm tunnel` / `pnpm voice:setup` |
 | `ELEVENLABS_LLM`, `ELEVENLABS_VOICE_ID`, `AGENCY_NAME` | no | The voice agent's model (default `gemini-2.5-flash`), voice and the agency name it uses |
 | `PUBLIC_URL`, `NGROK_DOMAIN` | voice | Written by `pnpm tunnel`; where ElevenLabs sends the mid-call tool and post-call webhook |
 | `AGENTMAIL_API_KEY` | email | AgentMail. `AGENTMAIL_INBOX` is written by `pnpm email:setup` |
 | `DB_PATH` | no | Live store (default `~/.casework/casework.db`; keep it outside the repo, or `next dev` reloads in a loop) |
-| `REALITY_CONCURRENCY`, `TOOL_TIMEOUT_MS` | no | Batch parallelism (default 6), per-tool timeout for agent A (default 8000) |
+| `REALITY_CONCURRENCY`, `TOOL_TIMEOUT_MS` | no | Batch parallelism (default 6) and per-tool timeout (default 8000) |
 
 ## 5. Models, APIs and services
 
-- **Anthropic Claude** (`@anthropic-ai/sdk`):
-  - **Claude Haiku 5.5** (`claude-haiku-5-5`): agents A and B, and drafting follow-through messages
-    in the console.
-  - The current agent's models (Haiku, Opus and Sonnet 5.5) are listed in its section in §3.
+- **Anthropic Claude** (`@anthropic-ai/sdk`). Agent C uses three models (see §3):
+  - **Claude Haiku 5.5** (`claude-haiku-5-5`) reads the case, and drafts follow-through messages in the console.
+  - **Claude Opus 5.5** (`claude-opus-5-5`) decides.
+  - **Claude Sonnet 5.5** (`claude-sonnet-5-5`) reviews.
 - **ElevenLabs Conversational AI**: the voice agent (`@elevenlabs/react` in the browser; agents,
   tools, webhooks and conversations APIs on the server). The voice agent's own conversation model is
   chosen in ElevenLabs by `ELEVENLABS_LLM` (default `gemini-2.5-flash`); it only talks to the caller and

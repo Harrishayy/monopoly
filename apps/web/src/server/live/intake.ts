@@ -216,6 +216,10 @@ export function gateOutbound(caseRef: string, runId: string, view: RunView) {
 /** Sends an outbound message through its channel and records the result. Never throws. */
 export async function deliver(id: string, o: Outbound): Promise<{ ok: boolean; error?: string }> {
   const { setOutboundStatus } = await import('./store');
+  if (o.channel === 'email' && !senders.has('email')) {
+    const { ensureEmailSender } = await import('./channels/email');
+    ensureEmailSender();
+  }
   const send = senders.get(o.channel);
   if (!send || !o.address) {
     const error = !send ? `No live ${o.channel} channel connected` : 'No address';

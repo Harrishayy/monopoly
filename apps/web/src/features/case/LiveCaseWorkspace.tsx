@@ -12,6 +12,7 @@ import { Mascot } from '@/domain/mascot';
 import { AssessmentPanel, AuditLogRow, DecisionPanel, PipelineStrip, RunTrace } from '@/domain/run';
 import { Panes } from '@/layout';
 import { api, useApi } from '@/lib/api';
+import { VIDEO_DEMO_REF } from '@/lib/demo';
 import type { OutboundView, RunSummary } from '@/lib/api-types';
 import { useLiveSignal } from '@/lib/live';
 import { useRunStream } from '@/lib/sse';
@@ -26,10 +27,14 @@ type Tab = 'review' | 'conversation' | 'actions';
 export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; vocabulary: Vocabulary; list: React.ReactNode }) {
   const ref = initial.ref;
   const [tab, setTab] = useState<Tab>('conversation');
-  // ?tab=review (from old approval links) opens the review straight away.
+  const [autoReview, setAutoReview] = useState(true);
+  // ?tab= picks the opening view. The video run uses ?tab=conversation so the email chain stays on camera.
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get('tab');
-    if (t === 'review' || t === 'actions' || t === 'conversation') setTab(t);
+    if (t === 'review' || t === 'actions' || t === 'conversation') {
+      setTab(t);
+      if (t !== 'review') setAutoReview(false);
+    }
   }, []);
   const caseApi = useApi<Case>(`/api/cases/${encodeURIComponent(ref)}`, { initial, live: true });
   const c = caseApi.data ?? initial;
@@ -62,8 +67,7 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
   const runStatus: ChipStatus | undefined = runId ? (view.status === 'running' ? 'running' : view.outcome) : undefined;
   const held = outbound.data?.filter((o) => o.status === 'awaiting_approval' || o.status === 'failed') ?? [];
   const crm = c.sources.filter((s) => s.kind === 'crm');
-  // Open on the review when something is waiting for a person.
-  const [autoReview, setAutoReview] = useState(true);
+  // Open on the review when something is waiting for a person, unless the URL asked for another tab.
   useEffect(() => {
     if (autoReview && held.length) {
       setTab('review');
@@ -97,7 +101,14 @@ export function LiveCaseWorkspace({ c: initial, vocabulary, list }: { c: Case; v
         statusLabel={held.length ? 'Needs approval' : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="primary" icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
+            {ref === VIDEO_DEMO_REF && (
+              <Button size="sm" variant="primary" icon="call" asChild>
+                <a href="/portal?demo=1" target="_blank" rel="noreferrer">
+                  Call on portal
+                </a>
+              </Button>
+            )}
+            <Button size="sm" variant={ref === VIDEO_DEMO_REF ? 'secondary' : 'primary'} icon="decide" onClick={rerun} loading={starting} disabled={view.status === 'running' && !!runId}>
               Run agent again
             </Button>
             <DeleteCase caseRef={ref} title={c.title} noun={vocabulary.case.toLowerCase()} />

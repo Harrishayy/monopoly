@@ -25,7 +25,7 @@ From the repo root:
 ```bash
 pnpm bench --agent a,b --split val                 # score both agents on the validation cases
 pnpm bench --agent b --split test --name "final"   # the held-out test set; run rarely
-pnpm answer --agent b --in "data/challenges/Property Management" --out ANSWERS   # Reality Test
+pnpm answer --agent c --in "data/challenges/Property Management" --out ANSWERS   # Reality Test (C is the default)
 pnpm answer --agent a --in "data/public/Property Management" --withhold outcomes  # practice
 pnpm --filter @casework/agents judge --limit 30    # agent B on the other tracks' escalation examples
 pnpm --filter @casework/agents split               # print the split

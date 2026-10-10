@@ -12,7 +12,7 @@ const Body = z.object({
   /** Hide history events from this number on, and decide as of just before it. */
   cutBefore: z.number().int().positive().optional(),
   mode: z.enum(['model', 'rules']).optional(),
-  agent: z.enum(['a', 'b']).optional(),
+  agent: z.enum(['a', 'b', 'c', 'd']).optional(),
 });
 
 /** Starts an agent run and returns its id. Stream it from /api/runs/[id]/events. */

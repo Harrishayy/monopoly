@@ -16,7 +16,7 @@ export interface RunMeta {
   track: string;
   autonomy: Autonomy;
   mode: RunMode;
-  /** A: rules + guarded tool loop (packages/core). B: fixed pipeline (packages/agents). */
+  /** Which engine ran: a, b, c or d. Default is ENGINE, else agent C. */
   agent: AgentId;
   cut?: RunCut;
   groupId?: string;
@@ -88,7 +88,7 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
     track: pack.id,
     autonomy: opts.autonomy,
     mode: opts.mode,
-    agent: opts.agent ?? 'a',
+    agent: opts.agent ?? getEngine().id,
     cut: opts.cut,
     groupId: opts.groupId,
     tag: opts.tag,
@@ -108,7 +108,7 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
   };
   // The same engine the Reality Test runner uses; only persistence and the outbound gate differ.
   const run = (async () => {
-    const dir = meta.agent === 'b' ? await exampleDir(c) : undefined;
+    const dir = meta.agent === 'a' ? undefined : await exampleDir(c);
     await getEngine(meta.agent).run(c, pack, {
       runId,
       autonomy: opts.autonomy,
@@ -180,6 +180,32 @@ export function listRuns(filter: { caseRef?: string; groupId?: string; standalon
 
 export function allRunRecords() {
   return [...runs.values()];
+}
+
+/** Drops in-memory runs for a case after its stored history was cleared. */
+export function forgetRunsFor(caseRef: string) {
+  for (const [id, rec] of runs) if (rec.meta.caseRef === caseRef) runs.delete(id);
+}
+
+/** Loads one stored run into memory so the console can show it without a restart. */
+export function importStoredRun(runId: string): boolean {
+  const stored = loadStoredRuns().find((r) => r.runId === runId);
+  if (!stored) return false;
+  const events = stored.events.flatMap((e) => {
+    const p = RunEvent.safeParse(e);
+    return p.success ? [p.data] : [];
+  });
+  runs.set(runId, {
+    meta: stored.meta as RunMeta,
+    events,
+    view: runView(events),
+    listeners: new Set(),
+    done: Promise.resolve(),
+    finished: true,
+    error: stored.error ?? undefined,
+    decision: stored.decision as HumanDecision | undefined,
+  });
+  return true;
 }
 
 /** Records the person's choice on a run's handover. Returns an error string when it can't. */

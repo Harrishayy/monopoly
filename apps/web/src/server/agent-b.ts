@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Case } from '@casework/core';
-import { agentB, configureEngineB, ExampleBank, type Agent } from '@casework/agents';
+import { agentB, agentC, configureEngineB, configureEngineC, ExampleBank, type Agent } from '@casework/agents';
 import { DATA_DIR } from './config';
 
 /** Agent B reads case folders, not loaded cases: find the folder this case came from. */
@@ -34,7 +34,16 @@ const agent = () =>
 /** Gives the shared engine B its few-shot memory, once per server. */
 configureEngineB(agent);
 
-/** The case folder for an example case, so engine B reads the supplied files rather than a re-render. */
+const gC = globalThis as unknown as { __caseworkAgentC?: Promise<Agent> };
+const agentCWithMemory = () =>
+  (gC.__caseworkAgentC ??= ExampleBank.build('all')
+    .then((bank) => agentC({ examples: (c) => bank.render(c) }))
+    .catch(() => agentC()));
+
+/** Gives the shared engine C the same few-shot memory, once per server. */
+configureEngineC(agentCWithMemory);
+
+/** The case folder for an example case, so a folder-based engine reads the supplied files rather than a re-render. */
 export async function exampleDir(c: Case): Promise<string | undefined> {
   return c.ref.startsWith('LIVE-') ? undefined : caseDir(c);
 }

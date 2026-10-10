@@ -8,8 +8,8 @@ import type { Autonomy, CaseSummary, Handover, HumanDecision, NextStep, Outcome,
 /** How a run decides: the model loop (falls back to the playbook) or the deterministic playbook only. */
 export type RunMode = 'model' | 'rules';
 
-/** Which agent ran: A (rules + guarded tool loop) or B (fixed pipeline). */
-export type AgentId = 'a' | 'b';
+/** Which agent ran: A (rules + guarded tool loop), B (fixed pipeline), C (B + review dialogue) or D. */
+export type AgentId = 'a' | 'b' | 'c' | 'd';
 
 /** What a run was for (smoke, split, Reality Test…), and the label it was given. From run.json, or guessed from the folder name. */
 export interface RunTag {

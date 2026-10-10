@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ago, duration, money } from './format';
+import { ago, duration, money, utcStamp } from './format';
 
 describe('format', () => {
   it('money formats pence', () => expect(money(42000)).toBe('£420.00'));
@@ -7,6 +7,9 @@ describe('format', () => {
     expect(duration(820)).toBe('820ms');
     expect(duration(12_400)).toBe('12.4s');
     expect(duration(372_000)).toBe('6m 12s');
+  });
+  it('utcStamp is stable across Node and the browser', () => {
+    expect(utcStamp('2026-10-10T13:48:41.000Z')).toBe('10 Oct 2026, 13:48 UTC');
   });
   it('ago is relative to now', () => {
     const now = Date.parse('2026-10-10T12:00:00Z');

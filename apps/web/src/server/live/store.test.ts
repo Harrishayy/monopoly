@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -32,5 +33,21 @@ describe('deleting a live case', () => {
 
   it('reports an unknown case', () => {
     expect(store.setCaseHidden('LIVE-999', true)).toBe(false);
+  });
+});
+
+describe('clearCaseHistory', () => {
+  it('drops messages, runs and outbound and leaves the case row', () => {
+    store.insertCase({ ref: 'LIVE-010', title: 'Tap', customerName: 'Alex', contact: 'alex@example.com', channel: 'email', status: 'new', createdAt: now, updatedAt: now });
+    store.insertSource('LIVE-010', { id: 'LIVE-010:event-1', kind: 'email', title: 'Tap', receivedAt: now, body: 'Drip', meta: {} });
+    store.saveRunMeta('run-010', 'LIVE-010', { runId: 'run-010', caseRef: 'LIVE-010' });
+    store.saveRunEvent('run-010', 0, { type: 'run.started' });
+    store.finishRun('run-010');
+    store.insertOutbound({ id: 'o10', caseRef: 'LIVE-010', runId: 'run-010', channel: 'email', recipient: 'tenant', address: 'alex@example.com', subject: null, body: 'Hi', status: 'sent', why: null, createdAt: now, sentAt: now, error: null });
+
+    expect(store.clearCaseHistory('LIVE-010')).toEqual(['run-010']);
+    expect(store.sourcesFor('LIVE-010')).toEqual([]);
+    expect(store.listOutbound({ caseRef: 'LIVE-010' })).toEqual([]);
+    expect(store.getLiveCaseRow('LIVE-010')?.title).toBe('Tap');
   });
 });

@@ -59,6 +59,6 @@ Today a `revise` verdict gets one revision call, and the gate then judges by sam
 
 ## Open questions for the team
 
-1. **Which agent runs the Reality Test?** `pnpm reality` runs agent A (`packages/core` `runCase`). Agent B runs through `pnpm answer --agent b`. We should pick by `test`-split score by about 15:30 and point the final run at the winner.
+1. **Which agent runs the Reality Test?** `pnpm reality` and the live product run agent C (`ENGINE=c`). Pick another with `ENGINE=a|b|d` or `pnpm reality --agent a`.
 2. **Three eval entry points.** `pnpm eval` (agent A on the 258 cuts), `pnpm bench` (agents A and B on the same cuts, by split) and `pnpm harness` (`packages/evals`: rubric scenarios with a Claude judge, `11-evals.md`) overlap. The cuts and the bench hold the published numbers, so the bench should stay the scoreboard. `pnpm harness` adds perturbed variants (safety signals, planted instructions, tool failures) and the timed `rehearse` check, and is worth keeping for those.
 3. **Doc numbering.** `11-evals.md` and `11-property-workflow.md` share a number. One should be renumbered.

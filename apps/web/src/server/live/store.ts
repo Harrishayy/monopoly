@@ -216,6 +216,16 @@ export function countSources(caseRef: string): number {
   return (db().prepare(`SELECT COUNT(*) AS n FROM sources WHERE case_ref = ?`).get(caseRef) as { n: number }).n;
 }
 
+/** Drops messages, runs and outbound on a case. The case row stays. Used to re-seed the video demo. */
+export function clearCaseHistory(caseRef: string): string[] {
+  const runIds = (db().prepare(`SELECT run_id FROM runs WHERE case_ref = ?`).all(caseRef) as { run_id: string }[]).map((r) => r.run_id);
+  for (const id of runIds) db().prepare(`DELETE FROM run_events WHERE run_id = ?`).run(id);
+  db().prepare(`DELETE FROM runs WHERE case_ref = ?`).run(caseRef);
+  db().prepare(`DELETE FROM outbound WHERE case_ref = ?`).run(caseRef);
+  db().prepare(`DELETE FROM sources WHERE case_ref = ?`).run(caseRef);
+  return runIds;
+}
+
 /** A live case as the agent sees it. */
 export function liveCase(ref: string): Case | undefined {
   const row = getLiveCaseRow(ref);

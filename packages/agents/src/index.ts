@@ -14,7 +14,7 @@ export { runBench, score, summarise } from './bench/bench';
 export { ExampleBank } from './bench/examples';
 export { cutsFor, loadCuts, loadSplit } from './bench/labels';
 export { runCase } from './b/pipeline';
-export { configureEngineB, getEngine, materialise, type AnswersOptions, type Engine, type EngineContext, type EngineId } from './engine';
+export { configureEngineB, configureEngineC, DEFAULT_ENGINE, getEngine, materialise, type AnswersOptions, type Engine, type EngineContext, type EngineId } from './engine';
 export { findCaseDirs } from './b/ingest/casefile';
 export { domainActionOf } from './b';
 export { DEFAULT_MODEL, defaultCaller, structured } from './b/llm/client';

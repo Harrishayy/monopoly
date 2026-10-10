@@ -1,4 +1,5 @@
 import 'server-only';
+import { liveEnv } from '../env';
 import { ingest, registerSender } from '../intake';
 import { kvGet, kvSet, sourcesFor, type Outbound } from '../store';
 
@@ -31,12 +32,12 @@ interface Message extends MessageItem {
   attachments?: { attachment_id: string; filename?: string; content_type?: string; size?: number }[];
 }
 
-export const emailInbox = () => process.env.AGENTMAIL_INBOX ?? null;
+export const emailInbox = () => liveEnv('AGENTMAIL_INBOX') ?? null;
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${process.env.AGENTMAIL_API_KEY}`, 'Content-Type': 'application/json', ...init.headers },
+    headers: { Authorization: `Bearer ${liveEnv('AGENTMAIL_API_KEY')}`, 'Content-Type': 'application/json', ...init.headers },
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`AgentMail ${init.method ?? 'GET'} ${path} → ${res.status}: ${(await res.text()).slice(0, 300)}`);
@@ -122,15 +123,26 @@ async function send(o: Outbound) {
   });
 }
 
+/** Registers the AgentMail sender if the keys are on disk now. Safe to call more than once. */
+export function ensureEmailSender(): boolean {
+  if (!liveEnv('AGENTMAIL_API_KEY', true) || !emailInbox()) return false;
+  registerSender('email', send);
+  return true;
+}
+
+let pollingStarted = false;
+
 export async function startEmail() {
-  if (!process.env.AGENTMAIL_API_KEY || !emailInbox()) {
+  if (!ensureEmailSender()) {
     console.log('[email] AGENTMAIL_API_KEY / AGENTMAIL_INBOX not set; email channel off (run pnpm email:setup).');
     return;
   }
-  registerSender('email', send);
   // Only ingest mail that arrives from now on the first time; later restarts resume from the cursor.
   if (!kvGet(CURSOR_KEY)) kvSet(CURSOR_KEY, new Date().toISOString());
-  void pollOnce();
-  setInterval(() => void pollOnce(), POLL_MS).unref?.();
+  if (!pollingStarted) {
+    pollingStarted = true;
+    void pollOnce();
+    setInterval(() => void pollOnce(), POLL_MS).unref?.();
+  }
   console.log(`[email] polling ${emailInbox()} every ${POLL_MS / 1000}s`);
 }

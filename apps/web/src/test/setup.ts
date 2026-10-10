@@ -4,8 +4,8 @@ import { afterEach } from 'vitest';
 
 afterEach(() => cleanup());
 
-// jsdom has no matchMedia; components read prefers-reduced-motion.
-if (!window.matchMedia) {
+// jsdom has no matchMedia; components read prefers-reduced-motion. Node tests have no window.
+if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({ matches: false, media: query, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false }) as MediaQueryList;
 }

@@ -15,7 +15,7 @@ import { getAgents } from './registry';
 import { assessmentHint } from './hybrid';
 import { cModels } from './c';
 
-const USAGE = `agents answer --agent a|b|c --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
+const USAGE = `agents answer --agent a|b|c|d --in <dir> [--out <dir>] [--track property] [--withhold none|outcomes] [--cases 001,002]
               [--examples all|dev|none] [--concurrency 4] [--offline] [--model claude-haiku-5-5]
 agents bench  [--agent a,b,c,d] [--suite cuts|outside|perturb] [--variants clean,noise,…] [--split val|test|dev|all] [--labels both|cuts|holdout] [--limit N] [--examples dev|none] [--manuals off]
               [--concurrency 6] [--offline] [--model …] [--out <dir>]
@@ -104,7 +104,7 @@ async function main() {
 
   if (cmd === 'answer') {
     if (!flags.in) throw new Error(`--in is required\n${USAGE}`);
-    const id = (flags.agent ?? 'b') as AgentId;
+    const id = (flags.agent ?? 'c') as AgentId;
     const examples = usesBank([id]) ? await bank(flags.examples, 'all') : undefined;
     const [agent] = getAgents([id], registry(examples));
     let dirs = await findCaseDirs(here(flags.in));

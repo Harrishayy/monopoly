@@ -5,7 +5,11 @@ import type { Autonomy, Case, Outcome, Source, TrackPack } from '@casework/core'
 import { runCase, type EmitInput } from '@casework/core/agent';
 import type { Agent, AgentId } from './agent';
 import { agentB } from './b';
+import { agentC } from './c';
 import { getAgents } from './registry';
+
+/** The agent the product and `pnpm reality` run when ENGINE is unset. */
+export const DEFAULT_ENGINE: AgentId = 'c';
 
 /**
  * The one way anything runs a case. The live product (calls, emails, portal) and the Reality Test
@@ -85,7 +89,7 @@ function folderEngine(id: EngineId, label: string, agent: () => Promise<Agent>):
       const tmp = ctx.dir ? undefined : await materialise(c);
       try {
         const dir = ctx.dir ?? tmp!;
-        ctx.emit({ type: 'step.read', sourceIds: c.sources.map((s) => s.id), summary: `Agent B reads the case${ctx.cutBefore ? ` up to event ${ctx.cutBefore - 1}` : ''}, builds its fact ledger and decides.` });
+        ctx.emit({ type: 'step.read', sourceIds: c.sources.map((s) => s.id), summary: `Agent ${id.toUpperCase()} reads the case${ctx.cutBefore ? ` up to event ${ctx.cutBefore - 1}` : ''}, builds its fact ledger and decides.` });
         const d = await (await agent()).decide({ dir, track: pack.id, cutBefore: ctx.cutBefore, asOf: ctx.asOf, withhold: 'outcomes', offline: ctx.offline });
         ctx.emit({
           type: 'next.proposed',
@@ -197,16 +201,25 @@ export function configureEngineB(build: () => Promise<Agent>) {
   engines.delete('b');
 }
 
+/** Agent C gets the same few-shot memory when a builder is supplied. */
+let cAgent: () => Promise<Agent> = async () => agentC();
+export function configureEngineC(build: () => Promise<Agent>) {
+  let p: Promise<Agent> | undefined;
+  cAgent = () => (p ??= build().catch(() => agentC()));
+  engines.delete('c');
+}
+
 /**
- * The engine to run: 'a' natively, 'b' with its configured memory, any other registry agent through its folder
- * adapter. Default: ENGINE, else agent D (the best on val, test and the perturbation suite; docs/plan/12-agent-d.md).
+ * The engine to run: 'a' natively, 'b'/'c' with configured memory, any other registry agent through its folder
+ * adapter. Default: ENGINE, else agent C.
  */
 export function getEngine(id: EngineId | undefined = (process.env.ENGINE as EngineId | undefined)): Engine {
-  const key: EngineId = id ?? 'd';
+  const key: EngineId = id ?? DEFAULT_ENGINE;
   let e = engines.get(key);
   if (!e) {
     if (key === 'a') e = engineA;
     else if (key === 'b') e = folderEngine('b', 'Agent B · fixed pipeline', () => bAgent());
+    else if (key === 'c') e = folderEngine('c', 'Agent C · pipeline with review dialogue', () => cAgent());
     else {
       const agent = getAgents([key])[0]!;
       e = folderEngine(key, agent.label, async () => agent);
