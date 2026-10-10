@@ -62,7 +62,7 @@ pnpm eval --resume .casework/eval                     # re-run only cuts that fe
 pnpm --filter @casework/tracks inspect 033 --cut 9    # how the rules read one case at one moment
 ```
 
-On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a prohibited one 4.7% of the time. With the model (Haiku 5.5), that becomes 81.0% and 1.6%. The prompt was tuned on these same cuts, so treat 81% as optimistic. Details are in [docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md#evaluation).
+On the 258 labelled cuts, the rules alone choose an acceptable next step 65.5% of the time and a prohibited one 4.7% of the time. With the model (Haiku 5.5), that becomes 81.0% and 1.6%, but the prompt was tuned on those cuts. On 70 held-out cuts labelled afterwards, Haiku scores **74.3%** with no prohibited steps, against 67.1% for the rules alone. Details are in [docs/plan/11-property-workflow.md](docs/plan/11-property-workflow.md#evaluation).
 
 The web app (`pnpm dev`) runs the same agent and has these screens:
 

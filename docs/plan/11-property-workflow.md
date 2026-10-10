@@ -144,7 +144,16 @@ The current prompt fixed three faults the first Haiku run exposed:
 - it treated scrambled dates as conflicts;
 - it would not close, and chased for attachments marked "(unavailable)".
 
-Escalations fell from 30 to 6, and closes rose from 1 to 4. The fix gained 45 cuts and lost 5. These changes were made by studying misses on this same set of cuts, so 81% is an optimistic estimate. The rules behind them are general, not case-specific, but there is no held-out set.
+Escalations fell from 30 to 6, and closes rose from 1 to 4. The fix gained 45 cuts and lost 5. These changes were made by studying misses on this same set of cuts, so 81% is optimistic.
+
+**Held-out check.** `eval/holdout.json` holds 70 fresh cuts across 40 cases (15 determined, 55 judgement). They were labelled afterwards by reviewers who saw only the case data, never the prompt or the model's answers, and every cut is at least 2 events away from any tuning cut.
+
+| Held-out (70 cuts) | All | Determined (15) | Judgement (55) | Prohibited action chosen |
+|---|---|---|---|---|
+| Rules-only playbook | 67.1% | 60.0% | 69.1% | 2.9% |
+| **`claude-haiku-5-5` + rules + guard** | **74.3%** | 66.7% | 76.4% | **0.0%** |
+
+About 74% is the honest estimate, roughly 7 points below the tuning set. With only 70 cuts, it is uncertain by about ±5 points. Run it with `pnpm eval --cuts packages/tracks/src/property/eval/holdout.json`. Do not tune the prompt against it, or it stops being held out.
 
 The remaining misses are spread thin. The largest groups are chasing the contractor when a price should go to the landlord (3), and telling the landlord when the label wants the job closed (3). These are defensible but not labelled. Run batches at concurrency 5 or lower; higher rates hit API rate limits, which made most cuts fall back to the rules in a first attempt.
 
