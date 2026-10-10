@@ -1,23 +1,23 @@
 import { TRACK_META } from '@casework/tracks/meta';
 import type { TrackId } from '@casework/core';
-import { CaseListItem } from '@/domain/case';
+import { CaseList } from '@/domain/case';
 import { Panes } from '@/layout';
 import { listCases, summarise } from '@/server/cases';
 import { ACTIVE_TRACK } from '@/server/config';
-import { EmptyState, Eyebrow } from '@/ui';
+import { EmptyState, Kbd } from '@/ui';
 
 export async function InboxView() {
   const meta = TRACK_META[ACTIVE_TRACK as TrackId];
   const cases = (await listCases()).map(summarise);
+  const noun = meta.vocabulary.case.toLowerCase();
   if (!cases.length) {
     return (
       <EmptyState
         title={`No ${meta.vocabulary.cases.toLowerCase()} yet`}
         body={
           <>
-            Put the synthetic data for <b>{meta.label}</b> in <code className="font-mono">data/{meta.id}/</code>. Each track
-            pack&apos;s loader turns it into cases, and they appear here. Change the track with <code className="font-mono">TRACK</code>{' '}
-            in <code className="font-mono">.env</code>.
+            Point <code className="font-mono">DATA_DIR</code> in <code className="font-mono">.env</code> at a folder of {meta.label} cases (see{' '}
+            <code className="font-mono">data/README.md</code>). The track pack&apos;s loader turns each folder into a {noun}, and it appears here.
           </>
         }
       />
@@ -25,18 +25,23 @@ export async function InboxView() {
   }
   return (
     <Panes
-      list={
-        <div className="grid gap-1 p-2">
-          <div className="flex items-center justify-between px-2 pb-1 pt-2">
-            <Eyebrow>{meta.label}</Eyebrow>
-            <Eyebrow>{cases.length}</Eyebrow>
-          </div>
-          {cases.map((c) => (
-            <CaseListItem key={c.ref} c={c} />
-          ))}
-        </div>
+      list={<CaseList cases={cases} noun={meta.vocabulary.cases} label={meta.label} />}
+      detail={
+        <EmptyState
+          title={`Pick a ${noun}`}
+          body={
+            <div className="grid gap-2">
+              <p>
+                Open a {noun} to step through its history. At any point you choose, the agent sees only what came before, decides the next step, and you see that next to
+                what really happened.
+              </p>
+              <p className="flex items-center justify-center gap-1.5">
+                <Kbd keys={['j']} /> <Kbd keys={['k']} /> move through the list
+              </p>
+            </div>
+          }
+        />
       }
-      detail={<EmptyState title={`Pick a ${meta.vocabulary.case.toLowerCase()}`} body="Its sources, the agent's run and the decision appear here." />}
     />
   );
 }

@@ -24,7 +24,7 @@ export function runEventStream(runId: string, afterSeq = -1): Response {
         }
       };
       rec.events.filter((e) => e.seq > afterSeq).forEach((event) => send({ kind: 'event', event }));
-      if (rec.done) return send({ kind: 'end', error: rec.error });
+      if (rec.finished) return send({ kind: 'end', error: rec.error });
       const unsubscribe = subscribe(runId, send);
       const heartbeat = setInterval(() => controller.enqueue(enc.encode(': keep-alive\n\n')), 15_000);
       cleanup = () => {

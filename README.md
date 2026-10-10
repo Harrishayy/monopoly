@@ -42,6 +42,20 @@ Reality Test (put the released cases in `data/challenges/` first, see [data/READ
 pnpm reality --track property --in data/challenges --out ANSWERS
 ```
 
+The web app (`pnpm dev`) runs the same agent and has these screens:
+
+| Route | What it's for |
+|---|---|
+| `/inbox`, `/cases/<ref>` | Step through a case: pick any point in its history, let the agent decide with only what came before it, and compare its choice with what really happened next and the eval label (accepted, missed or prohibited). Also shows the sources, the live run trace, the pipeline strip (Read → Assess → Decide → Guard → Act / hand over), the decision and any handover. `?cut=<n>` and `?run=<id>` open a specific point or run. |
+| `/runs` | Every run in this session as a live card. |
+| `/escalations` | Handover cards waiting for a person. Choosing an option is recorded with the run. |
+| `/reality` | Run the eval on the labelled examples (rules-only runs are free) and Reality Test batches, and read `ANSWERS/` written by the CLI. |
+| `/tools` | Tools, policy rules, always-escalate triggers, tool health and how a run moves through the pipeline. |
+| `/agents` | For the team: how agent A and agent B work, and their eval results side by side on the same labelled moments. Reads what each agent wrote under `.casework/`. |
+| `/design` | Every component in every state, under all three visual directions. |
+
+Runs started in the UI are kept in memory and disappear when the server restarts. `pnpm reality` is still what writes `ANSWERS/`.
+
 Checks: `pnpm typecheck && pnpm test && pnpm build`.
 
 ### Environment variables

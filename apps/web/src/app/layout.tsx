@@ -9,6 +9,7 @@ import {
   Onest,
 } from 'next/font/google';
 import { DirectionSync } from '@/state/DirectionSync';
+import { Toaster, TooltipProvider } from '@/ui';
 import './globals.css';
 
 // All three directions' faces load while a direction is still being chosen.
@@ -33,7 +34,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-GB" data-dir="docket" className={fontVars} suppressHydrationWarning>
       <body>
         <DirectionSync />
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,0 +1,20 @@
+/* Outcome stamp skins. Ported from docs/design/casework-design-directions.html (.stamp). */
+.stamp { display: inline-flex; align-items: center; gap: 10px; color: var(--c); font: 800 22px/1 var(--font-d); text-transform: uppercase; letter-spacing: .06em; }
+[data-dir="docket"] .stamp { border: 3px double var(--c); padding: 10px 16px 9px; transform: rotate(-4deg); font-variation-settings: 'wdth' 125; letter-spacing: .08em; mix-blend-mode: multiply; border-radius: 4px; }
+[data-dir="docket"] .stamp.reveal { animation: stamp-thump var(--dur-stamp) var(--spring) both; }
+[data-dir="switchboard"] .stamp { font: 500 15px/1 var(--font-m); letter-spacing: .1em; padding: 12px 14px; border-radius: 6px; background: color-mix(in srgb, var(--c) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent); }
+[data-dir="switchboard"] .stamp::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 14px var(--c); }
+[data-dir="switchboard"] .stamp.reveal { animation: stamp-blink .6s steps(2) 3; }
+[data-dir="relay"] .stamp { background: var(--c); color: var(--surface); padding: 12px 20px; border-radius: 999px; border: 2px solid var(--line-strong); box-shadow: 3px 3px 0 var(--line-strong); font-size: 20px; letter-spacing: .01em; text-transform: none; }
+[data-dir="relay"] .stamp.reveal { animation: stamp-pop .5s var(--spring) both; }
+@keyframes stamp-thump { 0% { transform: scale(1.9) rotate(-12deg); opacity: 0 } 60% { transform: scale(.96) rotate(-3deg); opacity: 1 } 100% { transform: scale(1) rotate(-4deg) } }
+@keyframes stamp-blink { 50% { opacity: .25 } }
+@keyframes stamp-pop { 0% { transform: scale(.4) rotate(-6deg) } 100% { transform: scale(1) } }
+
+/* Trace rail between step nodes, per direction. */
+.trace-step::before { content: ""; position: absolute; left: 15px; top: 40px; bottom: -6px; width: 2px; background: var(--line); }
+.trace-step:last-child::before { display: none; }
+[data-dir="docket"] .trace-step::before { background: repeating-linear-gradient(var(--line-strong) 0 3px, transparent 3px 6px); width: 1px; left: 16px; opacity: .5; }
+[data-dir="relay"] .trace-step::before { width: 3px; left: 14.5px; }
+[data-dir="switchboard"] .trace-step[data-active] .trace-node { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 18px var(--accent); }
+.trace-step { animation: step-in var(--dur-base) var(--out) both; }

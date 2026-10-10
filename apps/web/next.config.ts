@@ -9,6 +9,8 @@ const config: NextConfig = {
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: ['@casework/core', '@casework/tracks'],
   reactStrictMode: true,
+  // Don't generate AGENTS.md: the repo keeps no text aimed at AI models outside CLAUDE.md.
+  agentRules: false,
 };
 
 export default config;

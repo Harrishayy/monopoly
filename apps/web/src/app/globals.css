@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "../tokens/index.css";
 @import "../domain/mascot/mascot.css";
+@import "../domain/run/stamp.css";
 
 /* Tailwind names → direction tokens. Use these (bg-surface, text-ink-2, rounded-ui, font-display…). */
 @theme inline {
@@ -38,3 +39,16 @@ body {
 }
 h1, h2, h3, h4 { font-family: var(--font-d); line-height: 1.1; text-wrap: balance; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Shared keyframes. Transform and opacity only, so they stay at 60fps. */
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pop-in { from { opacity: 0; transform: translate(-50%, -48%) scale(.97) } to { opacity: 1; transform: translate(-50%, -50%) scale(1) } }
+@keyframes slide-up { from { transform: translateY(100%) } to { transform: translateY(0) } }
+@keyframes slide-left { from { transform: translateX(100%) } to { transform: translateX(0) } }
+@keyframes step-in { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@keyframes shimmer { from { opacity: .55 } 50% { opacity: 1 } to { opacity: .55 } }
+.skeleton { animation: shimmer 1.4s var(--ease) infinite; }
+
+/* Relay: buttons press into their offset shadow. */
+[data-dir="relay"] .btn-primary, [data-dir="relay"] .btn-secondary { box-shadow: var(--shadow); }
+[data-dir="relay"] .btn-primary:active, [data-dir="relay"] .btn-secondary:active { box-shadow: none; transform: translate(3px, 3px); }

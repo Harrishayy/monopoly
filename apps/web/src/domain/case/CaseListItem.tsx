@@ -1,25 +1,48 @@
 import type { CaseSummary } from '@casework/core';
 import Link from 'next/link';
-import { StatusChip } from '@/ui';
 import { cn } from '@/lib/cn';
+import { Icon, StatusChip, type ChipStatus } from '@/ui';
+
+const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: '2-digit', timeZone: 'UTC' });
+import { KIND } from './kinds';
+
+export interface CaseListItemProps {
+  c: CaseSummary;
+  selected?: boolean;
+  /** Status from the latest run, when there is one. */
+  status?: ChipStatus;
+  unread?: boolean;
+  slaWarning?: boolean;
+}
 
 /** A row in the inbox. The whole row is one link. */
-export function CaseListItem({ c, selected }: { c: CaseSummary; selected?: boolean }) {
+export function CaseListItem({ c, selected, status, unread, slaWarning }: CaseListItemProps) {
   return (
     <Link
       href={`/cases/${encodeURIComponent(c.ref)}`}
       aria-current={selected ? 'page' : undefined}
+      data-ref={c.ref}
       className={cn(
         'grid gap-1.5 rounded-ui border-(length:--bw) border-transparent p-2.5 hover:bg-surface-2',
-        selected && 'border-accent/35 bg-accent-soft',
+        selected && 'border-accent/35 bg-accent-soft hover:bg-accent-soft',
+        slaWarning && 's-escalated border-l-4 border-l-(--c)',
       )}
     >
       <span className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] text-ink-2">{c.ref}</span>
-        <StatusChip status={c.status} className="px-1.5 py-0.5 text-[9.5px]" />
+        <span className="flex min-w-0 items-center gap-1.5 font-mono text-[11px] text-ink-2">
+          <Icon name={KIND[c.channel].icon} size={12} />
+          {c.ref}
+          {unread && <span className="size-1.5 rounded-full bg-accent" aria-label="Unread" role="img" />}
+        </span>
+        <StatusChip status={status ?? c.status} size="sm" />
       </span>
-      <span className="text-[13.5px] font-semibold leading-snug">{c.title}</span>
-      <span className="text-xs text-ink-2">{c.customer.name}</span>
+      <span className={cn('text-[13.5px] leading-snug', unread ? 'font-bold' : 'font-semibold')}>{c.title}</span>
+      <span className="flex items-center justify-between gap-2 text-xs text-ink-2">
+        <span className="truncate">{c.customer.name}</span>
+        <time dateTime={c.updatedAt} title="Latest event" className="shrink-0 font-mono text-[11px]">
+          {day.format(new Date(c.updatedAt))}
+        </time>
+      </span>
     </Link>
   );
 }

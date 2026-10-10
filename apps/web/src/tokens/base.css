@@ -18,6 +18,7 @@
   --spring: cubic-bezier(.3,1.5,.5,1); /* only the outcome stamp and Relay pops */
 
   /* layers */
+  --nav-h: 57px; /* TopNav height; sticky panes sit under it */
   --z-sticky: 10; --z-nav: 40; --z-toast: 50; --z-dialog: 60; --z-palette: 70;
 }
 

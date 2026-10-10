@@ -1,53 +1,58 @@
-import type { RunView, StepKind } from '@casework/core';
-import { TriangleAlert, BookOpen, Check, GitBranch, Hand, Lock, Wrench } from 'lucide-react';
-import { cn } from '@/lib/cn';
+'use client';
 
-const ICON: Record<StepKind, React.ComponentType<{ size?: number }>> = {
-  read: BookOpen,
-  tool: Wrench,
-  decide: GitBranch,
-  fail: TriangleAlert,
-  blocked: Lock,
-  escalate: Hand,
-  resolve: Check,
-};
+import type { RunView } from '@casework/core';
+import { useEffect, useRef } from 'react';
+import { VisuallyHidden } from '@/ui';
+import { TraceStep } from './TraceStep';
 
-const TONE: Partial<Record<StepKind, string>> = {
-  fail: 'text-bad border-bad/50',
-  blocked: 'text-bad border-bad/50',
-  escalate: 'text-hold border-hold',
-  resolve: 'text-ok border-ok',
-};
+/** Ordered steps of a run, live or replayed, from the shared RunView. Auto-scrolls while live unless you scrolled up. */
+export function RunTrace({ view, mode = 'replay', empty }: { view: RunView; mode?: 'live' | 'replay'; empty?: React.ReactNode }) {
+  const endRef = useRef<HTMLLIElement>(null);
+  const pinned = useRef(true);
+  const n = view.steps.length;
 
-/** Ordered steps of a run, from the shared RunView. Live and replay use the same component. */
-export function RunTrace({ view }: { view: RunView }) {
-  if (!view.steps.length) return null;
-  const last = view.steps.at(-1)?.seq;
+  useEffect(() => {
+    const onScroll = () => {
+      const el = endRef.current;
+      if (!el) return;
+      pinned.current = el.getBoundingClientRect().top < window.innerHeight + 120;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  useEffect(() => {
+    if (mode === 'live' && pinned.current) endRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [n, mode]);
+
+  if (!n) return <>{empty ?? null}</>;
+  const start = view.startedAt ? new Date(view.startedAt).getTime() : new Date(view.steps[0]!.at).getTime();
+  const last = view.steps.at(-1)!;
+  const failAttempts = new Map<number, number>();
+  for (const s of view.steps) {
+    if (s.kind !== 'fail' || !s.callId) continue;
+    failAttempts.set(s.seq, view.steps.filter((x) => x.kind === 'fail' && x.callId === s.callId && x.seq <= s.seq).length);
+  }
   return (
-    <ol className="grid" aria-live="polite">
-      {view.steps.map((s) => {
-        const Icon = ICON[s.kind];
-        const active = view.status === 'running' && s.seq === last;
-        return (
-          <li key={s.seq} className="relative grid grid-cols-[32px_minmax(0,1fr)] gap-3 py-2">
-            <span
-              className={cn(
-                'z-10 grid size-8 place-items-center rounded-full border-(length:--bw) border-line bg-surface-2 text-ink-2',
-                TONE[s.kind],
-                active && 'scale-110 border-accent bg-accent text-accent-ink',
-              )}
-            >
-              <Icon size={15} />
-            </span>
-            <div className="min-w-0">
-              <div className={cn('text-sm font-semibold [overflow-wrap:anywhere]', s.kind === 'tool' && 'font-mono text-[12.5px] font-medium')}>
-                {s.title}
-              </div>
-              <div className={cn('text-[13px] text-ink-2', s.kind === 'fail' && 'text-bad')}>{s.detail}</div>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <>
+      <ol className="grid" aria-label="Run trace">
+        {view.steps.map((s) => (
+          <TraceStep
+            key={s.seq}
+            kind={s.kind}
+            title={s.title}
+            detail={s.detail}
+            at={s.at}
+            offsetMs={new Date(s.at).getTime() - start}
+            state={view.status === 'running' && s.seq === last.seq ? 'active' : 'done'}
+            call={s.kind === 'tool' && s.callId ? view.toolCalls.find((c) => c.callId === s.callId) : undefined}
+            attempt={failAttempts.get(s.seq)}
+          />
+        ))}
+        <li ref={endRef} aria-hidden className="h-px" />
+      </ol>
+      <div aria-live="polite">
+        <VisuallyHidden>{mode === 'live' ? `${last.title}. ${view.status === 'completed' ? 'Run finished.' : ''}` : ''}</VisuallyHidden>
+      </div>
+    </>
   );
 }
