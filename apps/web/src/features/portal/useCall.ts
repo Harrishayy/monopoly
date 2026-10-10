@@ -37,6 +37,13 @@ export interface TypedDetails {
   name?: string;
   email?: string;
   phone?: string;
+  address?: string;
+}
+
+/** The assistant's opening line when the caller filled in their details first, so it doesn't ask for their name again. */
+function greeting(d: TypedDetails) {
+  const first = d.name?.trim().split(/\s+/)[0];
+  return `Hello${first ? ` ${first}` : ''}, thanks for your details${d.address ? `; I've got the property as ${d.address}` : ''}. What's the problem?`;
 }
 
 const errorText = (err: unknown) => (err instanceof Error ? err.message : typeof err === 'string' ? err : 'Something went wrong.');
@@ -80,6 +87,8 @@ export function useCall() {
   const [closing, setClosing] = useState(false);
   const [conversationId, setConversationId] = useState<string>();
   const callerBye = useRef(false);
+  /** Details from the pre-call form, filed on the case as soon as the call connects. */
+  const pending = useRef<TypedDetails>(undefined);
 
   const phaseRef = useRef<CallPhase>('idle');
   const convId = useRef<string>(undefined);
@@ -195,7 +204,8 @@ export function useCall() {
     return () => md.removeEventListener('devicechange', onChange);
   }, [refreshDevices, inputId, changeInputDevice]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (details?: TypedDetails) => {
+    pending.current = details;
     setError(undefined);
     setNotHeard(false);
     // Browsers only expose the microphone on https or localhost; anywhere else mediaDevices is missing.
@@ -235,7 +245,11 @@ export function useCall() {
         go('failed');
         endSession();
       }, CONNECT_TIMEOUT_MS);
-      startSession({ signedUrl: body.signedUrl, ...(inputId !== 'default' && { inputDeviceId: inputId }) });
+      startSession({
+        signedUrl: body.signedUrl,
+        ...(inputId !== 'default' && { inputDeviceId: inputId }),
+        ...(details?.name && { overrides: { agent: { firstMessage: greeting(details) } } }),
+      });
     } catch (err) {
       setError(errorText(err));
       go('failed');
@@ -343,7 +357,7 @@ export function useCall() {
       if (!res.ok) throw new Error(body.error ?? 'We could not save that. Please try again.');
       if (body.caseRef) setCaseRef(body.caseRef);
       if (phaseRef.current === 'live') {
-        const said = [t.name && `name "${t.name}"`, t.email && `email "${t.email}"`, t.phone && `phone "${t.phone}"`].filter(Boolean).join(', ');
+        const said = [t.name && `name "${t.name}"`, t.email && `email "${t.email}"`, t.phone && `phone "${t.phone}"`, t.address && `property address "${t.address}"`].filter(Boolean).join(', ');
         try {
           sendContextualUpdate(`The caller typed their details on screen: ${said}. These are saved on the case. Use these exact spellings and don't ask them to spell these again.`);
         } catch {
@@ -353,6 +367,17 @@ export function useCall() {
     },
     [sendContextualUpdate],
   );
+
+  // File the pre-call details once the call has an id: the case opens with the caller's name and contact,
+  // and the assistant gets the exact spellings so it doesn't ask for them.
+  useEffect(() => {
+    const d = pending.current;
+    if (phase !== 'live' || !conversationId || !d) return;
+    pending.current = undefined;
+    void saveTyped(d).catch(() => {
+      // The caller can still say or retype them; the transcript is filed either way.
+    });
+  }, [phase, conversationId, saveTyped]);
 
   // Keep the screen awake and warn before leaving while the call is live.
   useEffect(() => {

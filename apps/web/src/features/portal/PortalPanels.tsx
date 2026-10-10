@@ -25,11 +25,11 @@ export function PortalPanels({ config }: { config: PortalConfig }) {
           { value: 'write', label: 'Write to us' },
         ]}
       />
-      <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <div className={cn('h-full min-h-0', tab !== 'call' && 'hidden lg:block')}>
+      <div className="grid gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:grid-rows-[minmax(0,1fr)]">
+        <div className={cn('lg:h-full lg:min-h-0', tab !== 'call' && 'hidden lg:block')}>
           <CallPanel enabled={config.voice} agency={config.agency} onWrite={() => setTab('write')} />
         </div>
-        <div className={cn('h-full min-h-0', tab !== 'write' && 'hidden lg:block')}>
+        <div className={cn('lg:h-full lg:min-h-0', tab !== 'write' && 'hidden lg:block')}>
           <ReportForm email={config.email} />
         </div>
       </div>

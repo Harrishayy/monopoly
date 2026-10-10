@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { parseEnv } from 'node:util';
 import { REPO_ROOT } from '../../config';
 import { amend, ingest, type IngestResult } from '../intake';
-import { getSourceByExternalId, kvGet, kvSet, updateCase } from '../store';
+import { getLiveCaseRow, getSourceByExternalId, kvGet, kvSet, updateCase } from '../store';
 
 /**
  * ElevenLabs voice adapter. Three ways a call reaches a case, all idempotent on the conversation id:
@@ -143,11 +143,17 @@ export function logIssue(a: LogIssueArgs): IngestResult & { say: string } {
         externalId: id,
         meta,
       });
+  retitle(r.caseRef, logged.issue);
   const say =
     a.urgency === 'emergency'
       ? `Logged as an emergency under reference ${spoken(r.caseRef)}. A coordinator has been alerted now.`
       : `Logged under reference ${spoken(r.caseRef)}. A coordinator will review it and follow up with you.`;
   return { ...r, say };
+}
+
+/** A call opened from the portal's details form is titled "Phone call" until we know what it is about. */
+function retitle(caseRef: string, title?: string) {
+  if (title && getLiveCaseRow(caseRef)?.title === 'Phone call') updateCase(caseRef, { title, updatedAt: new Date().toISOString() });
 }
 
 const stripEmpty = <T extends object>(a: T) => Object.fromEntries(Object.entries(a).filter(([, v]) => v)) as T;
@@ -199,7 +205,10 @@ export function recordFinishedCall(d: ConversationData, via: 'webhook' | 'poller
   const meta = { provider: 'elevenlabs', conversationId: d.conversation_id, callState: 'ended', via, durationSecs: d.metadata?.call_duration_secs };
   const receivedAt = d.metadata?.start_time_unix_secs ? new Date(d.metadata.start_time_unix_secs * 1000).toISOString() : undefined;
   let r: IngestResult | undefined;
-  if (existing) r = amend(id, body, meta);
+  if (existing) {
+    r = amend(id, body, meta);
+    if (r) retitle(r.caseRef, logged?.issue ?? summary?.split(/[.!?]/)[0]?.slice(0, 90));
+  }
   else if ((d.transcript ?? []).some((t) => t.role === 'user' && t.message)) {
     r = ingest({
       channel: 'call',

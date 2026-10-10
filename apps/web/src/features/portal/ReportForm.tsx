@@ -59,10 +59,10 @@ export function ReportForm({ email }: { email?: string }) {
 
   if (state.kind === 'done')
     return (
-      <Surface as="section" className="flex h-full flex-col justify-center gap-3 p-6" role="status" aria-labelledby="h-report">
+      <Surface as="section" className="flex flex-col justify-center gap-3 p-5 sm:p-6 lg:h-full" role="status" aria-labelledby="h-report">
         <Eyebrow tone="accent">Report received</Eyebrow>
-        <h2 id="h-report" className="text-2xl font-bold tracking-tight">
-          Your reference is <span className="font-mono">{state.ref}</span>
+        <h2 id="h-report" className="text-xl font-bold tracking-tight sm:text-2xl">
+          Your reference is <span className="whitespace-nowrap font-mono">{state.ref}</span>
         </h2>
         <p className="text-[14px] text-ink-2">A coordinator will review it and get back to you. Quote the reference if you contact us again.</p>
         <div className="flex flex-wrap gap-2">
@@ -82,17 +82,17 @@ export function ReportForm({ email }: { email?: string }) {
     );
 
   return (
-    <Surface as="form" padded={false} onSubmit={submit} className="flex h-full flex-col overflow-hidden" aria-labelledby="h-report">
-      <div className="grid shrink-0 gap-1 border-b-(length:--bw) border-line px-5 py-3.5">
+    <Surface as="form" padded={false} onSubmit={submit} className="flex flex-col lg:h-full lg:overflow-hidden" aria-labelledby="h-report">
+      <div className="grid shrink-0 gap-1 border-b-(length:--bw) border-line px-4 py-3.5 sm:px-5">
         <Eyebrow>Prefer to write?</Eyebrow>
         <h2 id="h-report" className="text-xl font-bold tracking-tight">
           Report an issue
         </h2>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
+      <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         <div className="grid shrink-0 gap-3 sm:grid-cols-2">
           <Input label="Your name" value={form.name} onChange={set('name')} required autoComplete="name" />
-          <Input label="Phone or email" value={form.contact} onChange={set('contact')} required autoComplete="email" />
+          <Input label="Phone or email" value={form.contact} onChange={set('contact')} required autoComplete="email" inputMode="email" />
           <Input label="Property address" value={form.address} onChange={set('address')} required autoComplete="street-address" />
           <Input label="What’s wrong?" placeholder="e.g. Boiler not heating" value={form.issue} onChange={set('issue')} required maxLength={120} />
         </div>
@@ -102,7 +102,7 @@ export function ReportForm({ email }: { email?: string }) {
           </span>
           <SegmentedControl
             label="How urgent is it?"
-            className="justify-self-start"
+            className="w-full sm:w-auto sm:justify-self-start"
             value={form.urgency}
             onChange={(v) => setForm((f) => ({ ...f, urgency: v as Urgency }))}
             options={[
@@ -125,8 +125,8 @@ export function ReportForm({ email }: { email?: string }) {
           </p>
         )}
       </div>
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t-(length:--bw) border-line px-5 py-3">
-        <Button type="submit" variant="primary" loading={state.kind === 'sending'}>
+      <div className="flex shrink-0 flex-col items-stretch gap-x-4 gap-y-2.5 border-t-(length:--bw) border-line px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
+        <Button type="submit" variant="primary" loading={state.kind === 'sending'} className="h-11 sm:h-auto">
           <Icon name="arrow" size={16} />
           Send report
         </Button>

@@ -62,7 +62,7 @@ Casework does the reading and the routine moves, and knows when to stop:
 |---|---|
 | **Voice** | An ElevenLabs Conversational AI agent answers as the agency's tenant line. Mid-call it calls our `log_issue` tool, so the case appears while the caller is still talking. The post-call webhook (HMAC-verified) files the full transcript and the agent re-runs. A poller files calls that no webhook delivered. |
 | **Email** | A real inbox (AgentMail, e.g. `casework-lettings@agentmail.to`). New mail becomes a case within about 10 s. Replies are sent in the same thread. A follow-up joins the existing case by thread, then by sender. |
-| **Tenant portal** | `/portal`: a "Call us" button (browser voice call) and a report form. |
+| **Tenant portal** | `/portal`: a "Call us" button (browser voice call) and a report form, built for phones first. Before a call the caller types their name, contact and address, so the case opens under them at once and the assistant greets them by name. On a phone the transcript reads as a chat in the page, with the call controls fixed at the bottom. |
 | **Deleting cases** | "Delete" on a live case hides it from the inbox, approvals, runs and counts (with Undo). It is a flag: the history and costs stay in the database, and new messages from the same person open a fresh case. |
 | **One record** | Every message, every agent run (each step, tool call and refusal), every outbound message and every human decision is stored and survives restarts. |
 | **Approvals** | The *Needs approval* inbox filter. Each case's **Review messages** tab shows why the gate held the message, the draft in an editor, and who's involved. Approve & send, or reject. |

@@ -158,6 +158,8 @@ async function main() {
       },
     },
     platform_settings: {
+      // The portal asks for the caller's details first and opens with a greeting that uses them.
+      overrides: { conversation_config_override: { agent: { first_message: true } } },
       ...(webhookId ? { workspace_overrides: { webhooks: { post_call_webhook_id: webhookId, events: ['transcript'] } } } : {}),
     },
   };
@@ -189,6 +191,7 @@ async function main() {
   const got = await el<any>('GET', `/v1/convai/agents/${agentId}`);
   const tools = got.conversation_config?.agent?.prompt?.tool_ids ?? [];
   console.log(`agent: ${got.agent_id} "${got.name}" voice=${got.conversation_config?.tts?.voice_id} tools=${JSON.stringify(tools)}`);
+  console.log(`first message override: ${got.platform_settings?.overrides?.conversation_config_override?.agent?.first_message === true ? 'on' : 'OFF'}`);
   console.log(`post-call webhook on agent: ${JSON.stringify(got.platform_settings?.workspace_overrides?.webhooks ?? null)}`);
   console.log(`Test it: https://elevenlabs.io/app/talk-to?agent_id=${agentId}`);
 }

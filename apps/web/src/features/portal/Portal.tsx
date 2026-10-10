@@ -12,7 +12,8 @@ export interface PortalConfig {
 /** Tenant help in one screen: call the voice line or write in. Everything lands in the console as a live case. */
 export function Portal({ config }: { config: PortalConfig }) {
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-bg text-ink">
+    // Phones scroll the page like any website; wide screens get a fixed two-panel layout.
+    <div className="flex min-h-dvh flex-col bg-bg text-ink lg:h-dvh lg:overflow-hidden">
       <header className="shrink-0 border-b-(length:--bw) border-line bg-surface-2">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 sm:px-6">
           <Mascot size={30} decorative />
@@ -50,9 +51,9 @@ export function Portal({ config }: { config: PortalConfig }) {
         </span>
       </p>
 
-      <main className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-5 lg:py-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-4 sm:px-6 lg:min-h-0 lg:gap-5 lg:py-6">
         <div className="grid shrink-0 gap-1">
-          <h1 className="text-2xl font-bold tracking-tight lg:text-[28px]">Something wrong with your home?</h1>
+          <h1 className="text-[22px] font-bold leading-tight tracking-tight text-balance sm:text-2xl lg:text-[28px]">Something wrong with your home?</h1>
           <p className="hidden text-[14px] text-ink-2 sm:block">Talk to us now or tell us in writing. Every report gets a reference, and a coordinator follows it up.</p>
         </div>
         <PortalPanels config={config} />
