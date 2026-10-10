@@ -2,7 +2,8 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { RunEvent, runView, type Autonomy, type Case, type HumanDecision, type RunView, type TrackPack } from '@casework/core';
 import { runCase, type EmitInput } from '@casework/core/agent';
-import type { RunCut, RunMode, RunSummary } from '@/lib/api-types';
+import type { AgentId, RunCut, RunMode, RunSummary, RunTag } from '@/lib/api-types';
+import { runAgentB } from './agent-b';
 
 export type RunSignal = { kind: 'event'; event: RunEvent } | { kind: 'end'; error?: string };
 
@@ -13,8 +14,12 @@ export interface RunMeta {
   track: string;
   autonomy: Autonomy;
   mode: RunMode;
+  /** A: rules + guarded tool loop (packages/core). B: fixed pipeline (packages/agents). */
+  agent: AgentId;
   cut?: RunCut;
   groupId?: string;
+  /** Inherited from the eval or batch; single runs started by hand are ad hoc. */
+  tag?: RunTag;
   startedAt: string;
 }
 
@@ -36,8 +41,10 @@ const runs: Map<string, RunRecord> = (g.__caseworkRuns ??= new Map<string, RunRe
 export interface StartRunOptions {
   autonomy: Autonomy;
   mode: RunMode;
+  agent?: AgentId;
   cut?: RunCut;
   groupId?: string;
+  tag?: RunTag;
   signal?: AbortSignal;
 }
 
@@ -50,8 +57,10 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
     track: pack.id,
     autonomy: opts.autonomy,
     mode: opts.mode,
+    agent: opts.agent ?? 'a',
     cut: opts.cut,
     groupId: opts.groupId,
+    tag: opts.tag,
     startedAt: new Date().toISOString(),
   };
   const rec = { meta, events: [], view: runView([]), listeners: new Set(), finished: false } as unknown as RunRecord;
@@ -63,14 +72,18 @@ export function startRun(c: Case, pack: TrackPack, opts: StartRunOptions): strin
     rec.view = runView(rec.events);
     rec.listeners.forEach((l) => l({ kind: 'event', event }));
   };
-  rec.done = runCase(c, pack, {
-    runId,
-    autonomy: opts.autonomy,
-    emit,
-    asOf: opts.cut?.asOf,
-    signal: opts.signal,
-    ...(opts.mode === 'rules' ? { model: null } : {}),
-  })
+  const run =
+    meta.agent === 'b'
+      ? runAgentB(c, { runId, track: pack.id, autonomy: opts.autonomy, cutBefore: opts.cut?.cutBefore, asOf: opts.cut?.asOf, offline: opts.mode === 'rules' }, emit)
+      : runCase(c, pack, {
+          runId,
+          autonomy: opts.autonomy,
+          emit,
+          asOf: opts.cut?.asOf,
+          signal: opts.signal,
+          ...(opts.mode === 'rules' ? { model: null } : {}),
+        });
+  rec.done = run
     .then(() => undefined)
     .catch((err: unknown) => {
       rec.error = err instanceof Error ? err.message : String(err);
@@ -93,8 +106,12 @@ export function subscribe(runId: string, fn: (s: RunSignal) => void) {
 export function summariseRun(rec: RunRecord): RunSummary {
   const v = rec.view;
   const last = v.steps.at(-1);
+  const { tag, ...meta } = rec.meta;
   return {
-    ...rec.meta,
+    ...meta,
+    kind: tag?.kind ?? 'adhoc',
+    name: tag?.name,
+    note: tag?.note,
     done: rec.finished,
     error: rec.error ?? null,
     status: v.status,

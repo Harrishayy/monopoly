@@ -12,6 +12,7 @@ const Body = z.object({
   /** Hide history events from this number on, and decide as of just before it. */
   cutBefore: z.number().int().positive().optional(),
   mode: z.enum(['model', 'rules']).optional(),
+  agent: z.enum(['a', 'b']).optional(),
 });
 
 /** Starts an agent run and returns its id. Stream it from /api/runs/[id]/events. */
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
   const runId = startRun(c, pack, {
     autonomy: body.data.autonomy ?? pack.autonomy,
     mode,
+    agent: body.data.agent,
     cut: at && cutBefore ? { cutBefore, asOf: at.asOf } : undefined,
   });
   return Response.json({ runId }, { status: 202 });

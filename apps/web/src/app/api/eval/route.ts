@@ -1,7 +1,12 @@
+import { RunKind } from '@casework/core';
 import { z } from 'zod';
 import { listEvals, startEval } from '@/server/batches';
 
-const Body = z.object({ mode: z.enum(['model', 'rules']).default('rules'), only: z.array(z.string()).optional() });
+const Body = z.object({
+  mode: z.enum(['model', 'rules']).default('rules'),
+  only: z.array(z.string()).optional(),
+  tag: z.object({ kind: RunKind.optional(), name: z.string().max(80).optional(), note: z.string().max(500).optional() }).optional(),
+});
 
 /** Starts scoring every labelled cut. Rules-only is free and takes seconds; model mode calls the API per cut. */
 export async function POST(req: Request) {

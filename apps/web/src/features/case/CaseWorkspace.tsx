@@ -1,6 +1,6 @@
 'use client';
 
-import type { Autonomy, Case, RunEvent, Vocabulary } from '@casework/core';
+import type { Case, RunEvent, Vocabulary } from '@casework/core';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CaseHeader, SourceChip, SourcesProvider, SourceViewer } from '@/domain/case';
@@ -10,17 +10,16 @@ import { AssessmentPanel, AuditLogRow, DecisionPanel, PipelineStrip, RunTrace } 
 import { CutComparison, EndingReveal, HistoryTimeline, Scorecard, verdictFor } from '@/domain/timeline';
 import { Panes } from '@/layout';
 import { api, useApi } from '@/lib/api';
-import type { CaseTimeline, RunMode, RunSummary, ToolRegistry } from '@/lib/api-types';
+import type { AgentId, CaseTimeline, RunSummary, ToolRegistry } from '@/lib/api-types';
 import { useRunStream } from '@/lib/sse';
 import { useUi } from '@/state/ui';
-import { Button, Eyebrow, SegmentedControl, Skeleton, ErrorState, TabPanel, Tabs, toast, type ChipStatus } from '@/ui';
+import { Button, Eyebrow, SegmentedControl, Skeleton, ErrorState, Switch, TabPanel, Tabs, toast, type ChipStatus } from '@/ui';
 
 type Tab = 'step' | 'sources' | 'trace';
 
-const AUTONOMY: { value: Autonomy; label: string; hint: string }[] = [
-  { value: 'suggest', label: 'Suggest', hint: 'The agent only proposes; every action waits for a person.' },
-  { value: 'ask_first', label: 'Ask first', hint: 'Safe, reversible steps go ahead; anything else asks first.' },
-  { value: 'autonomous', label: 'Autonomous', hint: 'Acts within policy limits; the guard still refuses barred actions.' },
+const AGENTS: { value: AgentId; label: string; hint: string }[] = [
+  { value: 'a', label: 'Agent A', hint: 'Rules read the case, then the model picks one action; a policy guard can refuse it.' },
+  { value: 'b', label: 'Agent B', hint: 'Fixed pipeline: fact ledger, three sampled decisions, a critic, then a gate.' },
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -40,18 +39,22 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
   const stopWalk = useRef(false);
   const startedHere = useRef(new Set<string>());
   const [animated, setAnimated] = useState(new Set<string>());
-  const [modeChoice, setMode] = useState<RunMode | null>(null);
-  const { autonomy, setAutonomy } = useUi();
+  const [agent, setAgent] = useState<AgentId>('a');
+  const [anywhere, setAnywhere] = useState(false);
+  const { autonomy } = useUi();
 
   const { data: registry } = useApi<ToolRegistry>('/api/tools');
   const modelAvailable = !!registry?.model.configured;
-  const mode: RunMode = modelChoiceOr(modeChoice, modelAvailable);
+  // Both agents use the model when a key is set; without one they fall back (A: playbook, B: fallback).
+  const mode = modelAvailable ? 'model' : 'rules';
 
   const timeline = useApi<CaseTimeline>(`/api/cases/${encodeURIComponent(ref)}/timeline`);
-  const runs = useApi<RunSummary[]>(`/api/runs?case=${encodeURIComponent(ref)}`, {
+  const allRuns = useApi<RunSummary[]>(`/api/runs?case=${encodeURIComponent(ref)}`, {
     poll: (d) => walking || !!d?.some((r) => !r.done),
     intervalMs: 1200,
   });
+  // Points, scorecard and verdicts show the chosen agent's runs only.
+  const runs = { ...allRuns, data: allRuns.data?.filter((r) => r.agent === agent) };
 
   const onEvent = useCallback(
     (e: RunEvent) => {
@@ -68,7 +71,8 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
     if (autoPicked.current || runId || !runs.data) return;
     autoPicked.current = true;
     // Deep links: ?run=<id> opens that run; ?cut=<n> opens that point (and its latest run, if any).
-    const linked = initialRun ? runs.data.find((r) => r.runId === initialRun) : undefined;
+    const linked = initialRun ? allRuns.data?.find((r) => r.runId === initialRun) : undefined;
+    if (linked && linked.agent !== agent) setAgent(linked.agent);
     if (initialCut !== undefined && !linked) {
       const atCut = runs.data.find((r) => r.cut?.cutBefore === initialCut);
       setSelectedCut(initialCut);
@@ -80,7 +84,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
       setRunId(latest.runId);
       setSelectedCut(latest.cut?.cutBefore ?? null);
     }
-  }, [runs.data, runId, initialRun, initialCut]);
+  }, [runs.data, runId, initialRun, initialCut]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh the run list whenever the selected run finishes.
   useEffect(() => {
@@ -100,7 +104,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
     async (cutBefore: number | null) => {
       setStarting(true);
       try {
-        const { runId: id } = await api<{ runId: string }>('/api/runs', { method: 'POST', json: { caseRef: ref, cutBefore: cutBefore ?? undefined, mode, autonomy } });
+        const { runId: id } = await api<{ runId: string }>('/api/runs', { method: 'POST', json: { caseRef: ref, cutBefore: cutBefore ?? undefined, mode, agent, autonomy } });
         startedHere.current.add(id);
         setRunId(id);
         setSelectedCut(cutBefore);
@@ -113,7 +117,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
         setStarting(false);
       }
     },
-    [ref, mode, autonomy, runs],
+    [ref, mode, agent, autonomy, runs],
   );
 
   async function walkAll() {
@@ -135,7 +139,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
     }
     setWalking(false);
     void runs.reload();
-    toast.success('Step-through finished', { description: `${labels.length} labelled points decided` });
+    toast.success('Step-through finished', { description: `${labels.length} decision points decided by ${agent === 'a' ? 'Agent A' : 'Agent B'}` });
   }
 
   // Latest run per cut point for this case.
@@ -144,7 +148,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
     for (const r of runs.data ?? []) if (r.cut && !m.has(r.cut.cutBefore)) m.set(r.cut.cutBefore, r);
     return m;
   }, [runs.data]);
-  const selectedRun = runs.data?.find((r) => r.runId === runId);
+  const selectedRun = allRuns.data?.find((r) => r.runId === runId);
   const cut = selectedCut === undefined ? (selectedRun?.cut?.cutBefore ?? null) : selectedCut;
   const label = cut !== null ? timeline.data?.labels.find((l) => l.cutBefore === cut) : undefined;
   const happened = cut !== null ? timeline.data?.events.find((e) => e.n === cut) : undefined;
@@ -165,43 +169,38 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
   };
 
   const controls = (
-    <div className="grid gap-3 rounded-ui-lg border-(length:--bw) border-line bg-surface-2/40 p-3">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="grid gap-1">
-          <Eyebrow>Decide with</Eyebrow>
-          <SegmentedControl
-            label="Decide with"
-            size="sm"
-            value={mode}
-            onChange={setMode}
-            options={modelAvailable ? [{ value: 'model', label: 'Model' }, { value: 'rules', label: 'Rules only' }] : [{ value: 'rules', label: 'Rules only' }]}
-          />
-        </div>
-        <div className="grid gap-1">
-          <Eyebrow>Autonomy</Eyebrow>
-          <SegmentedControl label="Autonomy" size="sm" value={autonomy} onChange={setAutonomy} options={AUTONOMY.map(({ value, label }) => ({ value, label }))} />
-        </div>
-        <div className="ml-auto flex flex-wrap gap-2">
-          {walking ? (
-            <Button size="sm" variant="danger" onClick={() => (stopWalk.current = true)}>
-              Stop step-through
-            </Button>
-          ) : (
-            labelled.length > 0 && (
-              <Button size="sm" icon="play" onClick={walkAll} disabled={starting}>
-                Step through {labelled.length} labelled points
-              </Button>
-            )
-          )}
-          <Button size="sm" variant="primary" icon="decide" onClick={() => start(null)} loading={starting && !walking} disabled={walking}>
-            Decide now
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <SegmentedControl
+        label="Agent"
+        size="sm"
+        value={agent}
+        onChange={(v) => {
+          setAgent(v);
+          setRunId(null);
+          autoPicked.current = false;
+        }}
+        options={AGENTS.map(({ value, label }) => ({ value, label }))}
+      />
+      <span className="min-w-0 flex-1 text-[12px] text-ink-2">
+        {AGENTS.find((a) => a.value === agent)?.hint}
+        {!modelAvailable && ' No model key is set, so it runs without the model.'}
+      </span>
+      <div className="flex flex-wrap gap-2">
+        {walking ? (
+          <Button size="sm" variant="danger" onClick={() => (stopWalk.current = true)}>
+            Stop
           </Button>
-        </div>
+        ) : (
+          labelled.length > 0 && (
+            <Button size="sm" icon="play" onClick={walkAll} disabled={starting}>
+              Run all {labelled.length} decision points
+            </Button>
+          )
+        )}
+        <Button size="sm" variant="primary" icon="decide" onClick={() => start(null)} loading={starting && !walking} disabled={walking}>
+          Decide now
+        </Button>
       </div>
-      <p className="text-[12px] text-ink-2">
-        {AUTONOMY.find((a) => a.value === autonomy)?.hint}{' '}
-        {mode === 'rules' ? 'Rules only runs the pack’s deterministic playbook: instant and free.' : `The model decides (${registry?.model.decide}); the playbook takes over if it fails.`}
-      </p>
     </div>
   );
 
@@ -218,7 +217,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
           value={tab}
           onChange={setTab}
           items={[
-            { value: 'step', label: 'Step through', count: labelled.length || undefined },
+            { value: 'step', label: 'Decision points', count: labelled.length || undefined },
             { value: 'sources', label: 'Sources', count: c.sources.length },
             { value: 'trace', label: 'Run trace', count: view.steps.length || undefined },
           ]}
@@ -230,21 +229,28 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
               <Skeleton lines={8} />
             ) : (
               <>
-                {runId ? (
-                  <CutComparison cutBefore={cut} asOf={selectedRun?.cut?.asOf ?? view.assessment?.asOf} next={next} running={view.status === 'running'} happened={happened} label={label} verdict={verdict} />
-                ) : (
-                  <div className="grid justify-items-start gap-2 rounded-ui-lg border-(length:--bw) border-dashed border-line p-4 text-[13.5px] text-ink-2">
-                    <b className="text-ink">Pick a point in the history</b>
-                    Choose “Decide here” between any two events. The agent sees only what came before, decides the next step, and you see it next to what really happened.
-                  </div>
-                )}
-                {labelled.length > 0 && <Scorecard rows={[...labelled].sort((a, b) => a.cutBefore - b.cutBefore).map((l) => ({ label: l, run: runsByCut.get(l.cutBefore) }))} selectedRunId={runId} onSelect={selectRun} />}
+                <Scorecard
+                  rows={[...labelled].sort((a, b) => a.cutBefore - b.cutBefore).map((l) => ({ label: l, run: runsByCut.get(l.cutBefore) }))}
+                  selectedCut={cut}
+                  busy={starting || walking}
+                  onPick={(n) => {
+                    const existing = runsByCut.get(n);
+                    if (existing && existing.mode === mode) selectRun(existing.runId, n);
+                    else void start(n);
+                  }}
+                />
+                {runId && <CutComparison cutBefore={cut} asOf={selectedRun?.cut?.asOf ?? view.assessment?.asOf} next={next} running={view.status === 'running'} happened={happened} label={label} verdict={verdict} />}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="font-display text-[15px] font-bold">History</h2>
+                  <Switch label="Decide at any event" checked={anywhere} onCheckedChange={setAnywhere} />
+                </div>
                 <HistoryTimeline
                   events={timeline.data.events}
                   labels={labelled}
                   cutBefore={cut}
                   runsByCut={runsByCut}
                   busy={starting || walking}
+                  anywhere={anywhere}
                   onDecide={(n) => {
                     const existing = runsByCut.get(n);
                     if (existing && existing.mode === mode) selectRun(existing.runId, n);
@@ -297,7 +303,7 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
           <DecisionPanel
             view={view}
             animateIn={animateIn}
-            context={cut === null ? 'On the full history so far' : `As of just before event ${cut}${selectedRun ? ` · ${selectedRun.mode === 'rules' ? 'rules only' : 'model'}` : ''}`}
+            context={`${selectedRun?.agent === 'b' ? 'Agent B' : 'Agent A'} · ${cut === null ? 'on the full history so far' : `as of just before event ${cut}`}${selectedRun?.mode === 'rules' ? ' · without the model' : ''}`}
             onOpenHandover={() => document.getElementById('handover')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             onViewTrace={() => setTab('trace')}
           />
@@ -330,9 +336,4 @@ export function CaseWorkspace({ c, vocabulary, list, initialRun, initialCut }: {
       <Panes list={list} listOnMobile={false} detail={detail} aside={aside} />
     </SourcesProvider>
   );
-}
-
-function modelChoiceOr(choice: RunMode | null, modelAvailable: boolean): RunMode {
-  if (choice === 'model' && !modelAvailable) return 'rules';
-  return choice ?? (modelAvailable ? 'model' : 'rules');
 }

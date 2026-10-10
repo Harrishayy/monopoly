@@ -3,10 +3,12 @@
 import type { CaseSummary } from '@casework/core';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { RUN_KIND_META } from '@casework/core';
 import { AnswerViewer, BatchRunControl, EvalScoreboard, RealityCaseRow, RealityMeter, type BatchStart } from '@/domain/reality';
+import { filterByKind, RunKindBadge, RunKindFilter, RunTagFields, type RunKindFilterValue } from '@/domain/run';
 import { PageHeader, SectionHeader } from '@/layout';
 import { api, useApi } from '@/lib/api';
-import type { BatchView, EvalView, RunMode, ToolRegistry } from '@/lib/api-types';
+import type { BatchView, EvalView, RunMode, RunTag, ToolRegistry } from '@/lib/api-types';
 import { Button, Dialog, EmptyState, ErrorState, Eyebrow, RelativeTime, Select, Skeleton, Surface, TabPanel, Tabs, toast } from '@/ui';
 
 type Tab = 'eval' | 'reality';
@@ -53,12 +55,15 @@ function EvalPanel() {
   const [selected, setSelected] = useState<string>();
   const [starting, setStarting] = useState(false);
   const [confirm, setConfirm] = useState(false);
-  const view = evals?.find((e) => e.id === selected) ?? evals?.[0];
+  const [tag, setTag] = useState<RunTag>({ kind: 'full' });
+  const [kind, setKind] = useState<RunKindFilterValue>('all');
+  const listed = filterByKind(evals ?? [], kind);
+  const view = listed.find((e) => e.id === selected) ?? listed[0];
 
   async function start(mode: RunMode) {
     setStarting(true);
     try {
-      const { evalId } = await api<{ evalId: string }>('/api/eval', { method: 'POST', json: { mode } });
+      const { evalId } = await api<{ evalId: string }>('/api/eval', { method: 'POST', json: { mode, tag } });
       setSelected(evalId);
       await reload();
     } catch (e) {
@@ -86,15 +91,17 @@ function EvalPanel() {
             </>
           }
         />
-        {evals && evals.length > 1 && (
+        <RunTagFields value={tag} onChange={setTag} kinds={['smoke', 'full', 'train', 'val', 'test', 'adhoc']} />
+        {evals && evals.length > 1 && <RunKindFilter runs={evals} value={kind} onChange={setKind} />}
+        {listed.length > 1 && (
           <Select
             label="Result set"
             className="max-w-md"
             value={view?.id ?? ''}
             onChange={setSelected}
-            options={evals.map((e) => ({
+            options={listed.map((e) => ({
               value: e.id,
-              label: `${e.source === 'cli' ? 'pnpm eval' : 'This session'} · ${e.mode}${e.done ? '' : ' · running'}${e.startedAt ? ` · ${new Date(e.startedAt).toLocaleString('en-GB')}` : ''}`,
+              label: `${RUN_KIND_META[e.kind].label}${e.name ? ` · ${e.name}` : ''} · ${e.source === 'cli' ? 'pnpm eval' : 'This session'} · ${e.mode}${e.done ? '' : ' · running'}${e.startedAt ? ` · ${new Date(e.startedAt).toLocaleString('en-GB')}` : ''}`,
             }))}
           />
         )}
@@ -109,6 +116,7 @@ function EvalPanel() {
       )}
       {view && (
         <div className="grid gap-2">
+          <RunKindBadge tag={view} />
           <Eyebrow>
             {view.source === 'cli' ? 'Last pnpm eval' : 'Started here'} · {view.mode}
             {view.startedAt && (
@@ -157,7 +165,9 @@ function BatchPanel() {
   });
   const [starting, setStarting] = useState(false);
   const [viewing, setViewing] = useState<string | null>(null);
+  const [kind, setKind] = useState<RunKindFilterValue>('all');
   const live = data?.batches.find((b) => b.source === 'ui');
+  const batches = filterByKind(data?.batches ?? [], kind);
 
   async function start(b: BatchStart) {
     setStarting(true);
@@ -190,8 +200,10 @@ function BatchPanel() {
           body={<>Run one above, or run <code className="font-mono">pnpm reality</code> and its ANSWERS/ folder appears here.</>}
         />
       )}
-      {data?.batches.map((b) => (
+      {!!data?.batches.length && <RunKindFilter runs={data.batches} value={kind} onChange={setKind} />}
+      {batches.map((b) => (
         <Surface key={b.id} as="section" className="grid gap-4" aria-label={`Batch ${b.dir}`}>
+          <RunKindBadge tag={b} />
           <SectionHeader
             level={3}
             title={b.source === 'cli' ? `${b.dir}/ (written by the CLI)` : `${b.dir} · ${b.mode}`}

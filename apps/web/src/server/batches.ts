@@ -5,10 +5,11 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { RunEvent, runView, type Case } from '@casework/core';
 import { getPack } from '@casework/tracks';
-import type { BatchCase, BatchView, EvalRow, EvalScore, EvalView, RunMode } from '@/lib/api-types';
+import type { BatchCase, BatchView, EvalRow, EvalScore, EvalView, RunMode, RunTag } from '@/lib/api-types';
 import { getCaseAt, listCases, loadCases } from './cases';
 import { ACTIVE_TRACK, REPO_ROOT } from './config';
 import { cliEvalResults, labelsFor } from './labels';
+import { readRunTag } from './manifest';
 import { getRun, pool, startRun } from './runs';
 
 /** Case folders a batch may read, and output folders the CLI writes. Paths are repo-relative. */
@@ -33,21 +34,22 @@ export function score(rows: EvalRow[]): EvalView['score'] {
 }
 
 /** Scores the agent on every labelled cut, the same way `pnpm eval` does, with runs visible in the UI. */
-export async function startEval(opts: { mode: RunMode; only?: string[]; track?: string }): Promise<string> {
+export async function startEval(opts: { mode: RunMode; only?: string[]; track?: string; tag?: Partial<RunTag> }): Promise<string> {
   const track = opts.track ?? ACTIVE_TRACK;
   const pack = getPack(track);
   let labels = await labelsFor(track);
   if (opts.only?.length) labels = labels.filter((l) => opts.only!.includes(l.case));
   const refs = new Map((await listCases(track)).map((c) => [num(c.ref), c.ref]));
   const id = randomUUID();
-  const view: EvalView = { id, source: 'ui', mode: opts.mode, startedAt: new Date().toISOString(), total: labels.length, done: false, rows: [], score: score([]) };
+  const tag: RunTag = { kind: opts.tag?.kind ?? (opts.only?.length ? 'smoke' : 'full'), name: opts.tag?.name || undefined, note: opts.tag?.note || undefined };
+  const view: EvalView = { id, ...tag, source: 'ui', mode: opts.mode, startedAt: new Date().toISOString(), total: labels.length, done: false, rows: [], score: score([]) };
   store.evals.set(id, view);
 
   void pool(labels, concurrency(), async (label) => {
     const ref = refs.get(label.case);
     const at = ref ? await getCaseAt(ref, label.cutBefore, track) : undefined;
     if (!ref || !at) return;
-    const runId = startRun(at.c, pack, { autonomy: pack.autonomy, mode: opts.mode, cut: { cutBefore: label.cutBefore, asOf: label.asOf }, groupId: id });
+    const runId = startRun(at.c, pack, { autonomy: pack.autonomy, mode: opts.mode, cut: { cutBefore: label.cutBefore, asOf: label.asOf }, groupId: id, tag });
     await getRun(runId)!.done;
     const v = getRun(runId)!.view;
     const action = v.next?.action ?? 'none';
@@ -78,7 +80,7 @@ export async function startEval(opts: { mode: RunMode; only?: string[]; track?: 
 export async function listEvals(): Promise<EvalView[]> {
   const out = [...store.evals.values()].sort((a, b) => (b.startedAt ?? '').localeCompare(a.startedAt ?? ''));
   const cli = await cliEvalResults();
-  if (cli) out.push({ id: 'cli', source: 'cli', mode: cli.mode, startedAt: cli.at, total: cli.rows.length, done: true, rows: cli.rows, score: score(cli.rows) });
+  if (cli) out.push({ id: 'cli', ...(await readRunTag(join(REPO_ROOT, '.casework/eval'), 'eval')), source: 'cli', mode: cli.mode, startedAt: cli.at, total: cli.rows.length, done: true, rows: cli.rows, score: score(cli.rows) });
   return out;
 }
 
@@ -86,7 +88,7 @@ export const getEval = (id: string) => store.evals.get(id);
 
 // ---------------------------------------------------------------- reality batches
 
-export async function startBatch(opts: { dir: (typeof BATCH_INPUTS)[number]; mode: RunMode; withhold: 'none' | 'outcomes'; track?: string }): Promise<string | { error: string }> {
+export async function startBatch(opts: { dir: (typeof BATCH_INPUTS)[number]; mode: RunMode; withhold: 'none' | 'outcomes'; track?: string; tag?: Partial<RunTag> }): Promise<string | { error: string }> {
   const track = opts.track ?? ACTIVE_TRACK;
   const pack = getPack(track);
   let cases: Case[];
@@ -98,8 +100,14 @@ export async function startBatch(opts: { dir: (typeof BATCH_INPUTS)[number]; mod
   if (!cases.length) return { error: `No ${pack.label} cases in ${opts.dir}. See data/README.md for the expected layout.` };
   const id = randomUUID();
   const abort = new AbortController();
+  const tag: RunTag = {
+    kind: opts.tag?.kind ?? (opts.withhold === 'outcomes' ? 'practice' : opts.dir === 'data/challenges' ? 'reality' : 'adhoc'),
+    name: opts.tag?.name || undefined,
+    note: opts.tag?.note || undefined,
+  };
   const batch: BatchView & { abort: AbortController } = {
     id,
+    ...tag,
     source: 'ui',
     dir: opts.dir,
     mode: opts.mode,
@@ -116,7 +124,7 @@ export async function startBatch(opts: { dir: (typeof BATCH_INPUTS)[number]; mod
     async (c, i) => {
       const row = batch.cases[i]!;
       row.status = 'running';
-      row.runId = startRun(c, pack, { autonomy: pack.autonomy, mode: opts.mode, groupId: id, signal: abort.signal });
+      row.runId = startRun(c, pack, { autonomy: pack.autonomy, mode: opts.mode, groupId: id, tag, signal: abort.signal });
       const rec = getRun(row.runId)!;
       await rec.done;
       row.status = 'done';
@@ -171,7 +179,8 @@ async function readAnswerDir(dir: (typeof ANSWER_DIRS)[number]): Promise<BatchVi
     cases.push({ ref: v.caseRef || `#${n}`, n: Number(n), status: 'done', outcome: v.outcome, answerPath: `${dir}/${n}` });
   }
   if (!cases.length) return undefined;
-  return { id: `cli:${dir}`, source: 'cli', dir, mode: 'cli', concurrency: 0, state: 'done', cases };
+  const { manifest, ...tag } = await readRunTag(abs, dir.split('/').at(-1)!);
+  return { id: `cli:${dir}`, ...tag, startedAt: manifest?.startedAt, finishedAt: manifest?.finishedAt, source: 'cli', dir, mode: 'cli', concurrency: 0, state: 'done', cases };
 }
 
 /** Reads ANSWER.md, REASONING.md or trace.jsonl from a folder the CLI or an agent's eval wrote. */

@@ -8,6 +8,7 @@ import { listCases } from './cases';
 import { REPO_ROOT } from './config';
 import { labelsFor } from './labels';
 import { ACTIVE_TRACK } from './config';
+import { readRunTag } from './manifest';
 
 /**
  * Compares the two agents built for the Reality Test from what each wrote to disk:
@@ -107,19 +108,22 @@ const fromARow = (r: EvalRow): AgentDecision => ({
 async function agentARuns(): Promise<AgentRunView[]> {
   const out: AgentRunView[] = [];
   const base = join(REPO_ROOT, '.casework');
-  for (const name of (await dirs(base)).filter((n) => n.startsWith('eval'))) {
+  for (const name of (await dirs(base)).filter((n) => n !== 'agents' && n !== 'agent-b')) {
     const dir = join(base, name);
     const results = join(dir, 'results.jsonl');
     if (!existsSync(results)) continue;
     const rows = jsonl(await readFile(results, 'utf8')) as unknown as EvalRow[];
+    if (!rows.length || typeof rows[0]!.cutBefore !== 'number') continue;
+    const { manifest, ...tag } = await readRunTag(dir, name);
     const summary = await readFile(join(dir, 'SUMMARY.md'), 'utf8').catch(() => '');
     const ds = rows.map(fromARow);
     out.push({
       id: `a:${name}`,
+      ...tag,
       agent: 'a',
       label: name,
-      mode: summary.match(/^# Eval · .+ · (.+)$/m)?.[1] ?? 'unknown',
-      set: 'Labelled cuts',
+      mode: summary.match(/^# Eval · .+ · (.+)$/m)?.[1] ?? manifest?.model ?? 'unknown',
+      set: /holdout/.test(name) ? 'Held-out cuts' : 'Labelled cuts',
       updatedAt: (await stat(results)).mtime.toISOString(),
       complete: true,
       decisions: ds,
@@ -129,7 +133,7 @@ async function agentARuns(): Promise<AgentRunView[]> {
   for (const e of await listEvals()) {
     if (e.source !== 'ui') continue;
     const ds = e.rows.map(fromARow);
-    out.push({ id: `a:ui:${e.id}`, agent: 'a', label: `Run here · ${e.id.slice(0, 8)}`, mode: e.mode === 'rules' ? 'rules-only playbook' : `model (${process.env.MODEL_DECIDE ?? 'default'})`, set: 'Labelled cuts', updatedAt: e.startedAt, total: e.total, complete: e.done, decisions: ds, metrics: aMetrics(ds) });
+    out.push({ id: `a:ui:${e.id}`, kind: e.kind, name: e.name, note: e.note, agent: 'a', label: `Run here · ${e.id.slice(0, 8)}`, mode: e.mode === 'rules' ? 'rules-only playbook' : `model (${process.env.MODEL_DECIDE ?? 'default'})`, set: 'Labelled cuts', updatedAt: e.startedAt, total: e.total, complete: e.done, decisions: ds, metrics: aMetrics(ds) });
   }
   return out;
 }
@@ -227,6 +231,7 @@ async function agentBRuns(): Promise<AgentRunView[]> {
     const models = [...new Set(ds.flatMap((d) => d.models ?? []))];
     out.push({
       id: `b:${rel}`,
+      ...(await readRunTag(dir, rel)),
       agent: 'b',
       label: rel,
       mode: models.length ? `model ${models.join(', ')}` : 'unknown',
@@ -241,9 +246,78 @@ async function agentBRuns(): Promise<AgentRunView[]> {
   return out;
 }
 
+// ---------------------------------------------------------------- shared bench (packages/agents)
+
+/** One row of .casework/agents/…/results.jsonl: an agent's action on a cut, scored against the cut's accepted list. */
+interface BenchRow {
+  agent: string;
+  cut: string;
+  case: string;
+  kind: 'determined' | 'judgement';
+  action: string;
+  accept: string[];
+  pass: boolean;
+  prohibited: boolean;
+  decidedBy: string;
+  ms: number;
+  failures: string[];
+  reason: string;
+}
+
+/**
+ * `pnpm bench` runs: .casework/agents/bench/<run>/ and .casework/agents/<run>/ (smoke).
+ * Both agents are scored by the same rule, so each agent in a run becomes its own row here.
+ */
+async function benchRuns(): Promise<AgentRunView[]> {
+  const root = join(REPO_ROOT, '.casework/agents');
+  const rels = [...(await dirs(root)).filter((d) => d !== 'bench' && !d.startsWith('answers')), ...(await dirs(join(root, 'bench'))).map((d) => `bench/${d}`)];
+  const out: AgentRunView[] = [];
+  for (const rel of rels) {
+    const dir = join(root, rel);
+    const resultsPath = join(dir, 'results.jsonl');
+    const { manifest, ...tag } = await readRunTag(dir, rel.split('/').at(-1)!);
+    if (!existsSync(resultsPath) && !manifest) continue;
+    const rows = jsonl(await readFile(resultsPath, 'utf8').catch(() => '')) as unknown as BenchRow[];
+    const agents = new Set([...rows.map((r) => r.agent), ...(rows.length ? [] : (manifest?.agent ?? '').split(',').filter(Boolean))]);
+    const st = await stat(existsSync(resultsPath) ? resultsPath : dir);
+    for (const agent of agents) {
+      if (agent !== 'a' && agent !== 'b') continue;
+      const ds: AgentDecision[] = rows
+        .filter((r) => r.agent === agent)
+        .map((r) => ({
+          key: r.cut,
+          case: r.case,
+          cutBefore: Number(r.cut.split('@')[1]),
+          kind: r.kind,
+          action: r.action,
+          decidedBy: r.decidedBy,
+          reason: r.reason,
+          accepted: r.pass,
+          prohibited: r.prohibited,
+          accept: r.accept,
+          ms: r.ms,
+          error: r.failures?.length ? r.failures.join('; ') : undefined,
+        }));
+      out.push({
+        id: `bench:${rel}:${agent}`,
+        ...tag,
+        agent,
+        label: rel.replace(/^bench\//, ''),
+        mode: manifest?.model ? `model ${manifest.model}` : /rules/.test(rel) ? 'rules-only playbook' : 'model',
+        set: manifest?.split ? `Labelled cuts · ${manifest.split} split` : 'Labelled cuts',
+        updatedAt: manifest?.finishedAt ?? manifest?.startedAt ?? st.mtime.toISOString(),
+        complete: rows.length > 0 && (!manifest || !!manifest.finishedAt),
+        decisions: ds.sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true })),
+        metrics: aMetrics(ds),
+      });
+    }
+  }
+  return out;
+}
+
 export async function agentsOverview(): Promise<AgentsOverview> {
-  const [a, b, cases] = await Promise.all([agentARuns(), agentBRuns(), listCases().catch(() => [])]);
+  const [a, b, bench, cases] = await Promise.all([agentARuns(), agentBRuns(), benchRuns(), listCases().catch(() => [])]);
   const refs = Object.fromEntries(cases.map((c) => [c.ref.split('-').at(-1)!, c.ref]));
-  const runs = [...a, ...b].sort((x, y) => (y.updatedAt ?? '').localeCompare(x.updatedAt ?? ''));
+  const runs = [...a, ...b, ...bench].sort((x, y) => (y.updatedAt ?? '').localeCompare(x.updatedAt ?? ''));
   return { agents: AGENTS, runs, refs };
 }

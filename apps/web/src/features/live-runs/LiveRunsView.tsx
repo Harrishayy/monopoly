@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Mascot } from '@/domain/mascot';
+import { filterByKind, RunKindBadge, RunKindFilter, type RunKindFilterValue } from '@/domain/run';
 import { PageHeader } from '@/layout';
 import { useApi } from '@/lib/api';
 import type { RunSummary } from '@/lib/api-types';
@@ -15,7 +16,9 @@ type Filter = 'standalone' | 'grouped' | 'all';
 export function LiveRunsView() {
   const [filter, setFilter] = useState<Filter>('standalone');
   const { data, error, loading, reload } = useApi<RunSummary[]>('/api/runs', { poll: true, intervalMs: 1500 });
-  const runs = (data ?? []).filter((r) => (filter === 'all' ? true : filter === 'standalone' ? !r.groupId : !!r.groupId));
+  const [kind, setKind] = useState<RunKindFilterValue>('all');
+  const scoped = (data ?? []).filter((r) => (filter === 'all' ? true : filter === 'standalone' ? !r.groupId : !!r.groupId));
+  const runs = filterByKind(scoped, kind);
   const active = data?.filter((r) => !r.done).length ?? 0;
 
   return (
@@ -38,6 +41,7 @@ export function LiveRunsView() {
           />
         }
       />
+      {scoped.length > 0 && <RunKindFilter runs={scoped} value={kind} onChange={setKind} />}
       {loading && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} variant="block" />)}</div>}
       {error && <ErrorState error={{ title: 'Couldn’t load runs', detail: error }} onRetry={reload} />}
       {data && !runs.length && (
@@ -62,6 +66,7 @@ export function LiveRunsView() {
                 {r.done ? <StatusChip size="sm" status={r.outcome ?? 'failed'} label={r.outcome === 'resolved' ? 'Next step' : undefined} /> : <StatusChip size="sm" status="running" />}
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-ink-2">
+                <RunKindBadge tag={r} />
                 <span>{r.mode === 'rules' ? 'Rules only' : 'Model'}</span>
                 {r.cut && <span>Before event {r.cut.cutBefore}</span>}
                 <span>{r.steps} steps</span>

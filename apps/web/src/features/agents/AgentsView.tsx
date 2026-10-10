@@ -1,8 +1,10 @@
 'use client';
 
+import { RUN_KIND_META } from '@casework/core';
 import Link from 'next/link';
 import { Fragment, useMemo, useState } from 'react';
 import { AnswerViewer } from '@/domain/reality';
+import { filterByKind, RunKindBadge, RunKindFilter, type RunKindFilterValue } from '@/domain/run';
 import { PageHeader, SectionHeader } from '@/layout';
 import { useApi } from '@/lib/api';
 import type { AgentDecision, AgentInfo, AgentRunView, AgentsOverview } from '@/lib/api-types';
@@ -106,7 +108,7 @@ function AgentCard({ agent, latest }: { agent: AgentInfo; latest?: AgentRunView 
       {latest ? (
         <div className="grid gap-2">
           <Eyebrow>
-            Latest run · {latest.label} · {latest.mode}
+            Latest run · {RUN_KIND_META[latest.kind].label} · {latest.name ?? latest.label} · {latest.mode}
           </Eyebrow>
           <Metrics run={latest} />
         </div>
@@ -142,11 +144,12 @@ function Metrics({ run }: { run: AgentRunView }) {
 
 type Filter = 'all' | 'disagree' | 'a_only' | 'b_only' | 'both_wrong';
 
-const bRight = (d?: AgentDecision) => (d?.judge ? d.judge.actionMatch === 'same' || d.judge.actionMatch === 'acceptable_alternative' : undefined);
+/** Scored by the cut's accepted list when the run has one (shared bench), else by agent B's judge. */
+const bRight = (d?: AgentDecision) => (d?.accepted !== undefined ? d.accepted : d?.judge ? d.judge.actionMatch === 'same' || d.judge.actionMatch === 'acceptable_alternative' : undefined);
 
 function HeadToHead({ data, onOpenAnswer }: { data: AgentsOverview; onOpenAnswer: (p: string) => void }) {
-  const aRuns = data.runs.filter((r) => r.agent === 'a' && r.set === 'Labelled cuts' && r.decisions.length);
-  const bRuns = data.runs.filter((r) => r.agent === 'b' && r.set === 'Labelled cuts' && r.decisions.length);
+  const aRuns = data.runs.filter((r) => r.agent === 'a' && r.set.endsWith('cuts') && r.decisions.length);
+  const bRuns = data.runs.filter((r) => r.agent === 'b' && r.set.includes('cuts') && r.decisions.length);
   // Default to the largest model run of A, and the B run with the most decisions.
   const pickA = [...aRuns].sort((x, y) => Number(y.mode.startsWith('model')) - Number(x.mode.startsWith('model')) || y.decisions.length - x.decisions.length)[0];
   const pickB = [...bRuns].sort((x, y) => y.decisions.length - x.decisions.length)[0];
@@ -205,8 +208,8 @@ function HeadToHead({ data, onOpenAnswer }: { data: AgentsOverview; onOpenAnswer
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Select label="Agent A run" value={a!.id} onChange={setA} options={aRuns.map((r) => ({ value: r.id, label: `${r.label} · ${r.mode} · ${r.decisions.length} cuts` }))} />
-            <Select label="Agent B run" value={b!.id} onChange={setB} options={bRuns.map((r) => ({ value: r.id, label: `${r.label} · ${r.mode} · ${r.decisions.length} cuts${r.complete ? '' : ' (running)'}` }))} />
+            <Select label="Agent A run" value={a!.id} onChange={setA} options={aRuns.map((r) => ({ value: r.id, label: `${RUN_KIND_META[r.kind].label} · ${r.name ?? r.label} · ${r.mode} · ${r.decisions.length} cuts` }))} />
+            <Select label="Agent B run" value={b!.id} onChange={setB} options={bRuns.map((r) => ({ value: r.id, label: `${RUN_KIND_META[r.kind].label} · ${r.name ?? r.label} · ${r.mode} · ${r.decisions.length} cuts${r.complete ? '' : ' (running)'}` }))} />
           </div>
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Agreement">
             {(
@@ -283,7 +286,7 @@ function HeadToHead({ data, onOpenAnswer }: { data: AgentsOverview; onOpenAnswer
                               <Mono className="text-[12px]">{r.b.action}</Mono>
                               {r.b.recipient && <span className="text-ink-2"> → {r.b.recipient.split(/[(,]/)[0]!.trim()}</span>}
                             </span>
-                            <BVerdict d={r.b} />
+                            {r.b.accepted !== undefined ? <AVerdict d={r.b} /> : <BVerdict d={r.b} />}
                           </div>
                         </td>
                         <td className="px-3 py-2 text-right">
@@ -388,19 +391,23 @@ function Reasoning({ title, d, onOpenAnswer }: { title: string; d: AgentDecision
 function RunsSection({ runs, refs, onOpenAnswer }: { runs: AgentRunView[]; refs: Record<string, string>; onOpenAnswer: (p: string) => void }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
-  const run = runs.find((r) => r.id === selected);
+  const [kind, setKind] = useState<RunKindFilterValue>('all');
+  const shown = filterByKind(runs, kind);
+  const run = shown.find((r) => r.id === selected);
   return (
     <section className="grid gap-4" aria-labelledby="h-runs">
-      <SectionHeader id="h-runs" title="Every run on disk" description="Newest first. Runs still writing results refresh every few seconds. Open one to see each decision." />
+      <SectionHeader id="h-runs" title="Every run on disk" description="Newest first, split by what each run was for. Give a run its type with --kind and --name. Runs still writing refresh every few seconds." />
+      {runs.length > 0 && <RunKindFilter runs={runs} value={kind} onChange={setKind} />}
       {!runs.length ? (
         <EmptyState title="No eval runs yet" body="Run an eval for either agent; its results appear here as they are written." />
       ) : (
         <ul className="grid gap-2">
-          {runs.map((r) => (
+          {shown.map((r) => (
             <li key={r.id}>
               <Surface padded={false} selected={r.id === selected} className="grid gap-3 p-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <AgentBadge id={r.agent} />
+                  <RunKindBadge tag={r} />
                   <b className="font-mono text-[13px] [overflow-wrap:anywhere]">{r.label}</b>
                   <span className="text-[12.5px] text-ink-2">
                     {r.mode} · {r.set}
@@ -447,7 +454,7 @@ function RunsSection({ runs, refs, onOpenAnswer }: { runs: AgentRunView[]; refs:
                       {d.recipient && <span className="text-[12.5px] text-ink-2"> → {d.recipient.split(/[(,]/)[0]!.trim()}</span>}
                     </td>
                     <td className="px-3 py-2 text-[12.5px] text-ink-2">{d.decidedBy ?? '–'}</td>
-                    <td className="px-3 py-2">{run.agent === 'a' ? <AVerdict d={d} /> : <BVerdict d={d} />}</td>
+                    <td className="px-3 py-2">{d.accepted !== undefined ? <AVerdict d={d} /> : <BVerdict d={d} />}</td>
                     <td className="px-3 py-2 text-right">
                       <Button size="sm" variant="ghost" aria-expanded={open === d.key} onClick={() => setOpen(open === d.key ? null : d.key)}>
                         {open === d.key ? 'Hide' : 'Why'}

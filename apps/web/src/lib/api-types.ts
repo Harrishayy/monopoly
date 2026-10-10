@@ -1,4 +1,4 @@
-import type { Autonomy, CaseSummary, Handover, HumanDecision, NextStep, Outcome, PolicyRule, RunView, ToolEffect } from '@casework/core';
+import type { Autonomy, CaseSummary, Handover, HumanDecision, NextStep, Outcome, PolicyRule, RunKind, RunView, ToolEffect } from '@casework/core';
 
 /**
  * Response shapes of the web API. Client-safe: types only, no server imports.
@@ -8,6 +8,16 @@ import type { Autonomy, CaseSummary, Handover, HumanDecision, NextStep, Outcome,
 /** How a run decides: the model loop (falls back to the playbook) or the deterministic playbook only. */
 export type RunMode = 'model' | 'rules';
 
+/** Which agent ran: A (rules + guarded tool loop) or B (fixed pipeline). */
+export type AgentId = 'a' | 'b';
+
+/** What a run was for (smoke, split, Reality Test…), and the label it was given. From run.json, or guessed from the folder name. */
+export interface RunTag {
+  kind: RunKind;
+  name?: string;
+  note?: string;
+}
+
 /** Where in a case's history a run was cut. */
 export interface RunCut {
   /** Events numbered >= cutBefore were hidden from the agent. */
@@ -15,12 +25,13 @@ export interface RunCut {
   asOf: string;
 }
 
-export interface RunSummary {
+export interface RunSummary extends RunTag {
   runId: string;
   caseRef: string;
   caseTitle: string;
   autonomy: Autonomy;
   mode: RunMode;
+  agent: AgentId;
   cut?: RunCut;
   /** Set when the run belongs to an eval or batch. */
   groupId?: string;
@@ -94,7 +105,7 @@ export interface EvalScore {
   prohibited: number;
 }
 
-export interface EvalView {
+export interface EvalView extends RunTag {
   id: string;
   /** 'cli' rows come from .casework/eval/results.jsonl; 'ui' rows from a run started here. */
   source: 'cli' | 'ui';
@@ -117,7 +128,7 @@ export interface BatchCase {
   answerPath?: string;
 }
 
-export interface BatchView {
+export interface BatchView extends RunTag {
   id: string;
   source: 'cli' | 'ui';
   /** Folder the cases came from, or the folder the CLI wrote. */
@@ -177,7 +188,7 @@ export interface AgentStage {
 }
 
 export interface AgentInfo {
-  id: 'a' | 'b';
+  id: AgentId;
   name: string;
   approach: string;
   code: string;
@@ -219,7 +230,7 @@ export interface AgentDecision {
   error?: string;
 }
 
-export interface AgentRunView {
+export interface AgentRunView extends RunTag {
   id: string;
   agent: AgentInfo['id'];
   /** Folder name or UI eval id. */

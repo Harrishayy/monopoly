@@ -1,3 +1,4 @@
+import { RunKind } from '@casework/core';
 import { z } from 'zod';
 import { BATCH_INPUTS, listBatches, startBatch } from '@/server/batches';
 
@@ -5,6 +6,7 @@ const Body = z.object({
   dir: z.enum(BATCH_INPUTS),
   mode: z.enum(['model', 'rules']).default('model'),
   withhold: z.enum(['none', 'outcomes']).default('none'),
+  tag: z.object({ kind: RunKind.optional(), name: z.string().max(80).optional(), note: z.string().max(500).optional() }).optional(),
 });
 
 /**

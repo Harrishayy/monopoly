@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { BatchView, RunMode } from '@/lib/api-types';
+import type { BatchView, RunMode, RunTag } from '@/lib/api-types';
+import { RunTagFields } from '../run';
 import { duration } from '@/lib/format';
 import { Button, Dialog, KeyValue, ProgressBar, SegmentedControl, Select, Switch } from '@/ui';
 
@@ -9,6 +10,7 @@ export interface BatchStart {
   dir: string;
   mode: RunMode;
   withhold: 'none' | 'outcomes';
+  tag: RunTag;
 }
 
 /** Start, watch and cancel a batch. Shows concurrency, elapsed time and progress. */
@@ -16,6 +18,11 @@ export function BatchRunControl({ batch, inputs, onStart, onCancel, starting, mo
   const [dir, setDir] = useState(inputs[0] ?? 'data/challenges');
   const [mode, setMode] = useState<RunMode>('rules');
   const [withhold, setWithhold] = useState(false);
+  const [tag, setTag] = useState<RunTag>({ kind: 'reality' });
+  // Suggest a type from the folder and switch until the person picks one.
+  const [tagTouched, setTagTouched] = useState(false);
+  const suggested: RunTag['kind'] = withhold ? 'practice' : dir.includes('challenges') ? 'reality' : 'adhoc';
+  const shownTag = tagTouched ? tag : { ...tag, kind: suggested };
   const [confirm, setConfirm] = useState(false);
   // Wall clock set after mount (and every second while running), so server and client render the same.
   const [nowMs, setNowMs] = useState<number | null>(null);
@@ -31,7 +38,7 @@ export function BatchRunControl({ batch, inputs, onStart, onCancel, starting, mo
   const total = batch?.cases.length ?? 0;
   const end = batch?.finishedAt ? Date.parse(batch.finishedAt) : nowMs;
   const elapsed = batch?.startedAt && end ? Math.max(0, end - Date.parse(batch.startedAt)) : 0;
-  const start = () => onStart({ dir, mode, withhold: withhold ? 'outcomes' : 'none' });
+  const start = () => onStart({ dir, mode, withhold: withhold ? 'outcomes' : 'none', tag: shownTag });
 
   return (
     <div className="grid gap-4">
@@ -48,6 +55,16 @@ export function BatchRunControl({ batch, inputs, onStart, onCancel, starting, mo
                 { value: 'rules', label: 'Rules only (free)' },
                 { value: 'model', label: 'Model' },
               ]}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <RunTagFields
+              value={shownTag}
+              kinds={['smoke', 'practice', 'reality', 'full', 'adhoc']}
+              onChange={(t) => {
+                setTag(t);
+                setTagTouched(true);
+              }}
             />
           </div>
           <div className="sm:col-span-2">

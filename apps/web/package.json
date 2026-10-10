@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@casework/agents": "workspace:*",
     "@casework/core": "workspace:*",
     "@casework/tracks": "workspace:*",
     "@radix-ui/react-dialog": "^1.2.0",

@@ -26,11 +26,14 @@ export interface HistoryTimelineProps {
   runsByCut: Map<number, RunSummary>;
   onDecide: (cutBefore: number) => void;
   busy?: boolean;
+  /** Offer "Decide here" between every two events, not only at labelled decision points. */
+  anywhere?: boolean;
 }
 
-/** The case history, with a "decide here" point between every two events. */
-export function HistoryTimeline({ events, labels, cutBefore, runsByCut, onDecide, busy }: HistoryTimelineProps) {
+/** The case history, with its labelled decision points marked. With `anywhere`, any gap between events can be a decision point. */
+export function HistoryTimeline({ events, labels, cutBefore, runsByCut, onDecide, busy, anywhere }: HistoryTimelineProps) {
   const labelAt = new Map(labels.map((l) => [l.cutBefore, l]));
+  const pointNo = new Map([...labels].sort((a, b) => a.cutBefore - b.cutBefore).map((l, i) => [l.cutBefore, i + 1]));
   return (
     <ol aria-label="Case history" className="grid">
       {events.map((e, i) => {
@@ -42,7 +45,7 @@ export function HistoryTimeline({ events, labels, cutBefore, runsByCut, onDecide
         const selected = cutBefore === e.n;
         return (
           <li key={e.n} className="grid">
-            {i > 0 && (
+            {i > 0 && (label || run || selected || anywhere) && (
               <div className={cn('group relative grid grid-cols-[32px_minmax(0,1fr)] gap-3', selected && 'my-1')}>
                 <span aria-hidden className="mx-auto w-px bg-line" />
                 <div className="flex min-h-8 flex-wrap items-center gap-2 py-1">
@@ -57,13 +60,13 @@ export function HistoryTimeline({ events, labels, cutBefore, runsByCut, onDecide
                         ? 'border-accent bg-accent text-accent-ink'
                         : label || run
                           ? 'border-accent/50 bg-accent-soft text-accent'
-                          : 'border-dashed border-line text-ink-2 opacity-60 hover:opacity-100 focus-visible:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100',
+                          : 'border-dashed border-line text-ink-2',
                     )}
                   >
                     <Icon name="decide" size={12} />
-                    {selected ? `Deciding before event ${e.n}` : 'Decide here'}
+                    {label ? `Decision point ${pointNo.get(e.n)}` : selected ? `Deciding before event ${e.n}` : 'Decide here'}
                   </button>
-                  {label && <span className="font-mono text-[10.5px] uppercase tracking-[.06em] text-ink-2">labelled · {label.kind}</span>}
+                  {label && <span className="text-[11.5px] text-ink-2">{label.kind === 'determined' ? 'Clear-cut' : 'Judgement call'}</span>}
                   {run && !run.done && <Spinner size={12} label="Deciding" />}
                   {verdict && <VerdictChip verdict={verdict} size="sm" />}
                 </div>

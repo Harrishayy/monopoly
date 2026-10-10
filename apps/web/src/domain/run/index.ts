@@ -9,3 +9,4 @@ export * from './RetryBadge';
 export * from './RunTrace';
 export * from './ToolCallBlock';
 export * from './TraceStep';
+export * from './RunKind';

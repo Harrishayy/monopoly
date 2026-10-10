@@ -51,7 +51,7 @@ export function CutComparison({ cutBefore, asOf, next, running, happened, label,
               <span className="text-[12.5px] text-ink-2">
                 → {next.recipient} · {next.decidedBy === 'model' ? 'model' : 'playbook'}
               </span>
-              <p className="line-clamp-4 text-[13px] [overflow-wrap:anywhere]">{next.reason}</p>
+              <p className="line-clamp-3 text-[13px] [overflow-wrap:anywhere]">{next.reason}</p>
               <ConfidenceMeter value={next.confidence} />
             </>
           ) : (
@@ -76,7 +76,7 @@ export function CutComparison({ cutBefore, asOf, next, running, happened, label,
       {label ? (
         <div className="grid gap-2 border-t-(length:--bw) border-dashed border-line pt-3 text-[13px]">
           <div className="flex flex-wrap items-baseline gap-2">
-            <Eyebrow>Labelled answer · {label.kind}</Eyebrow>
+            <Eyebrow>What our label accepts · {label.kind === 'determined' ? 'clear-cut' : 'judgement call'}</Eyebrow>
           </div>
           <p>{label.situation}</p>
           <div className="grid gap-1.5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-baseline sm:gap-x-3">
@@ -89,14 +89,17 @@ export function CutComparison({ cutBefore, asOf, next, running, happened, label,
               </>
             )}
           </div>
-          {label.boundaries && label.boundaries.length > 0 && (
-            <ul className="grid list-disc gap-0.5 pl-4 text-[12.5px] text-ink-2">
-              {label.boundaries.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
+          {((label.boundaries?.length ?? 0) > 0 || label.note) && (
+            <details className="text-[12.5px] text-ink-2">
+              <summary className="cursor-pointer font-semibold">Boundaries and notes</summary>
+              <ul className="mt-1 grid list-disc gap-0.5 pl-4">
+                {label.boundaries?.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+              {label.note && <p className="mt-1 italic">{label.note}</p>}
+            </details>
           )}
-          {label.note && <p className="text-[12.5px] italic text-ink-2">{label.note}</p>}
         </div>
       ) : (
         cutBefore !== null && <p className="text-[12.5px] text-ink-2">No label for this point, so compare with what happened next yourself.</p>

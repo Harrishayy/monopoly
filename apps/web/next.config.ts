@@ -7,7 +7,7 @@ loadEnvConfig(resolve(process.cwd(), '../..'));
 
 const config: NextConfig = {
   // Workspace packages ship TypeScript source; Next compiles them.
-  transpilePackages: ['@casework/core', '@casework/tracks'],
+  transpilePackages: ['@casework/core', '@casework/tracks', '@casework/agents'],
   reactStrictMode: true,
   // Don't generate AGENTS.md: the repo keeps no text aimed at AI models outside CLAUDE.md.
   agentRules: false,
